@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore node_modules directory
+node_modules/
+
+# Include application properties
+!application.properties
+!application.yml
