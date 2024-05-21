@@ -2,14 +2,12 @@ package com.respo.respo.Configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 public class AppConfig {
 
     @Bean
@@ -27,10 +25,13 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests(authorizeRequests ->
-                authorizeRequests.anyRequest().authenticated()
+                authorizeRequests.anyRequest().permitAll() // This line changes the authorization to permit all requests.
             )
-            .httpBasic();
-        
+            .httpBasic().disable() // This disables HTTP Basic authentication.
+
+            // Optionally disable CSRF protection if your service is purely stateless
+            .csrf().disable();
+
         return http.build();
     }
 }
