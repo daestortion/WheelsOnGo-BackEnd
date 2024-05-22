@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = ("http://localhost:3000"))
+@CrossOrigin(origins = {"http://localhost:3000", "https://main--wheelsongo.netlify.app"})
 public class UserController {
 
 	@Autowired
