@@ -16,10 +16,10 @@ public class AppConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://wheelsongo.netlify.app")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
+                		.allowedOriginPatterns("https://*.netlify.app", "http://localhost:3000")  // Adjust this pattern to match your deployment and local test URLs
+                		.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                		.allowedHeaders("*")
+                		.allowCredentials(true);
             }
         };
     }
