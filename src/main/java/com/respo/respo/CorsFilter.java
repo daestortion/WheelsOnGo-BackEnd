@@ -17,7 +17,14 @@ public class CorsFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
 
-        response.setHeader("Access-Control-Allow-Origin", "https://main--wheelsongo.netlify.app"); // Replace with your frontend URL
+        // Retrieve the origin from the incoming request
+        String origin = request.getHeader("Origin");
+
+        // Check if the origin is one of the allowed origins
+        if ("https://main--wheelsongo.netlify.app".equals(origin) || "http://localhost:3000".equals(origin)) {
+            response.setHeader("Access-Control-Allow-Origin", origin); // Reflect the origin if it's allowed
+        }
+
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "*");
         response.setHeader("Access-Control-Max-Age", "3600");
