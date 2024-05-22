@@ -16,10 +16,10 @@ public class AppConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*") // Allows all origins
+                        .allowedOrigins("https://wheelsongo.netlify.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*") // Allows all headers
-                        .allowCredentials(true); // Important for cookies, authorization headers with HTTPS
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
