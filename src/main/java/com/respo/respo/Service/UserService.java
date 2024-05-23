@@ -91,6 +91,20 @@
                 }
             }
 
+            // Reactivate
+            public String reactivateUser(int userId) {
+                UserEntity user = urepo.findById(userId)
+                    .orElseThrow(() -> new NoSuchElementException("User " + userId + " does not exist"));
+
+                if (!user.isDeleted()) {
+                    return "User #" + userId + " is not deleted!";
+                } else {
+                    user.setDeleted(false);
+                    urepo.save(user);
+                    return "User #" + userId + " has been reactivated";
+                }
+            }
+
             public int loginUser(String identifier, String password) {
                 Optional<UserEntity> userOpt = identifier.contains("@") ? 
                     urepo.findByEmail(identifier) : urepo.findByUsername(identifier);
