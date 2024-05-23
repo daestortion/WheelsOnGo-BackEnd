@@ -81,4 +81,8 @@ public class CarService {
 	public List<CarEntity> findCarsByUserId(int userId) {
 		return crepo.findByOwnerId(userId);
 	}
+	
+	public CarEntity getCarById(int carId) {
+	    return crepo.findById(carId).orElseThrow(() -> new NoSuchElementException("Car not found with id: " + carId));
+	}
 }

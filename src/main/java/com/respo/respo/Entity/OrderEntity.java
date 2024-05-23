@@ -1,7 +1,11 @@
 package com.respo.respo.Entity;
 
 import java.time.LocalDate;
+import java.util.Random;
+
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "tblOrders")
@@ -13,8 +17,9 @@ public class OrderEntity {
 
     @ManyToOne
     @JoinColumn(name = "userId")
+    @JsonIgnoreProperties({"cars", "verification", "orders"}) // Ignore specific nested objects during serialization
     private UserEntity user;
-
+    
     @ManyToOne
     @JoinColumn(name = "carId")
     private CarEntity car;
@@ -31,6 +36,9 @@ public class OrderEntity {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "referenceNumber", unique = true)
+    private String referenceNumber; // Unique reference number
+
     public OrderEntity() {}
 
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, boolean isDeleted) {
@@ -42,9 +50,14 @@ public class OrderEntity {
         this.endDate = endDate;
         this.totalPrice = totalPrice;
         this.isDeleted = isDeleted;
+        this.referenceNumber = generateReferenceNumber();
     }
 
-    // Getters and setters
+    private String generateReferenceNumber() {
+        Random random = new Random();
+        return String.format("%08d", random.nextInt(100000000)); // Generates an 8-digit random number
+    }
+    
     public int getOrderId() {
         return orderId;
     }

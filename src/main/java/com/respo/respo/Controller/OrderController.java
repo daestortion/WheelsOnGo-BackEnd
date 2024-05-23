@@ -14,8 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
+import com.respo.respo.Service.UserService;
 
 @RestController
 @RequestMapping("/order")
@@ -23,18 +27,25 @@ import com.respo.respo.Service.OrderService;
 public class OrderController {
 
 	@Autowired
-	OrderService oserv;
-	
-	@GetMapping("/print")
-	public String itWorks() {
-		return "It works";
-	}
-	
-	//Create
-	@PostMapping("/insertOrder")
-	public OrderEntity insertUser(@RequestBody OrderEntity order) {
-		return oserv.insertOrder(order);
-	}
+    private OrderService oserv;
+
+    @Autowired
+    private UserService userv;
+
+    @Autowired
+    private CarService cserv;
+    
+    // Create
+    @PostMapping("/insertOrder")
+    public OrderEntity insertOrder(@RequestBody OrderEntity order, @RequestParam int userId, @RequestParam int carId) {
+        UserEntity user = userv.getUserById(userId); // Fetch the user by ID
+        CarEntity car = cserv.getCarById(carId); // Fetch the car by ID
+
+        order.setUser(user);
+        order.setCar(car);
+
+        return oserv.insertOrder(order);
+    }
 	
 	//Read
 	@GetMapping("/getAllOrders")
