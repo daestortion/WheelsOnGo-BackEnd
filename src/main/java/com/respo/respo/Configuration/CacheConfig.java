@@ -1,4 +1,4 @@
-package com.respo.respo.config;
+package com.respo.respo.Configuration;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
