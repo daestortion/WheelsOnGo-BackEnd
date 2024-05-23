@@ -84,22 +84,25 @@ public class UserController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
-		String identifier = credentials.get("identifier");
-		String password = credentials.get("password");
+public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
+    String identifier = credentials.get("identifier");
+    String password = credentials.get("password");
+
+    try {
+        Optional<UserEntity> user = userService.validateUser(identifier, password);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+    } catch (IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account is deleted.");
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+    }
+}
 	
-		try {
-			Optional<UserEntity> user = userService.validateUser(identifier, password);
-			if (user.isPresent()) {
-				return ResponseEntity.ok(user.get());
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-		}
-	}	
 
     @GetMapping("/forgot-password")
 	public ResponseEntity<?> forgotPassword(@RequestParam String identifier) {

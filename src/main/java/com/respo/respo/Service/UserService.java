@@ -140,22 +140,21 @@
             }
 
             public Optional<UserEntity> validateUser(String identifier, String password) {
-                Optional<UserEntity> user = Optional.empty();
-                try {
-                    user = identifier.contains("@")
-                            ? urepo.findByEmail(identifier)
-                            : urepo.findByUsername(identifier);
-                    if (user.isPresent() && user.get().getpWord().equals(password)) {
+                Optional<UserEntity> user = identifier.contains("@")
+                        ? urepo.findByEmail(identifier)
+                        : urepo.findByUsername(identifier);
+            
+                if (user.isPresent()) {
+                    UserEntity userEntity = user.get();
+                    if (userEntity.getpWord().equals(password) && !userEntity.isDeleted()) {
                         return user;
-                    } else {
-                        System.out.println("User not found or password mismatch for identifier: " + identifier);
+                    } else if (userEntity.isDeleted()) {
+                        throw new IllegalStateException("Account is deleted.");
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("An error occurred while validating user: " + e.getMessage());
                 }
                 return Optional.empty();
             }
+            
             
 
             public UserEntity getUserById(int userId) {
