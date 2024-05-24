@@ -23,7 +23,7 @@ import com.respo.respo.Service.UserService;
 
 @RestController
 @RequestMapping("/order")
-@CrossOrigin(origins = ("http://localhost:3000"))
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class OrderController {
 
 	@Autowired
