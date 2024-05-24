@@ -22,7 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = ("http://localhost:3000"))
+@CrossOrigin(origins = ("http://main--wheelsongo.netlify.app"))
 public class AdminController {
 
 	@Autowired

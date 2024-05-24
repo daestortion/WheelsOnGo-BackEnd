@@ -26,7 +26,7 @@ import com.respo.respo.Service.VerificationService;
 
 @RestController
 @RequestMapping("/verification")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://main--wheelsongo.netlify.app")
 public class VerificationController {
 
     @Autowired

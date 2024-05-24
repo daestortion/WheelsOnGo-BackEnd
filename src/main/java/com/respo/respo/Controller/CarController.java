@@ -25,7 +25,7 @@ import com.respo.respo.Service.UserService;
 
 @RestController
 @RequestMapping("/car")
-@CrossOrigin(origins = ("http://localhost:3000"))
+@CrossOrigin(origins = ("http://main--wheelsongo.netlify.app"))
 public class CarController {
 
 	@Autowired
