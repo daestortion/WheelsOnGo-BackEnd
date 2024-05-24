@@ -39,6 +39,9 @@ public class OrderEntity {
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
     
+    @Column(name = "payment")
+    private PaymentEntity payment;
+
     public OrderEntity() {}
 
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, boolean isDeleted) {
@@ -113,4 +116,21 @@ public class OrderEntity {
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+
+    public PaymentEntity getPayment() {
+        return payment;
+    }
+
+    public void setPayment(PaymentEntity payment) {
+        this.payment = payment;
+    }
+    
 }

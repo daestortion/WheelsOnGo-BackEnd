@@ -19,12 +19,6 @@ public class OrderService {
 	// Create
 	// Create
 	public OrderEntity insertOrder(OrderEntity order) {
-		// Calculate the number of days between startDate and endDate
-		long daysBetween = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
-		// Calculate the total price based on the number of days and car price per day
-		float totalPrice = daysBetween * order.getCar().getRentPrice();
-		order.setTotalPrice(totalPrice);
-
 		return orepo.save(order);
 	}
 
