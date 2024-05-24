@@ -83,23 +83,32 @@ public class UserController {
 		return userv.deleteUser(userId);
 	}
 
+	// Reactivate
+	@PutMapping("/reactivateUser/{userId}")
+	public String reactivateUser(@PathVariable int userId) {
+    	return userv.reactivateUser(userId);
+	}
+
+
 	@PostMapping("/login")
 	public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
-		String identifier = credentials.get("identifier");
-		String password = credentials.get("password");
-	
-		try {
-			Optional<UserEntity> user = userService.validateUser(identifier, password);
-			if (user.isPresent()) {
-				return ResponseEntity.ok(user.get());
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-		}
-	}	
+    	String identifier = credentials.get("identifier");
+    	String password = credentials.get("password");
+
+    	try {
+        	Optional<UserEntity> user = userService.validateUser(identifier, password);
+        	if (user.isPresent()) {
+            	return ResponseEntity.ok(user.get());
+        	} else {
+            	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        	}
+    	} catch (IllegalStateException e) {
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account is deleted.");
+    	} catch (Exception e) {
+        	e.printStackTrace();
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+    	}
+	}
 
     @GetMapping("/forgot-password")
 	public ResponseEntity<?> forgotPassword(@RequestParam String identifier) {
@@ -117,8 +126,6 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request: " + e.getMessage());
 		}
 	}
-
-
     
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam int userId, @RequestParam String newPassword) {
