@@ -25,7 +25,7 @@ public class CorsFilter implements Filter {
         res.setHeader("Access-Control-Allow-Credentials", "true");
 
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            res.setStatus(HttpServletResponse.SC_OK);
+            res.setStatus(HttpServletResponse.SC_OK);   
         } else {
             chain.doFilter(req, res);
         }
