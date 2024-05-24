@@ -15,22 +15,19 @@ public class PaymentEntity {
     private byte[] proof;
 
     @OneToOne
-    @JoinColumn(name = "orderId")
+    @JoinColumn(name = "orderId", referencedColumnName = "orderId")
     private OrderEntity order;
-    
-    
+
     public PaymentEntity() {
-	}
+    }
 
-	
-	public PaymentEntity(int paymentId, byte[] proof, OrderEntity order) {
-		this.paymentId = paymentId;
-		this.proof = proof;
-		this.order = order;
-	}
+    public PaymentEntity(int paymentId, byte[] proof, OrderEntity order) {
+        this.paymentId = paymentId;
+        this.proof = proof;
+        this.order = order;
+    }
 
-
-	// Getters and Setters
+    // Getters and Setters
     public int getPaymentId() {
         return paymentId;
     }

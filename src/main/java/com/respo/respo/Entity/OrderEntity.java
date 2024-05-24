@@ -7,6 +7,7 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
 @Entity
 @Table(name = "tblOrders")
 public class OrderEntity {
@@ -39,7 +40,7 @@ public class OrderEntity {
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
     
-    @Column(name = "payment")
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PaymentEntity payment;
 
     public OrderEntity() {}
