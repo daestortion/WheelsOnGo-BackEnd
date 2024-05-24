@@ -16,14 +16,14 @@ public class AppConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                		.allowedOriginPatterns("https://*.netlify.app", "http://localhost:3000")  // Adjust this pattern to match your deployment and local test URLs
-                		.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                		.allowedHeaders("*")
-                		.allowCredentials(true);
+                        .allowedOrigins("http://localhost:3000") // Replace with your React app's URL
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
-
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
