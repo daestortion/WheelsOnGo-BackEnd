@@ -16,7 +16,7 @@ public class AppConfig {
 	        @Override
 	        public void addCorsMappings(CorsRegistry registry) {
 	            registry.addMapping("/**")
-	                    .allowedOrigins("http://localhost:3000") // Ensure this matches your client URL exactly
+	                    .allowedOrigins("http://main--wheelsongo.netlify.app") // Ensure this matches your client URL exactly
 	                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 	                    .allowedHeaders("*")
 	                    .allowCredentials(true)
