@@ -42,7 +42,9 @@
 
             // Read
             public List<UserEntity> getAllUsers() {
-                return urepo.findAll();
+                List<UserEntity> users = urepo.findAll();
+                users.forEach(user -> System.out.println("Fetched user: " + user)); // Log user data
+                return users;
             }
 
             // Update
@@ -81,7 +83,7 @@
             public String deleteUser(int userId) {
                 UserEntity user = urepo.findById(userId)
                     .orElseThrow(() -> new NoSuchElementException("User " + userId + " does not exist"));
-
+            
                 if (user.isDeleted()) {
                     return "User #" + userId + " is already deleted!";
                 } else {
@@ -90,6 +92,7 @@
                     return "User #" + userId + " has been deleted";
                 }
             }
+            
 
             // Reactivate
             public String reactivateUser(int userId) {
