@@ -58,7 +58,7 @@ public class OrderEntity {
         this.referenceNumber = generateReferenceNumber();
     }
 
-    private String generateReferenceNumber() {
+    public String generateReferenceNumber() {
         Random random = new Random();
         return String.format("%08d", random.nextInt(100000000)); // Generates an 8-digit random number
     }
