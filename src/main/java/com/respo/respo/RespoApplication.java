@@ -10,7 +10,7 @@ public class RespoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(RespoApplication.class, args);
-		System.out.println("Zart Single Panget");
+		System.out.println("Way Forever!");
 	}
 
 }

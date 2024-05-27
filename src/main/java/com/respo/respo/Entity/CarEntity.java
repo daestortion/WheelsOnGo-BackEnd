@@ -30,7 +30,7 @@ public class CarEntity {
 
 	@Column(name = "isRented")
 	private boolean isRented = false;
-    
+	
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ownerId", referencedColumnName = "userId")  // Make sure 'userId' is correct
     @JsonIgnoreProperties("cars")
@@ -167,4 +167,14 @@ public class CarEntity {
 	public void setDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+
+	public boolean isRented() {
+		return isRented;
+	}
+
+	public void setRented(boolean isRented) {
+		this.isRented = isRented;
+	}
+
+	
 }

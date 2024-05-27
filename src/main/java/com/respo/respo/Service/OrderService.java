@@ -3,7 +3,9 @@ package com.respo.respo.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Repository.OrderRepository;
 
 import java.time.temporal.ChronoUnit;
@@ -18,8 +20,30 @@ public class OrderService {
 
 	// Create
 	// Create
+	// Create
 	public OrderEntity insertOrder(OrderEntity order) {
-		return orepo.save(order);
+	    // Check if the reference number is already set and is not empty, generate if necessary
+	    if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
+	        String newReferenceNumber = order.generateReferenceNumber(); // Generate a new reference number
+	        order.setReferenceNumber(newReferenceNumber); // Set the newly generated reference number
+	    }
+
+	    // Set user as renting
+	    UserEntity user = order.getUser();
+	    if (user != null) {
+	        user.setRenting(true); // Set the user's isRenting status to true
+	        // Persist changes to the user entity if necessary, e.g., userRepository.save(user);
+	    }
+
+	    // Set car as rented
+	    CarEntity car = order.getCar();
+	    if (car != null) {
+	        car.setRented(true); // Set the car's isRented status to true
+	        // Persist changes to the car entity if necessary, e.g., carRepository.save(car);
+	    }
+
+	    // Save the order with the reference number and updated entity statuses
+	    return orepo.save(order);
 	}
 
 	// Read
