@@ -17,14 +17,18 @@ public class PaymentEntity {
     @OneToOne
     @JoinColumn(name = "orderId", referencedColumnName = "orderId")
     private OrderEntity order;
-
+    
+    @JoinColumn(name = "status")
+    private int status;
+    
     public PaymentEntity() {
     }
 
-    public PaymentEntity(int paymentId, byte[] proof, OrderEntity order) {
+    public PaymentEntity(int paymentId, byte[] proof, OrderEntity order, int status) {
         this.paymentId = paymentId;
         this.proof = proof;
         this.order = order;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -51,4 +55,14 @@ public class PaymentEntity {
     public void setOrder(OrderEntity order) {
         this.order = order;
     }
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+    
+    
 }
