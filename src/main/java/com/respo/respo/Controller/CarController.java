@@ -52,38 +52,38 @@ public class CarController {
     // Create car with a specific owner
 	@PostMapping(value = "/insertCar/{userId}", consumes = {"multipart/form-data"})
 	public ResponseEntity<?> insertCar(
-	    @PathVariable int userId,
-	    @RequestParam("carBrand") String carBrand,
-	    @RequestParam("carModel") String carModel,
-	    @RequestParam("carYear") String carYear,
-	    @RequestParam("address") String address,
-	    @RequestParam("rentPrice") float rentPrice,
-	    @RequestParam(value = "carImage", required = false) MultipartFile carImage,
-	    @RequestParam(value = "carOR", required = false) MultipartFile carOR,
-	    @RequestParam(value = "carCR", required = false) MultipartFile carCR
+		@PathVariable int userId,
+		@RequestParam("carBrand") String carBrand,
+		@RequestParam("carModel") String carModel,
+		@RequestParam("carYear") String carYear,
+		@RequestParam("address") String address,
+		@RequestParam("rentPrice") float rentPrice,
+		@RequestParam("carDescription") String carDescription,  // Add carDescription parameter
+		@RequestParam(value = "carImage", required = false) MultipartFile carImage,
+		@RequestParam(value = "carOR", required = false) MultipartFile carOR,
+		@RequestParam(value = "carCR", required = false) MultipartFile carCR
 	) {
-	    CarEntity car = new CarEntity();
-	    car.setCarBrand(carBrand);
-	    car.setCarModel(carModel);
-	    car.setCarYear(carYear);
-	    car.setAddress(address);
-	    car.setRentPrice(rentPrice);
-	    
-	    if (carImage != null) {
-	        car.setCarImage(convertToBlob(carImage));
-	    }
-	    if (carOR != null) {
-	        car.setCarOR(convertToBlob(carOR));
-	    }
-	    if (carCR != null) {
-	        car.setCarCR(convertToBlob(carCR));
-	    }
-	    
-	    UserEntity user = userService.getUserById(userId);
-	    return ResponseEntity.ok(cserv.insertCar(car, user));
+		CarEntity car = new CarEntity();
+		car.setCarBrand(carBrand);
+		car.setCarModel(carModel);
+		car.setCarYear(carYear);
+		car.setAddress(address);
+		car.setRentPrice(rentPrice);
+		car.setCarDescription(carDescription);  // Set carDescription
+
+		if (carImage != null) {
+			car.setCarImage(convertToBlob(carImage));
+		}
+		if (carOR != null) {
+			car.setCarOR(convertToBlob(carOR));
+		}
+		if (carCR != null) {
+			car.setCarCR(convertToBlob(carCR));
+		}
+
+		UserEntity user = userService.getUserById(userId);
+		return ResponseEntity.ok(cserv.insertCar(car, user));
 	}
-
-
 
 
 	// Read
