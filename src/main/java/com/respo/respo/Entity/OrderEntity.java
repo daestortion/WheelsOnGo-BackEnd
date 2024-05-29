@@ -41,9 +41,12 @@ public class OrderEntity {
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
     
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private PaymentEntity payment;
+    @Column(name = "payment")
+    private Byte[] payment;
 
+    @Column(name = "status")
+    private int status;
+    
     public OrderEntity() {}
 
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, boolean isDeleted) {
@@ -127,11 +130,11 @@ public class OrderEntity {
         this.referenceNumber = referenceNumber;
     }
 
-    public PaymentEntity getPayment() {
+    public Byte[] getPayment() {
         return payment;
     }
 
-    public void setPayment(PaymentEntity payment) {
+    public void setPayment(Byte[] payment) {
         this.payment = payment;
     }
     

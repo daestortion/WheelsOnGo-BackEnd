@@ -50,7 +50,7 @@ public class CarEntity {
     }
     
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("car")
+    @JsonIgnoreProperties({"car", "user"})
     private List<OrderEntity> orders = new ArrayList<>();
 
     

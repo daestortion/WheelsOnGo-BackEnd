@@ -13,6 +13,7 @@
         import com.respo.respo.Entity.UserEntity;
         import com.respo.respo.Repository.UserRepository;
         import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
         @Service
         public class UserService {
@@ -22,6 +23,8 @@
 
             @Autowired
             private JavaMailSender mailSender;
+            
+            private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
             // Create
             public UserEntity insertUser(UserEntity user) throws IllegalArgumentException {
@@ -32,14 +35,20 @@
                 if (urepo.findByEmail(user.getEmail()).isPresent()) {
                     throw new IllegalArgumentException("Email already registered.");
                 }
-                // Save the user if checks pass
+                // Hash the password before saving it
+                String encodedPassword = passwordEncoder.encode(user.getpWord());
+                user.setpWord(encodedPassword); // Set the hashed password
+                
                 UserEntity savedUser = urepo.save(user);
                 // Handle profile pic saving logic if needed
                 // Example: saveProfilePic(savedUser, user.getProfilePic());
                 return savedUser;  // Save the user if checks pass
             }
 
-
+            public boolean checkPassword(String rawPassword, String encodedPassword) {
+                return passwordEncoder.matches(rawPassword, encodedPassword);
+            }
+            
             // Read
             public List<UserEntity> getAllUsers() {
                 List<UserEntity> users = urepo.findAll();
@@ -111,13 +120,13 @@
             public int loginUser(String identifier, String password) {
                 Optional<UserEntity> userOpt = identifier.contains("@") ? 
                     urepo.findByEmail(identifier) : urepo.findByUsername(identifier);
-            
-                if (userOpt.isPresent() && userOpt.get().getpWord().equals(password)) {
+
+                if (userOpt.isPresent() && checkPassword(password, userOpt.get().getpWord())) {
                     return 1; // Login successful
                 }
                 return 0; // Login unsuccessful, either identifier not found or password incorrect
-            }        
-            
+            }    
+        
             
             public UserEntity getUserByIdentifier(String identifier) {
                 if (StringUtils.hasText(identifier)) {
@@ -160,10 +169,11 @@
                 Optional<UserEntity> user = identifier.contains("@")
                         ? urepo.findByEmail(identifier)
                         : urepo.findByUsername(identifier);
-            
+
                 if (user.isPresent()) {
                     UserEntity userEntity = user.get();
-                    if (userEntity.getpWord().equals(password) && !userEntity.isDeleted()) {
+                    // Use BCryptPasswordEncoder's matches method to check the password
+                    if (passwordEncoder.matches(password, userEntity.getpWord()) && !userEntity.isDeleted()) {
                         return user;
                     } else if (userEntity.isDeleted()) {
                         throw new IllegalStateException("Account is deleted.");
