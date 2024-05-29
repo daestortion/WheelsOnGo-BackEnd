@@ -145,11 +145,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
                 UserEntity user = urepo.findById(userId).orElseThrow(() ->
                     new NoSuchElementException("No user found with ID: " + userId));
                 
-                user.setpWord(newPassword);  // Update the password
+                String hashedPassword = passwordEncoder.encode(newPassword);
+                user.setpWord(hashedPassword);  // Update the password
                 urepo.save(user);
                 return user;
             }
-
             public void sendPasswordResetEmail(UserEntity user, String resetLink) {
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setFrom("ayadekenneth07@gmail.com");

@@ -25,6 +25,7 @@ import com.respo.respo.Repository.UserRepository;
 import com.respo.respo.Service.UserService;
 
 import java.util.Optional;
+import com.respo.respo.Configuration.TokenGenerator; // Import TokenGenerator class
 
 @RestController
 @RequestMapping("/user")
@@ -119,14 +120,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
-
+    
     @GetMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String identifier) {
         try {
             UserEntity user = userv.getUserByIdentifier(identifier);
             if (user != null) {
-                // Assume you generate a reset token and store it with an expiry time in your database
-                String resetLink = "http://localhost:3000/resetpassword";
+                // Generate a reset token and store it with an expiry time in your database
+                String resetToken = TokenGenerator.generateResetToken(user.getUserId()); // Using TokenGenerator to generate reset token
+                String resetLink = "http://localhost:3000/resetpassword?userId=" + user.getUserId() + "&token=" + resetToken;
                 userv.sendPasswordResetEmail(user, resetLink);
                 return ResponseEntity.ok("If the email is associated with an account, a reset link has been sent.");
             } else {
@@ -138,14 +140,20 @@ public class UserController {
     }
     
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam int userId, @RequestParam String newPassword) {
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> requestBody) {
         try {
+            int userId = Integer.parseInt(requestBody.get("userId"));
+            String newPassword = requestBody.get("newPassword");
+            
             UserEntity user = userv.resetPassword(userId, newPassword);
             return ResponseEntity.ok("Password for user " + user.getUsername() + " has been successfully updated.");
         } catch (NoSuchElementException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NumberFormatException | NullPointerException e) {
+            return ResponseEntity.badRequest().body("Invalid userId provided");
         }
     }
+
 
     @PutMapping("/updateIsOwner/{userId}")
     public ResponseEntity<?> updateIsRenting(@PathVariable int userId, @RequestBody Map<String, Boolean> updates) {
