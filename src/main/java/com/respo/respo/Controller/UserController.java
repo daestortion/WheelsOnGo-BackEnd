@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,8 +54,11 @@ public class UserController {
     // Read
     @GetMapping("/getAllUsers")
     public List<UserEntity> getAllUsers() {
-        return userService.getAllUsers(); // This assumes the UserService properly handles user data retrieval
+        List<UserEntity> users = userv.getAllUsers();
+        users.forEach(user -> System.out.println("User: " + user.getUserId() + ", isDeleted: " + user.isDeleted()));
+        return users;
     }
+
     
     // U - Update a user record
     @PutMapping("/updateUser")
@@ -79,10 +81,18 @@ public class UserController {
     }
 
     // D - Delete a user record
-    @DeleteMapping("/deleteUser/{userId}")
-    public String deleteUser(@PathVariable int userId) {
-        return userv.deleteUser(userId);
+    @PutMapping("/deleteUser/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable int userId) {
+        try {
+            String result = userv.deleteUser(userId);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     // Reactivate
     @PutMapping("/reactivateUser/{userId}")

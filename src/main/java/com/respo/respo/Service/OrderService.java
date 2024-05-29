@@ -8,7 +8,6 @@ import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Repository.OrderRepository;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -39,12 +38,13 @@ public class OrderService {
 	    CarEntity car = order.getCar();
 	    if (car != null) {
 	        car.setRented(true); // Set the car's isRented status to true
+	        car.addOrder(order); // Add the order to the car's list of orders
 	        // Persist changes to the car entity if necessary, e.g., carRepository.save(car);
 	    }
-
 	    // Save the order with the reference number and updated entity statuses
 	    return orepo.save(order);
 	}
+
 
 	// Read
 	public List<OrderEntity> getAllOrders() {

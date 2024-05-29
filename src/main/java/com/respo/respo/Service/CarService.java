@@ -67,16 +67,17 @@ public class CarService {
 	// Delete
 	public String deleteCar(int carId) {
 		CarEntity car = crepo.findById(carId)
-			.orElseThrow(() -> new NoSuchElementException("Car " + carId + "does not exist"));
+			.orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist"));
 
 		if (car.isDeleted()) {
 			return "Car #" + carId + " is already deleted!";
 		} else {
 			car.setDeleted(true);
 			crepo.save(car);
-			return "Car #" + carId + "has been deleted";
+			return "Car #" + carId + " has been deleted";
 		}
 	}
+
 
 	public List<CarEntity> findCarsByUserId(int userId) {
 		return crepo.findByOwnerId(userId);
