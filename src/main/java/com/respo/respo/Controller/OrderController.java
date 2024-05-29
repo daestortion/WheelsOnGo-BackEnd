@@ -35,7 +35,7 @@ public class OrderController {
     @Autowired
     private CarService cserv;
     
-    // Create
+ // Create
     @PostMapping("/insertOrder")
     public OrderEntity insertOrder(@RequestBody OrderEntity order, @RequestParam int userId, @RequestParam int carId) {
         UserEntity user = userv.getUserById(userId); // Fetch the user by ID
@@ -44,7 +44,7 @@ public class OrderController {
         order.setUser(user);
         order.setCar(car);
 
-        return oserv.insertOrder(order);
+        return oserv.insertOrder(order); // Call the insertOrder method to save the order properly
     }
 	
 	//Read

@@ -1,5 +1,9 @@
 package com.respo.respo.Entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,6 +15,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 
@@ -30,7 +35,7 @@ public class CarEntity {
 
 	@Column(name = "isRented")
 	private boolean isRented = false;
-	
+		
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ownerId", referencedColumnName = "userId")  // Make sure 'userId' is correct
     @JsonIgnoreProperties("cars")
@@ -39,10 +44,23 @@ public class CarEntity {
     public UserEntity getOwner() {
         return this.owner;
     }
-
+    
     public void setOwner(UserEntity owner) {
         this.owner = owner;
     }
+    
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("car")
+    private List<OrderEntity> orders = new ArrayList<>();
+
+    
+	public List<OrderEntity> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(List<OrderEntity> orders) {
+		this.orders = orders;
+	}
 
 	@Column(name = "carYear")
     private String carYear;
@@ -175,6 +193,12 @@ public class CarEntity {
 	public void setRented(boolean isRented) {
 		this.isRented = isRented;
 	}
-
+	
+    public void addOrder(OrderEntity order) {
+        if (orders == null) {
+            orders = new ArrayList<>();
+        }
+        orders.add(order);
+    }
 	
 }
