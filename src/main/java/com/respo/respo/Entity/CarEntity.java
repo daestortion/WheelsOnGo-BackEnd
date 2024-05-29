@@ -33,6 +33,9 @@ public class CarEntity {
     @Column(name = "carModel")
     private String carModel;
 
+	@Column(name = "carDescription")
+    private String carDescription;
+
 	@Column(name = "isRented")
 	private boolean isRented = false;
 		
@@ -88,12 +91,13 @@ public class CarEntity {
 
     public CarEntity() {}
 
-	public CarEntity(int carId, String carBrand, String carModel, UserEntity owner, String carYear,  
+	public CarEntity(int carId, String carBrand, String carModel, String carDescription,UserEntity owner, String carYear,  
 					 String Address, float rentPrice,byte[] carImage, byte[] carOR, byte[] carCR) {
 		super();
 		this.carId = carId;
 		this.carBrand = carBrand;
 		this.carModel = carModel;
+		this.carDescription = carDescription;
 		this.owner = owner;
 		this.carYear = carYear;
 		this.Address = Address;
@@ -127,6 +131,14 @@ public class CarEntity {
 
 	public void setCarModel(String carModel) {
 		this.carModel = carModel;
+	}
+
+	public String getCarDescription() {
+		return carDescription;
+	}
+
+	public void setCarDescription(String carDescription) {
+		this.carDescription = carDescription;
 	}
 
 	public String getCarYear() {
