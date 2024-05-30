@@ -41,32 +41,28 @@ public class CarService {
 
 	// Update
 	public CarEntity updateCar(int carId, CarEntity newCarDetails) {
-	    CarEntity car = crepo.findById(carId)
-	            .orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
-
-	    // Check and update carImage if it's not null or empty
-	    if (newCarDetails.getCarImage() != null && newCarDetails.getCarImage().length > 0) {
-	        car.setCarImage(newCarDetails.getCarImage());
-	    }
-
-	    // Check and update carOR if it's not null or empty
-	    if (newCarDetails.getCarOR() != null && newCarDetails.getCarOR().length > 0) {
-	        car.setCarOR(newCarDetails.getCarOR());
-	    }
-
-		// Check and update Address if it's not null or empty
-	    if (newCarDetails.getAddress() != null && newCarDetails.getAddress().isEmpty()) {
-	        car.setAddress(newCarDetails.getAddress());
-	    }
-
-		// Check and update rentPrice if it's not null or empty
-	    if (newCarDetails.getRentPrice() != 0) {
+		CarEntity car = crepo.findById(carId)
+				.orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
+	
+		if (newCarDetails.getCarDescription() != null) {
+			car.setCarDescription(newCarDetails.getCarDescription());
+		}
+	
+		if (newCarDetails.getRentPrice() != 0) {
 			car.setRentPrice(newCarDetails.getRentPrice());
 		}
-		
-	    // There is no need for a try-catch block here as findById with orElseThrow already handles the exception
-	    return crepo.save(car);
+	
+		if (newCarDetails.getAddress() != null) {
+			car.setAddress(newCarDetails.getAddress());
+		}
+	
+		if (newCarDetails.getCarImage() != null && newCarDetails.getCarImage().length > 0) {
+			car.setCarImage(newCarDetails.getCarImage());
+		}
+	
+		return crepo.save(car);
 	}
+	
 
 	
 	// Delete
