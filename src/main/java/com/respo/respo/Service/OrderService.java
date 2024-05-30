@@ -37,7 +37,7 @@ public class OrderService {
 	    // Set car as rented
 	    CarEntity car = order.getCar();
 	    if (car != null) {
-	        car.setRented(true); // Set the car's isRented status to true
+	        car.setRented(false); // Set the car's isRented status to true
 	        car.addOrder(order); // Add the order to the car's list of orders
 	        // Persist changes to the car entity if necessary, e.g., carRepository.save(car);
 	    }
@@ -87,4 +87,17 @@ public class OrderService {
     public List<OrderEntity> getOrdersByUserId(UserEntity user) {
         return orepo.findByUser(user);
     }
+
+	public OrderEntity approveOrder(int orderId) {
+		OrderEntity order = orepo.findById(orderId)
+				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+	
+		CarEntity car = order.getCar();
+		if (car != null) {
+			car.setRented(true); // Set the car's rented status to true
+			// Save changes to the car entity if necessary, e.g., carRepository.save(car);
+		}
+	
+		return orepo.save(order);
+	}
 }
