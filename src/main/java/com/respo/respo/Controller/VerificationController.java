@@ -78,10 +78,30 @@ public class VerificationController {
     }    
 
     // Update an existing verification
-    @PutMapping("/updateVerification/{vId}")
-    public VerificationEntity updateVerification(@PathVariable int vId, @RequestBody VerificationEntity newVerificationDetails) {
-        return vserv.updateVerification(vId, newVerificationDetails);
+    @PutMapping("/updateVerification/{userId}")
+    public VerificationEntity updateVerification(@PathVariable int userId, 
+                                             @RequestParam("status") int status, 
+                                             @RequestParam("govId") MultipartFile govId, 
+                                             @RequestParam("driversLicense") MultipartFile driversLicense) throws IOException {
+        UserEntity userEntity = userv.getUserById(userId);
+        if (userEntity == null) {
+            throw new NoSuchElementException("No user found with ID: " + userId);
+        }
+    
+        VerificationEntity verification = vserv.getVerificationByUserId(userId);
+        if (verification == null) {
+            throw new NoSuchElementException("No verification record found for user with ID: " + userId);
+        }
+
+        byte[] govIdBytes = govId.getBytes();
+        byte[] driversLicenseBytes = driversLicense.getBytes();
+        verification.setStatus(status);
+        verification.setGovId(govIdBytes);
+        verification.setDriversLicense(driversLicenseBytes);
+
+        return vserv.updateVerification(verification);
     }
+
 
     // Delete a verification
     @DeleteMapping("/deleteVerification/{vId}")
