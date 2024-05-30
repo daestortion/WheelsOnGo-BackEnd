@@ -100,4 +100,9 @@ public class OrderController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/getOrdersByCarOwnerId/{ownerId}")
+    public List<OrderEntity> getOrdersByCarOwnerId(@PathVariable int ownerId) {
+        return oserv.getOrdersByCarOwnerId(ownerId);
+    }
 }
