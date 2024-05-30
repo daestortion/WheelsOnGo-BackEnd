@@ -29,20 +29,18 @@ public class VerificationService {
     }
 
     // Update
-    public VerificationEntity updateVerification(int vId, VerificationEntity newVerificationDetails) {
-        VerificationEntity verification = vrepo.findById(vId)
-                .orElseThrow(() -> new NoSuchElementException("Verification with ID " + vId + " does not exist."));
-
+    public VerificationEntity updateVerification(VerificationEntity verification) {
+        VerificationEntity existingVerification = vrepo.findById(verification.getVId())
+                .orElseThrow(() -> new NoSuchElementException("Verification with ID " + verification.getVId() + " does not exist."));
+        
         // Update fields accordingly
-        if (newVerificationDetails.getUser() != null) {
-            verification.setUser(newVerificationDetails.getUser());
-        }
-        verification.setStatus(newVerificationDetails.getStatus());
-        verification.setGovId(newVerificationDetails.getDriversLicense());
-        verification.setDriversLicense(newVerificationDetails.getGovId());
-
-        return vrepo.save(verification);
+        existingVerification.setStatus(verification.getStatus());
+        existingVerification.setGovId(verification.getGovId());
+        existingVerification.setDriversLicense(verification.getDriversLicense());
+    
+        return vrepo.save(existingVerification);
     }
+    
 
     // Delete
     public String deleteVerification(int vId) {
