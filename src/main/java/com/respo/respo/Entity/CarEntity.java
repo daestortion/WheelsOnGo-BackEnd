@@ -41,7 +41,7 @@ public class CarEntity {
 		
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ownerId", referencedColumnName = "userId")  // Make sure 'userId' is correct
-    @JsonIgnoreProperties("cars")
+    @JsonIgnoreProperties({"cars","orders"})
     private UserEntity owner;
 
     public UserEntity getOwner() {
