@@ -47,10 +47,15 @@ public class OrderEntity {
     @Column(name = "status")
     private int status;
     
+    @Column(name = "active")
+    private boolean isActive = false;
+
+    
     public OrderEntity() {}
 
-    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, boolean isDeleted, int status) {
-        super();
+    
+    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
+            float totalPrice, boolean isDeleted, String referenceNumber, Byte[] payment, int status, boolean isActive) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -58,9 +63,12 @@ public class OrderEntity {
         this.endDate = endDate;
         this.totalPrice = totalPrice;
         this.isDeleted = isDeleted;
-        this.referenceNumber = generateReferenceNumber();
+        this.referenceNumber = referenceNumber;
+        this.payment = payment;
         this.status = status;
+        this.isActive = isActive;
     }
+
 
     public String generateReferenceNumber() {
         Random random = new Random();
@@ -145,6 +153,14 @@ public class OrderEntity {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
     }
     
 }

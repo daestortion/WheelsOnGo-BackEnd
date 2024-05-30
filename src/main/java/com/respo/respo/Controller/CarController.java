@@ -94,9 +94,15 @@ public class CarController {
 	
 	// U - Update
 	@PutMapping("/updateCar")
-	public CarEntity updateCar(@RequestParam int carId, @RequestBody CarEntity newCarDetails) {
-		return cserv.updateCar(carId, newCarDetails);
+	public ResponseEntity<CarEntity> updateCar(@RequestBody CarEntity newCarDetails) {
+		try {
+			CarEntity updatedCar = cserv.updateCar(newCarDetails.getCarId(), newCarDetails);
+			return new ResponseEntity<>(updatedCar, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
 	}
+	
 
 	// D - Delete 
 	@PutMapping("/deleteCar/{carId}")
@@ -121,4 +127,26 @@ public class CarController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+	
+    @GetMapping("/allCarsWithOrders")
+    public ResponseEntity<List<CarEntity>> getAllCarsWithOrders() {
+        try {
+            List<CarEntity> cars = cserv.getAllCarsWithOrders();
+            return ResponseEntity.ok(cars);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
+	// Add this method in CarController
+	@GetMapping("/getCarById/{carId}")
+	public ResponseEntity<CarEntity> getCarById(@PathVariable int carId) {
+		try {
+			CarEntity car = cserv.getCarById(carId);
+			return new ResponseEntity<>(car, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+	}
+
 }
