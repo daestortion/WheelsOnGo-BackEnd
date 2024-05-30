@@ -15,4 +15,8 @@ public interface CarRepository extends JpaRepository<CarEntity, Integer>{
     
     @Query("SELECT c FROM CarEntity c JOIN FETCH c.owner")
     List<CarEntity> findAllWithOwner();
+    
+    List<CarEntity> findAllByIsRented(boolean isRented);
+
+
 }

@@ -121,4 +121,14 @@ public class CarController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+	
+    @GetMapping("/allCarsWithOrders")
+    public ResponseEntity<List<CarEntity>> getAllCarsWithOrders() {
+        try {
+            List<CarEntity> cars = cserv.getAllCarsWithOrders();
+            return ResponseEntity.ok(cars);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
 }
