@@ -99,6 +99,27 @@ public class OrderService {
 		return orepo.save(order);
 	}
 
+	public OrderEntity denyOrder(int orderId) {
+        OrderEntity order = orepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+
+        order.setStatus(2); // Set order status to 2
+
+        // Set user renting status to false
+        UserEntity user = order.getUser();
+        if (user != null) {
+            user.setRenting(false);
+        }
+
+        // Set car rented status to false
+        CarEntity car = order.getCar();
+        if (car != null) {
+            car.setRented(false);
+        }
+
+        return orepo.save(order);
+    }
+
     public List<OrderEntity> getOrdersByCarOwnerId(int ownerId) {
         List<CarEntity> cars = crepo.findByOwnerId(ownerId);
         return cars.stream()
