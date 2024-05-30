@@ -2,12 +2,12 @@ package com.respo.respo.Controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +30,7 @@ public class CarController {
 
 	@Autowired
 	CarService cserv;
+
 	@Autowired
     UserService userService;
 	
@@ -51,38 +52,38 @@ public class CarController {
     // Create car with a specific owner
 	@PostMapping(value = "/insertCar/{userId}", consumes = {"multipart/form-data"})
 	public ResponseEntity<?> insertCar(
-	    @PathVariable int userId,
-	    @RequestParam("carBrand") String carBrand,
-	    @RequestParam("carModel") String carModel,
-	    @RequestParam("carYear") String carYear,
-	    @RequestParam("address") String address,
-	    @RequestParam("rentPrice") float rentPrice,
-	    @RequestParam(value = "carImage", required = false) MultipartFile carImage,
-	    @RequestParam(value = "carOR", required = false) MultipartFile carOR,
-	    @RequestParam(value = "carCR", required = false) MultipartFile carCR
+		@PathVariable int userId,
+		@RequestParam("carBrand") String carBrand,
+		@RequestParam("carModel") String carModel,
+		@RequestParam("carYear") String carYear,
+		@RequestParam("address") String address,
+		@RequestParam("rentPrice") float rentPrice,
+		@RequestParam("carDescription") String carDescription,  // Add carDescription parameter
+		@RequestParam(value = "carImage", required = false) MultipartFile carImage,
+		@RequestParam(value = "carOR", required = false) MultipartFile carOR,
+		@RequestParam(value = "carCR", required = false) MultipartFile carCR
 	) {
-	    CarEntity car = new CarEntity();
-	    car.setCarBrand(carBrand);
-	    car.setCarModel(carModel);
-	    car.setCarYear(carYear);
-	    car.setAddress(address);
-	    car.setRentPrice(rentPrice);
-	    
-	    if (carImage != null) {
-	        car.setCarImage(convertToBlob(carImage));
-	    }
-	    if (carOR != null) {
-	        car.setCarOR(convertToBlob(carOR));
-	    }
-	    if (carCR != null) {
-	        car.setCarCR(convertToBlob(carCR));
-	    }
-	    
-	    UserEntity user = userService.getUserById(userId);
-	    return ResponseEntity.ok(cserv.insertCar(car, user));
+		CarEntity car = new CarEntity();
+		car.setCarBrand(carBrand);
+		car.setCarModel(carModel);
+		car.setCarYear(carYear);
+		car.setAddress(address);
+		car.setRentPrice(rentPrice);
+		car.setCarDescription(carDescription);  // Set carDescription
+
+		if (carImage != null) {
+			car.setCarImage(convertToBlob(carImage));
+		}
+		if (carOR != null) {
+			car.setCarOR(convertToBlob(carOR));
+		}
+		if (carCR != null) {
+			car.setCarCR(convertToBlob(carCR));
+		}
+
+		UserEntity user = userService.getUserById(userId);
+		return ResponseEntity.ok(cserv.insertCar(car, user));
 	}
-
-
 
 
 	// Read
@@ -91,17 +92,24 @@ public class CarController {
 		return cserv.getAllCars();
 	}
 	
-	// U - Update a user record
+	// U - Update
 	@PutMapping("/updateCar")
 	public CarEntity updateCar(@RequestParam int carId, @RequestBody CarEntity newCarDetails) {
 		return cserv.updateCar(carId, newCarDetails);
 	}
 
-	// D - Delete a user record
-	@DeleteMapping("/deleteCar/{carId}")
-	public String deleteCar(@PathVariable int carId) {
-		return cserv.deleteCar(carId);
-	}	
+	// D - Delete 
+	@PutMapping("/deleteCar/{carId}")
+	public ResponseEntity<String> deleteCar(@PathVariable int carId) {
+        try {
+            String result = cserv.deleteCar(carId);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }	
 
 
 	@GetMapping("/getAllCarsForUser/{userId}")
