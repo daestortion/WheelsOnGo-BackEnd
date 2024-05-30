@@ -7,15 +7,18 @@ import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.CarRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
 
 	@Autowired
 	OrderRepository orepo;
+	CarRepository crepo;
 
 	// Create
 	// Create
@@ -86,5 +89,20 @@ public class OrderService {
 	    // Get orders by user ID
     public List<OrderEntity> getOrdersByUserId(UserEntity user) {
         return orepo.findByUser(user);
+    }
+
+	public OrderEntity approveOrder(int orderId) {
+		OrderEntity order = orepo.findById(orderId)
+				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+	
+		order.setStatus(1); // Assuming status is a boolean field, set it to true
+		return orepo.save(order);
+	}
+
+    public List<OrderEntity> getOrdersByCarOwnerId(int ownerId) {
+        List<CarEntity> cars = crepo.findByOwnerId(ownerId);
+        return cars.stream()
+                   .<OrderEntity>flatMap(car -> orepo.findByCar(car).stream())
+                   .collect(Collectors.toList());
     }
 }

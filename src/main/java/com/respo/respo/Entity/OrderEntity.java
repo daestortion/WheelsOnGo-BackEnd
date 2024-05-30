@@ -154,6 +154,7 @@ public class OrderEntity {
 
     public void setStatus(int status) {
         this.status = status;
+        this.isActive = status == 1;
     }
 
     public boolean isActive() {

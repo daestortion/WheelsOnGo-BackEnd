@@ -2,6 +2,7 @@ package com.respo.respo.Controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -90,4 +91,18 @@ public class OrderController {
 		return orders;
 	}
 
+    @PutMapping("/approveOrder/{orderId}")
+    public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
+        try {
+            OrderEntity updatedOrder = oserv.approveOrder(orderId);
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/getOrdersByCarOwnerId/{ownerId}")
+    public List<OrderEntity> getOrdersByCarOwnerId(@PathVariable int ownerId) {
+        return oserv.getOrdersByCarOwnerId(ownerId);
+    }
 }
