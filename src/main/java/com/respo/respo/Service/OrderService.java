@@ -82,4 +82,9 @@ public class OrderService {
 			return "Order #" + orderId + "has been deleted";
 		}
 	}
+
+	    // Get orders by user ID
+    public List<OrderEntity> getOrdersByUserId(UserEntity user) {
+        return orepo.findByUser(user);
+    }
 }

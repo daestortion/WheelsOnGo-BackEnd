@@ -64,4 +64,10 @@ public class OrderController {
 	public String deleteUser(@PathVariable int orderId) {
 		return oserv.deleteOrder(orderId);
 	}
+
+	@GetMapping("/getOrdersByUserId/{userId}")
+    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId) {
+        UserEntity user = userv.getUserById(userId);
+        return oserv.getOrdersByUserId(user);
+    }
 }
