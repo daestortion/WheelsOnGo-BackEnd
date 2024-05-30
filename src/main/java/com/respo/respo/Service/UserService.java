@@ -10,7 +10,10 @@
         import org.springframework.util.StringUtils;
         import org.springframework.web.multipart.MultipartFile;
         import java.util.Base64;
-        import com.respo.respo.Entity.UserEntity;
+import java.util.Collections;
+
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
         import com.respo.respo.Repository.UserRepository;
         import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -214,5 +217,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
                 
                 return urepo.save(existingUser);
             }
-        
+            
+            public List<OrderEntity> getAllOrdersByUserId(int userId) {
+                Optional<UserEntity> userOpt = urepo.findById(userId);
+                if (userOpt.isPresent()) {
+                    return userOpt.get().getOrders(); // Get orders directly from the UserEntity
+                }
+                return Collections.emptyList(); // Return an empty list if user is not found
+            }
 }

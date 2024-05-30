@@ -1,6 +1,9 @@
 package com.respo.respo.Controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,7 +23,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.respo.respo.Entity.CarEntity;
+import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.UserRepository;
 import com.respo.respo.Service.UserService;
 
@@ -40,6 +46,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private OrderRepository orepo;
 
     @GetMapping("/print")
     public String itWorks() {
@@ -189,4 +198,66 @@ public class UserController {
         boolean isEmpty = urepo.count() == 0;
         return ResponseEntity.ok(isEmpty);
     }
+    
+    @GetMapping("/getAllOrdersFromUser/{userId}")
+    public ResponseEntity<List<OrderEntity>> getAllOrdersFromUser(@PathVariable int userId) {
+        try {
+            List<OrderEntity> orders = userv.getAllOrdersByUserId(userId);
+            if (orders.isEmpty()) {
+                return ResponseEntity.noContent().build(); // No orders found
+            }
+            return ResponseEntity.ok(orders); // Return the list of orders
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null); // Internal server error
+        }
+    }
+    
+    @GetMapping("/getOwnedCarsByUserId/{userId}")
+    public ResponseEntity<List<CarEntity>> getOwnedCarsByUserId(@PathVariable int userId) {
+        try {
+            UserEntity user = userService.getUserById(userId);
+            if (user != null) {
+                List<CarEntity> ownedCars = user.getCars();
+                if (ownedCars.isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No cars found
+                }
+                return new ResponseEntity<>(ownedCars, HttpStatus.OK); // Return the list of owned cars
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // User not found
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // Internal server error
+        }
+    }
+    
+
+    @GetMapping("/{userId}/carOrders")
+    public ResponseEntity<List<OrderEntity>> getCarOrdersByUserId(@PathVariable int userId) {
+        try {
+            UserEntity user = userService.getUserById(userId);
+            if (user != null) {
+                List<CarEntity> ownedCars = user.getCars();
+                List<OrderEntity> allOrders = new ArrayList<>();
+                for (CarEntity car : ownedCars) {
+                    allOrders.addAll(car.getOrders());
+                }
+                if (allOrders.isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No orders found
+                }
+                // Sort orders by orderId in descending order to show newest orders at the top
+                Collections.sort(allOrders, new Comparator<OrderEntity>() {
+                    @Override
+                    public int compare(OrderEntity o1, OrderEntity o2) {
+                        return Integer.compare(o2.getOrderId(), o1.getOrderId());
+                    }
+                });
+                return new ResponseEntity<>(allOrders, HttpStatus.OK); // Return all orders from all cars owned by the user
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // User not found
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // Internal server error
+        }
+    }
 }
+
