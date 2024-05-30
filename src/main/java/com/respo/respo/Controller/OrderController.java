@@ -84,14 +84,4 @@ public class OrderController {
         UserEntity user = userv.getUserById(userId);
         return oserv.getOrdersByUserId(user);
     }
-
-    @PutMapping("/approveOrder/{orderId}")
-    public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
-        try {
-            OrderEntity updatedOrder = oserv.approveOrder(orderId);
-            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
 }
