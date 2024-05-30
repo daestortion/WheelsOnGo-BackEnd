@@ -94,15 +94,15 @@ public class CarController {
 	
 	// U - Update
 	@PutMapping("/updateCar")
-    public ResponseEntity<CarEntity> updateCar(@RequestParam int carId, @RequestBody CarEntity newCarDetails) {
-        try {
-            CarEntity updatedCar = cserv.updateCar(carId, newCarDetails);
-            return new ResponseEntity<>(updatedCar, HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
-
+	public ResponseEntity<CarEntity> updateCar(@RequestBody CarEntity newCarDetails) {
+		try {
+			CarEntity updatedCar = cserv.updateCar(newCarDetails.getCarId(), newCarDetails);
+			return new ResponseEntity<>(updatedCar, HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+	}
+	
 
 	// D - Delete 
 	@PutMapping("/deleteCar/{carId}")

@@ -36,27 +36,28 @@ public class CarService {
 
 	// Update
 	public CarEntity updateCar(int carId, CarEntity newCarDetails) {
-        CarEntity car = crepo.findById(carId)
-                .orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
-
-        if (newCarDetails.getCarDescription() != null) {
-            car.setCarDescription(newCarDetails.getCarDescription());
-        }
-
-        if (newCarDetails.getRentPrice() != 0) {
-            car.setRentPrice(newCarDetails.getRentPrice());
-        }
-
-        if (newCarDetails.getAddress() != null) {
-            car.setAddress(newCarDetails.getAddress());
-        }
-
-        if (newCarDetails.getCarImage() != null && newCarDetails.getCarImage().length > 0) {
-            car.setCarImage(newCarDetails.getCarImage());
-        }
-
-        return crepo.save(car);
-    }
+		CarEntity car = crepo.findById(carId)
+				.orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
+	
+		if (newCarDetails.getCarDescription() != null) {
+			car.setCarDescription(newCarDetails.getCarDescription());
+		}
+	
+		if (newCarDetails.getRentPrice() != 0) {
+			car.setRentPrice(newCarDetails.getRentPrice());
+		}
+	
+		if (newCarDetails.getAddress() != null) {
+			car.setAddress(newCarDetails.getAddress());
+		}
+	
+		if (newCarDetails.getCarImage() != null && newCarDetails.getCarImage().length > 0) {
+			car.setCarImage(newCarDetails.getCarImage());
+		}
+	
+		return crepo.save(car);
+	}
+	
 
 	
 	// Delete
