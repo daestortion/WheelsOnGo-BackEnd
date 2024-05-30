@@ -2,6 +2,7 @@ package com.respo.respo.Controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -79,8 +80,13 @@ public class OrderController {
 	}
 
 	@GetMapping("/getOrdersByUserId/{userId}")
-    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId) {
-        UserEntity user = userv.getUserById(userId);
-        return oserv.getOrdersByUserId(user);
-    }
+	public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
+		UserEntity user = userv.getUserById(userId);
+		List<OrderEntity> orders = oserv.getOrdersByUserId(user);
+		if (active != null && active) {
+			orders = orders.stream().filter(OrderEntity::isActive).collect(Collectors.toList());
+		}
+		return orders;
+	}
+
 }
