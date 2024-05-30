@@ -1,5 +1,6 @@
 package com.respo.respo.Controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -35,17 +38,27 @@ public class OrderController {
     @Autowired
     private CarService cserv;
     
- // Create
     @PostMapping("/insertOrder")
-    public OrderEntity insertOrder(@RequestBody OrderEntity order, @RequestParam int userId, @RequestParam int carId) {
-        UserEntity user = userv.getUserById(userId); // Fetch the user by ID
-        CarEntity car = cserv.getCarById(carId); // Fetch the car by ID
-
+    public OrderEntity insertOrder(@RequestPart("order") OrderEntity order,
+                                   @RequestParam("userId") int userId,
+                                   @RequestParam("carId") int carId,
+                                   @RequestPart("file") MultipartFile file) throws IOException {
+        UserEntity user = userv.getUserById(userId);
+        CarEntity car = cserv.getCarById(carId);
         order.setUser(user);
         order.setCar(car);
+        
+        if (file != null && !file.isEmpty()) {
+            System.out.println("Received file with size: " + file.getSize());
+            order.setPayment(file.getBytes());
+        } else {
+            System.out.println("No file received");
+        }
 
-        return oserv.insertOrder(order); // Call the insertOrder method to save the order properly
+        return oserv.insertOrder(order);
     }
+
+
 	
 	//Read
 	@GetMapping("/getAllOrders")

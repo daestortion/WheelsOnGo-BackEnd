@@ -41,8 +41,9 @@ public class OrderEntity {
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
     
+    @Lob
     @Column(name = "payment")
-    private Byte[] payment;
+    private byte[] payment;
 
     @Column(name = "status")
     private int status;
@@ -55,7 +56,7 @@ public class OrderEntity {
 
     
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
-            float totalPrice, boolean isDeleted, String referenceNumber, Byte[] payment, int status, boolean isActive) {
+            float totalPrice, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -139,11 +140,11 @@ public class OrderEntity {
         this.referenceNumber = referenceNumber;
     }
 
-    public Byte[] getPayment() {
+    public byte[] getPayment() {
         return payment;
     }
 
-    public void setPayment(Byte[] payment) {
+    public void setPayment(byte[] payment) {
         this.payment = payment;
     }
 

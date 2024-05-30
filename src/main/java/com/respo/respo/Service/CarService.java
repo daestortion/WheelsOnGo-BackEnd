@@ -93,7 +93,7 @@ public class CarService {
 		return crepo.findById(carId).orElseThrow(() -> new NoSuchElementException("Car not found with id: " + carId));
 	}
 
-	@Scheduled(cron = "*/30 * * * * *") // Runs every 30 seconds
+	@Scheduled(cron = "0 0 * * * *") // Runs at the start of every hour
 	@Transactional // Ensure changes are persisted
 	public void updateCarRentalStatus() {
 	    LocalDate currentDate = LocalDate.now();
