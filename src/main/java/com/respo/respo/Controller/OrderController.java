@@ -101,8 +101,24 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/denyOrder/{orderId}")
+    public ResponseEntity<OrderEntity> denyOrder(@PathVariable int orderId) {
+        try {
+            OrderEntity updatedOrder = oserv.denyOrder(orderId);
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/getOrdersByCarOwnerId/{ownerId}")
-    public List<OrderEntity> getOrdersByCarOwnerId(@PathVariable int ownerId) {
-        return oserv.getOrdersByCarOwnerId(ownerId);
+    public ResponseEntity<List<OrderEntity>> getOrdersByCarOwnerId(@PathVariable int ownerId) {
+        try {
+            List<OrderEntity> orders = oserv.getOrdersByCarOwnerId(ownerId);
+            return new ResponseEntity<>(orders, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
