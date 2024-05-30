@@ -87,4 +87,12 @@ public class OrderService {
     public List<OrderEntity> getOrdersByUserId(UserEntity user) {
         return orepo.findByUser(user);
     }
+
+	public OrderEntity approveOrder(int orderId) {
+		OrderEntity order = orepo.findById(orderId)
+				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+	
+		order.setStatus(1); // Assuming status is a boolean field, set it to true
+		return orepo.save(order);
+	}
 }
