@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.stream.Collectors;
+
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -80,10 +82,14 @@ public class OrderController {
 	}
 
 	@GetMapping("/getOrdersByUserId/{userId}")
-    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId) {
-        UserEntity user = userv.getUserById(userId);
-        return oserv.getOrdersByUserId(user);
-    }
+	public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
+		UserEntity user = userv.getUserById(userId);
+		List<OrderEntity> orders = oserv.getOrdersByUserId(user);
+		if (active != null && active) {
+			orders = orders.stream().filter(OrderEntity::isActive).collect(Collectors.toList());
+		}
+		return orders;
+	}
 
     @PutMapping("/approveOrder/{orderId}")
     public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
