@@ -99,10 +99,10 @@ public class OrderService {
 		return orepo.save(order);
 	}
 
-    public List<OrderEntity> getOrdersByCarOwnerId(int ownerId) {
+	public List<OrderEntity> getOrdersByCarOwnerId(int ownerId) {
         List<CarEntity> cars = crepo.findByOwnerId(ownerId);
         return cars.stream()
-                   .<OrderEntity>flatMap(car -> orepo.findByCar(car).stream())
+                   .flatMap(car -> orepo.findByCar(car).stream())
                    .collect(Collectors.toList());
     }
 }
