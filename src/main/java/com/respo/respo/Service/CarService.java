@@ -93,48 +93,53 @@ public class CarService {
 		return crepo.findById(carId).orElseThrow(() -> new NoSuchElementException("Car not found with id: " + carId));
 	}
 
-	@Scheduled(cron = "0 * * * * *") // Runs at the start of every hour
+	@Scheduled(cron = "0 * * * * *") // Runs at the start of every minute
 	@Transactional // Ensure changes are persisted
 	public void updateCarRentalStatus() {
-	    LocalDate currentDate = LocalDate.now();
-	    List<CarEntity> rentedCars = new ArrayList<>(crepo.findAllByIsRented(true)); // Make a copy of the list
-	    System.out.println("Current Date: " + currentDate);
+		LocalDate currentDate = LocalDate.now();
+		List<CarEntity> rentedCars = new ArrayList<>(crepo.findAllByIsRented(true)); // Make a copy of the list
+		System.out.println("Current Date: " + currentDate);
 
-	    for (int i = 0; i < rentedCars.size(); i++) {
-	        CarEntity car = rentedCars.get(i);
-	        List<OrderEntity> orders = car.getOrders();
-	        
-	        if (!orders.isEmpty()) {
-	            // Sort orders by end date in descending order
-	            orders.sort(Comparator.comparing(OrderEntity::getEndDate).reversed());
-	            OrderEntity latestOrder = orders.get(0); // Get the latest order
-	            LocalDate endDate = latestOrder.getEndDate(); // Assuming endDate is a LocalDate
-	            System.out.println("Car ID: " + car.getCarId() + " Order End Date: " + endDate);
+		for (int i = 0; i < rentedCars.size(); i++) {
+			CarEntity car = rentedCars.get(i);
+			List<OrderEntity> orders = car.getOrders();
 
-	            // Print if endDate is null
-	            if (endDate == null) {
-	                System.out.println("End Date is null for order: " + latestOrder.getOrderId());
-	            }
+			if (!orders.isEmpty()) {
+				// Assuming Order IDs are generated sequentially, the last inserted order will
+				// have the highest ID
+				OrderEntity latestOrder = orders.stream()
+						.max(Comparator.comparingInt(OrderEntity::getOrderId))
+						.orElse(null);
+				if (latestOrder != null) {
+					LocalDate endDate = latestOrder.getEndDate();
+					System.out.println("Latest OrderId: " + latestOrder.getOrderId());
+					System.out.println("Car ID: " + car.getCarId() + " Order End Date: " + endDate);
 
-	            if (endDate != null && endDate.isBefore(currentDate)) {
-	                if (!latestOrder.isActive()) { // Only update if the order is currently active
-	                    latestOrder.setActive(false); // Set isActive to false
-	                    orderRepository.save(latestOrder);
-	                }
-	                if (car.isRented()) { // Check if the car is still rented
-	                    car.setRented(false); // Set isRented to false
-	                    UserEntity user = latestOrder.getUser();
-	                    System.out.println("User from Order: " + (user != null ? user.getUserId() : "null"));
-	                    if (user != null && user.isRenting()) {
-	                        user.setRenting(false); // Set user's isRenting to false
-	                        System.out.println("User is renting: " + user.isRenting());
-	                        userRepository.save(user); // Save the user state
-	                    }
-	                    crepo.save(car); // Save the car state
-	                }
-	            }
-	        }
-	    }
+					if (endDate == null) {
+						System.out.println("End Date is null for order: " + latestOrder.getOrderId());
+					}
+
+					if (endDate != null && endDate.isBefore(currentDate)) {
+						if (latestOrder.isActive()) { // Only update if the order is currently active
+							latestOrder.setActive(false); // Set isActive to false
+							latestOrder.setStatus(3); // Set status to 2 indicating end of rental
+							orderRepository.save(latestOrder);
+						}
+						if (car.isRented()) { // Check if the car is still rented
+							car.setRented(false); // Set isRented to false
+							UserEntity user = latestOrder.getUser();
+							System.out.println("User from Order: " + (user != null ? user.getUserId() : "null"));
+							if (user != null && user.isRenting()) {
+								user.setRenting(false); // Set user's isRenting to false
+								System.out.println("User is renting: " + user.isRenting());
+								userRepository.save(user); // Save the user state
+							}
+							crepo.save(car); // Save the car state
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public List<CarEntity> getAllCarsWithOrders() {
