@@ -115,7 +115,19 @@ public class CarController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }	
+    }
+	
+	@PutMapping("/approveCar/{carId}")
+    public ResponseEntity<String> approveCar(@PathVariable int carId) {
+        try {
+            cserv.approveCar(carId);
+            return new ResponseEntity<>("Car approved successfully", HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 	@GetMapping("/getAllCarsForUser/{userId}")

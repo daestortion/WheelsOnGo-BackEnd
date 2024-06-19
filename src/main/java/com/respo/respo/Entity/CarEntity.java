@@ -86,13 +86,16 @@ public class CarEntity {
 	@Column(name = "carCR")
 	private  byte[] carCR;
 
+	@Column(name = "isApproved")
+    private boolean isApproved = false;
+
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
     public CarEntity() {}
 
 	public CarEntity(int carId, String carBrand, String carModel, String carDescription,UserEntity owner, String carYear,  
-					 String Address, float rentPrice,byte[] carImage, byte[] carOR, byte[] carCR) {
+					 String Address, float rentPrice,byte[] carImage, byte[] carOR, byte[] carCR, boolean isApproved) {
 		super();
 		this.carId = carId;
 		this.carBrand = carBrand;
@@ -105,6 +108,7 @@ public class CarEntity {
 		this.carImage = carImage;
 		this.carOR = carOR;
 		this.carCR = carCR;
+		this.isApproved = false;
 		this.isDeleted = false;
 		this.isRented = false;
 	}
@@ -188,6 +192,14 @@ public class CarEntity {
 
 	public void setCarCR(byte[] carCR) {
 		this.carCR = carCR;
+	}
+
+	public boolean isApproved() {
+		return isApproved;
+	}
+
+	public void setApproved(boolean isApproved) {
+		this.isApproved = isApproved;
 	}
 
 	public boolean isDeleted() {
