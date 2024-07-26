@@ -42,7 +42,11 @@ public class UserEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"user"}) // Prevent recursion
     private VerificationEntity verification;
-    
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user"})
+    private List<ReportEntity> reports; // List to store reports associated with the user
+
 	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"owner"}) // Prevent recursion
     private List<CarEntity> cars; // List to store cars associated with the user
@@ -116,6 +120,14 @@ public class UserEntity {
 	public String getfName() {
 		return fName;
 	}
+
+	public List<ReportEntity> getReports() {
+        return reports;
+    }
+
+    public void setReports(List<ReportEntity> reports) {
+        this.reports = reports;
+    }
 
 	public void setfName(String fName) {
 		this.fName = fName;
