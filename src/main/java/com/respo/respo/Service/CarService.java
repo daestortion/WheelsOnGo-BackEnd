@@ -85,6 +85,13 @@ public class CarService {
 		}
 	}
 
+	public CarEntity approveCar(int carId) {
+        CarEntity car = crepo.findById(carId)
+                .orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
+        car.setApproved(true);
+        return crepo.save(car);
+    }
+
 	public List<CarEntity> findCarsByUserId(int userId) {
 		return crepo.findByOwnerId(userId);
 	}
