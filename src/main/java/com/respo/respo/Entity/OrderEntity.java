@@ -35,6 +35,9 @@ public class OrderEntity {
     @Column(name = "totalPrice")
     private float totalPrice;
 
+    @Column(name = "paymentOption")
+    private String paymentOption;
+
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
@@ -51,25 +54,23 @@ public class OrderEntity {
     @Column(name = "active")
     private boolean isActive = false;
 
-    
     public OrderEntity() {}
-
     
-    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
-            float totalPrice, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive) {
+    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
+                       String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
         this.startDate = startDate;
         this.endDate = endDate;
         this.totalPrice = totalPrice;
+        this.paymentOption = paymentOption;
         this.isDeleted = isDeleted;
         this.referenceNumber = referenceNumber;
         this.payment = payment;
         this.status = status;
         this.isActive = isActive;
     }
-
 
     public String generateReferenceNumber() {
         Random random = new Random();
@@ -124,6 +125,14 @@ public class OrderEntity {
         this.totalPrice = totalPrice;
     }
 
+    public String getPaymentOption() {
+        return paymentOption;
+    }
+
+    public void setPaymentOption(String paymentOption) {
+        this.paymentOption = paymentOption;
+    }
+
     public boolean isDeleted() {
         return isDeleted;
     }
@@ -164,5 +173,4 @@ public class OrderEntity {
     public void setActive(boolean isActive) {
         this.isActive = isActive;
     }
-    
 }
