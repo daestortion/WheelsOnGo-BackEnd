@@ -126,4 +126,9 @@ public class OrderService {
                    .flatMap(car -> orepo.findByCar(car).stream())
                    .collect(Collectors.toList());
     }
+
+	public OrderEntity getOrderById(int orderId) {
+		return orepo.findById(orderId).orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+	}
+	
 }

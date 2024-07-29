@@ -38,4 +38,13 @@ public class ReportService {
     public void deleteReport(int id) {
         reportRepository.deleteById(id);
     }
+
+    public ReportEntity updateReportStatus(int id, int status) {
+        ReportEntity report = reportRepository.findById(id).orElse(null);
+        if (report != null) {
+            report.setStatus(status);
+            return reportRepository.save(report);
+        }
+        return null;
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.respo.respo.Entity.ReportEntity;
 import com.respo.respo.Service.ReportService;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/report")
@@ -40,5 +41,13 @@ public class ReportController {
     public ResponseEntity<Void> deleteReport(@PathVariable int id) {
         reportService.deleteReport(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // New endpoint to update only the status
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ReportEntity> updateReportStatus(@PathVariable int id, @RequestBody Map<String, Integer> statusMap) {
+        int status = statusMap.get("status");
+        ReportEntity updatedReport = reportService.updateReportStatus(id, status);
+        return updatedReport != null ? ResponseEntity.ok(updatedReport) : ResponseEntity.notFound().build();
     }
 }

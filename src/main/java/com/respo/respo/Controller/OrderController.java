@@ -28,6 +28,7 @@ import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
 import com.respo.respo.Service.UserService;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/order")
@@ -121,4 +122,15 @@ public class OrderController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getProofOfPayment/{orderId}")
+    public ResponseEntity<byte[]> getProofOfPayment(@PathVariable int orderId) {
+        OrderEntity order = oserv.getOrderById(orderId);
+        if (order != null && order.getPayment() != null) {
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(order.getPayment());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 }
