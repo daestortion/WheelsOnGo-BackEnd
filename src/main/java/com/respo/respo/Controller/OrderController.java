@@ -46,24 +46,21 @@ public class OrderController {
     @Autowired
     private CarService cserv;
 
-    @PostMapping("/insertOrder")
+        @PostMapping("/insertOrder")
     public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
-                                         @RequestParam("carId") int carId,
-                                         @RequestPart(value = "order", required = false) OrderEntity order,
-                                         @RequestPart(value = "file", required = false) MultipartFile file,
-                                         HttpServletRequest request) {
+                                        @RequestParam("carId") int carId,
+                                        @RequestPart(value = "order", required = false) OrderEntity order,
+                                        @RequestPart(value = "file", required = false) MultipartFile file,
+                                        HttpServletRequest request) {
         try {
-            // Debug: Print request content type
             String contentType = request.getContentType();
             System.out.println("Request Content-Type: " + contentType);
 
-            // Debug: Check if order is null
             if (order == null) {
                 System.out.println("Order entity is null. Exiting.");
                 return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
             }
 
-            // Debug: Print order details
             System.out.println("Order Details: ");
             System.out.println("Start Date: " + order.getStartDate());
             System.out.println("End Date: " + order.getEndDate());
@@ -72,17 +69,14 @@ public class OrderController {
             System.out.println("Is Deleted: " + order.isDeleted());
             System.out.println("Reference Number: " + order.getReferenceNumber());
 
-            // Retrieve and set user and car
             UserEntity user = userv.getUserById(userId);
             CarEntity car = cserv.getCarById(carId);
             order.setUser(user);
             order.setCar(car);
 
-            // Debug: Print user and car details
             System.out.println("User Details: " + user.getUsername());
             System.out.println("Car Details: " + car.getCarModel());
 
-            // Handle file upload if available
             if (file != null && !file.isEmpty()) {
                 System.out.println("Received file with size: " + file.getSize());
                 order.setPayment(file.getBytes());
@@ -90,10 +84,11 @@ public class OrderController {
                 System.out.println("No file received, payment option: Cash");
             }
 
-            // Save order
+            order.setStatus(0); // Assuming 0 is the status for pending orders
+            user.setRenting(true); // Set the user's renting status to true
+
             OrderEntity savedOrder = oserv.insertOrder(order);
 
-            // Debug: Print saved order details
             System.out.println("Saved Order Details: ");
             System.out.println("Order ID: " + savedOrder.getOrderId());
             System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
@@ -107,16 +102,14 @@ public class OrderController {
 
     @PostMapping("/insertCashOrder")
     public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
-                                             @RequestParam("carId") int carId,
-                                             @RequestBody OrderEntity order) {
+                                            @RequestParam("carId") int carId,
+                                            @RequestBody OrderEntity order) {
         try {
-            // Debug: Check if order is null
             if (order == null) {
                 System.out.println("Order entity is null. Exiting.");
                 return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
             }
 
-            // Debug: Print order details
             System.out.println("Order Details: ");
             System.out.println("Start Date: " + order.getStartDate());
             System.out.println("End Date: " + order.getEndDate());
@@ -125,20 +118,19 @@ public class OrderController {
             System.out.println("Is Deleted: " + order.isDeleted());
             System.out.println("Reference Number: " + order.getReferenceNumber());
 
-            // Retrieve and set user and car
             UserEntity user = userv.getUserById(userId);
             CarEntity car = cserv.getCarById(carId);
             order.setUser(user);
             order.setCar(car);
 
-            // Debug: Print user and car details
             System.out.println("User Details: " + user.getUsername());
             System.out.println("Car Details: " + car.getCarModel());
 
-            // Save order
+            order.setStatus(0); // Assuming 0 is the status for pending orders
+            user.setRenting(true); // Set the user's renting status to true
+
             OrderEntity savedOrder = oserv.insertOrder(order);
 
-            // Debug: Print saved order details
             System.out.println("Saved Order Details: ");
             System.out.println("Order ID: " + savedOrder.getOrderId());
             System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
