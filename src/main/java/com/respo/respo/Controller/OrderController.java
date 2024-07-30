@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.stream.Collectors;
 
-
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
@@ -34,7 +35,7 @@ import com.respo.respo.Service.UserService;
 @CrossOrigin(origins = "http://main--wheelsongo.netlify.app", allowedHeaders = "*", allowCredentials = "true")
 public class OrderController {
 
-	@Autowired
+    @Autowired
     private OrderService oserv;
 
     @Autowired
@@ -42,65 +43,136 @@ public class OrderController {
 
     @Autowired
     private CarService cserv;
-    
+
     @PostMapping("/insertOrder")
     public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
                                          @RequestParam("carId") int carId,
                                          @RequestPart(value = "order", required = false) OrderEntity order,
-                                         @RequestBody(required = false) OrderEntity jsonOrder,
-                                         @RequestPart(value = "file", required = false) MultipartFile file) {
+                                         @RequestPart(value = "file", required = false) MultipartFile file,
+                                         HttpServletRequest request) {
         try {
-            if (order == null && jsonOrder != null) {
-                order = jsonOrder;
+            // Debug: Print request content type
+            String contentType = request.getContentType();
+            System.out.println("Request Content-Type: " + contentType);
+
+            // Debug: Check if order is null
+            if (order == null) {
+                System.out.println("Order entity is null. Exiting.");
+                return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
             }
-    
+
+            // Debug: Print order details
+            System.out.println("Order Details: ");
+            System.out.println("Start Date: " + order.getStartDate());
+            System.out.println("End Date: " + order.getEndDate());
+            System.out.println("Total Price: " + order.getTotalPrice());
+            System.out.println("Payment Option: " + order.getPaymentOption());
+            System.out.println("Is Deleted: " + order.isDeleted());
+            System.out.println("Reference Number: " + order.getReferenceNumber());
+
+            // Retrieve and set user and car
             UserEntity user = userv.getUserById(userId);
             CarEntity car = cserv.getCarById(carId);
             order.setUser(user);
             order.setCar(car);
-    
+
+            // Debug: Print user and car details
+            System.out.println("User Details: " + user.getUsername());
+            System.out.println("Car Details: " + car.getCarModel());
+
+            // Handle file upload if available
             if (file != null && !file.isEmpty()) {
                 System.out.println("Received file with size: " + file.getSize());
                 order.setPayment(file.getBytes());
             } else {
                 System.out.println("No file received, payment option: Cash");
             }
-    
+
+            // Save order
             OrderEntity savedOrder = oserv.insertOrder(order);
+
+            // Debug: Print saved order details
+            System.out.println("Saved Order Details: ");
+            System.out.println("Order ID: " + savedOrder.getOrderId());
+            System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
+
             return new ResponseEntity<>(savedOrder, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-	//Read
-	@GetMapping("/getAllOrders")
-	public List<OrderEntity> getAllOrders() {
-		return oserv.getAllOrders();
-	}
-	
-	//U - Update a order record
-	@PutMapping("/updateOrder")
-	public OrderEntity updateOrder(@RequestParam int orderId, @RequestBody OrderEntity newOrderDetails) {
-		return oserv.updateOrder(orderId, newOrderDetails);
-	}
-				
-	//D - Delete a order record
-	@DeleteMapping("/deleteOrder/{orderId}")
-	public String deleteUser(@PathVariable int orderId) {
-		return oserv.deleteOrder(orderId);
-	}
 
-	@GetMapping("/getOrdersByUserId/{userId}")
-	public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
-		UserEntity user = userv.getUserById(userId);
-		List<OrderEntity> orders = oserv.getOrdersByUserId(user);
-		if (active != null && active) {
-			orders = orders.stream().filter(OrderEntity::isActive).collect(Collectors.toList());
-		}
-		return orders;
-	}
+    @PostMapping("/insertCashOrder")
+    public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
+                                             @RequestParam("carId") int carId,
+                                             @RequestBody OrderEntity order) {
+        try {
+            // Debug: Check if order is null
+            if (order == null) {
+                System.out.println("Order entity is null. Exiting.");
+                return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
+            }
+
+            // Debug: Print order details
+            System.out.println("Order Details: ");
+            System.out.println("Start Date: " + order.getStartDate());
+            System.out.println("End Date: " + order.getEndDate());
+            System.out.println("Total Price: " + order.getTotalPrice());
+            System.out.println("Payment Option: " + order.getPaymentOption());
+            System.out.println("Is Deleted: " + order.isDeleted());
+            System.out.println("Reference Number: " + order.getReferenceNumber());
+
+            // Retrieve and set user and car
+            UserEntity user = userv.getUserById(userId);
+            CarEntity car = cserv.getCarById(carId);
+            order.setUser(user);
+            order.setCar(car);
+
+            // Debug: Print user and car details
+            System.out.println("User Details: " + user.getUsername());
+            System.out.println("Car Details: " + car.getCarModel());
+
+            // Save order
+            OrderEntity savedOrder = oserv.insertOrder(order);
+
+            // Debug: Print saved order details
+            System.out.println("Saved Order Details: ");
+            System.out.println("Order ID: " + savedOrder.getOrderId());
+            System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
+
+            return new ResponseEntity<>(savedOrder, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/getAllOrders")
+    public List<OrderEntity> getAllOrders() {
+        return oserv.getAllOrders();
+    }
+
+    @PutMapping("/updateOrder")
+    public OrderEntity updateOrder(@RequestParam int orderId, @RequestBody OrderEntity newOrderDetails) {
+        return oserv.updateOrder(orderId, newOrderDetails);
+    }
+
+    @DeleteMapping("/deleteOrder/{orderId}")
+    public String deleteUser(@PathVariable int orderId) {
+        return oserv.deleteOrder(orderId);
+    }
+
+    @GetMapping("/getOrdersByUserId/{userId}")
+    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
+        UserEntity user = userv.getUserById(userId);
+        List<OrderEntity> orders = oserv.getOrdersByUserId(user);
+        if (active != null && active) {
+            orders = orders.stream().filter(OrderEntity::isActive).collect(Collectors.toList());
+        }
+        return orders;
+    }
 
     @PutMapping("/approveOrder/{orderId}")
     public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
