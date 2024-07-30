@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
 import com.respo.respo.Service.UserService;
+import org.springframework.util.StreamUtils;
 
 @RestController
 @RequestMapping("/order")
@@ -148,6 +150,25 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/getProofOfPayment/{orderId}")
+    public void getProofOfPayment(@PathVariable int orderId, HttpServletResponse response) {
+        try {
+            OrderEntity order = oserv.getOrderById(orderId);
+            byte[] imageBytes = order.getPayment();
+    
+            if (imageBytes != null) {
+                response.setContentType("image/jpeg");
+                StreamUtils.copy(imageBytes, response.getOutputStream());
+            } else {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } catch (NoSuchElementException e) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+        }
+    }
 
     @GetMapping("/getAllOrders")
     public List<OrderEntity> getAllOrders() {
