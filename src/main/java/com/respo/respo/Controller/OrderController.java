@@ -28,7 +28,6 @@ import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
 import com.respo.respo.Service.UserService;
-import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/order")
@@ -45,25 +44,36 @@ public class OrderController {
     private CarService cserv;
     
     @PostMapping("/insertOrder")
-    public OrderEntity insertOrder(@RequestPart("order") OrderEntity order,
-                                   @RequestParam("userId") int userId,
-                                   @RequestParam("carId") int carId,
-                                   @RequestPart("file") MultipartFile file) throws IOException {
-        UserEntity user = userv.getUserById(userId);
-        CarEntity car = cserv.getCarById(carId);
-        order.setUser(user);
-        order.setCar(car);
-        
-        if (file != null && !file.isEmpty()) {
-            System.out.println("Received file with size: " + file.getSize());
-            order.setPayment(file.getBytes());
-        } else {
-            System.out.println("No file received");
+    public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
+                                         @RequestParam("carId") int carId,
+                                         @RequestPart(value = "order", required = false) OrderEntity order,
+                                         @RequestBody(required = false) OrderEntity jsonOrder,
+                                         @RequestPart(value = "file", required = false) MultipartFile file) {
+        try {
+            if (order == null && jsonOrder != null) {
+                order = jsonOrder;
+            }
+    
+            UserEntity user = userv.getUserById(userId);
+            CarEntity car = cserv.getCarById(carId);
+            order.setUser(user);
+            order.setCar(car);
+    
+            if (file != null && !file.isEmpty()) {
+                System.out.println("Received file with size: " + file.getSize());
+                order.setPayment(file.getBytes());
+            } else {
+                System.out.println("No file received, payment option: Cash");
+            }
+    
+            OrderEntity savedOrder = oserv.insertOrder(order);
+            return new ResponseEntity<>(savedOrder, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return oserv.insertOrder(order);
     }
-	
+    
 	//Read
 	@GetMapping("/getAllOrders")
 	public List<OrderEntity> getAllOrders() {
@@ -122,15 +132,4 @@ public class OrderController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @GetMapping("/getProofOfPayment/{orderId}")
-    public ResponseEntity<byte[]> getProofOfPayment(@PathVariable int orderId) {
-        OrderEntity order = oserv.getOrderById(orderId);
-        if (order != null && order.getPayment() != null) {
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(order.getPayment());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
 }
