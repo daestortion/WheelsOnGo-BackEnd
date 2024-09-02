@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -159,4 +158,51 @@ public class CarService {
 				})
 				.collect(Collectors.toList());
 	}
+
+	public List<DateRange> getActiveOrderDateRangesForCar(int carId) {
+        // Fetch the car by ID
+        CarEntity car = crepo.findById(carId)
+                .orElseThrow(() -> new NoSuchElementException("Car not found with id: " + carId));
+
+        // Filter out the active orders and map them to DateRange objects
+        return car.getOrders().stream()
+                .filter(OrderEntity::isActive)
+                .map(order -> new DateRange(order.getStartDate(), order.getEndDate()))
+                .collect(Collectors.toList());
+    }
+
+	public static class DateRange {
+        private LocalDate startDate;
+        private LocalDate endDate;
+
+        public DateRange(LocalDate startDate, LocalDate endDate) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+
+        public LocalDate getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(LocalDate startDate) {
+            this.startDate = startDate;
+        }
+
+        public LocalDate getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(LocalDate endDate) {
+            this.endDate = endDate;
+        }
+
+        @Override
+        public String toString() {
+            return "DateRange{" +
+                    "startDate=" + startDate +
+                    ", endDate=" + endDate +
+                    '}';
+        }
+    }
+	
 }

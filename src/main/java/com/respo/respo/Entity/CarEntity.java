@@ -44,26 +44,9 @@ public class CarEntity {
     @JsonIgnoreProperties({"cars","orders"})
     private UserEntity owner;
 
-    public UserEntity getOwner() {
-        return this.owner;
-    }
-    
-    public void setOwner(UserEntity owner) {
-        this.owner = owner;
-    }
-    
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
     @JsonIgnoreProperties({"car", "user"})
     private List<OrderEntity> orders = new ArrayList<>();
-
-    
-	public List<OrderEntity> getOrders() {
-		return orders;
-	}
-
-	public void setOrders(List<OrderEntity> orders) {
-		this.orders = orders;
-	}
 
 	@Column(name = "carYear")
     private String carYear;
@@ -76,15 +59,15 @@ public class CarEntity {
     
     @Lob
 	@Column(name = "carImage")
-	private  byte[] carImage;
+	private byte[] carImage;
     
     @Lob
 	@Column(name = "carOR")
-	private  byte[] carOR;
+	private byte[] carOR;
     
     @Lob
 	@Column(name = "carCR")
-	private  byte[] carCR;
+	private byte[] carCR;
 
 	@Column(name = "isApproved")
     private boolean isApproved = false;
@@ -92,10 +75,17 @@ public class CarEntity {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+	@Column(name = "color")
+	private String color;
+
+	@Column(name = "maxSeatingCapacity")
+	private int maxSeatingCapacity;
+
     public CarEntity() {}
 
-	public CarEntity(int carId, String carBrand, String carModel, String carDescription,UserEntity owner, String carYear,  
-					 String Address, float rentPrice,byte[] carImage, byte[] carOR, byte[] carCR, boolean isApproved) {
+	public CarEntity(int carId, String carBrand, String carModel, String carDescription, UserEntity owner, 
+                     String carYear, String Address, float rentPrice, byte[] carImage, byte[] carOR, byte[] carCR, 
+                     boolean isApproved, String color, int maxSeatingCapacity) {
 		super();
 		this.carId = carId;
 		this.carBrand = carBrand;
@@ -108,7 +98,9 @@ public class CarEntity {
 		this.carImage = carImage;
 		this.carOR = carOR;
 		this.carCR = carCR;
-		this.isApproved = false;
+		this.isApproved = isApproved;
+		this.color = color;
+		this.maxSeatingCapacity = maxSeatingCapacity;
 		this.isDeleted = false;
 		this.isRented = false;
 	}
@@ -152,7 +144,6 @@ public class CarEntity {
 	public void setCarYear(String carYear) {
 		this.carYear = carYear;
 	}
-
 
 	public String getAddress() {
 		return Address;
@@ -217,12 +208,45 @@ public class CarEntity {
 	public void setRented(boolean isRented) {
 		this.isRented = isRented;
 	}
-	
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	public int getMaxSeatingCapacity() {
+		return maxSeatingCapacity;
+	}
+
+	public void setMaxSeatingCapacity(int maxSeatingCapacity) {
+		this.maxSeatingCapacity = maxSeatingCapacity;
+	}
+
+	public UserEntity getOwner() {
+		return owner;
+	}
+
+	public void setOwner(UserEntity owner) {
+		this.owner = owner;
+	}
+
+    public List<OrderEntity> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(List<OrderEntity> orders) {
+		this.orders = orders;
+	}
+
     public void addOrder(OrderEntity order) {
         if (orders == null) {
             orders = new ArrayList<>();
         }
         orders.add(order);
     }
-	
 }
+
+	
