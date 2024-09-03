@@ -7,7 +7,6 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 @Entity
 @Table(name = "tblOrders")
 public class OrderEntity {
@@ -54,10 +53,14 @@ public class OrderEntity {
     @Column(name = "active")
     private boolean isActive = false;
 
+    @Column(name = "deliveryOption")
+    private String deliveryOption; // New attribute for delivery option
+
     public OrderEntity() {}
     
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
-                       String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive) {
+                       String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive,
+                       String deliveryOption) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -70,6 +73,7 @@ public class OrderEntity {
         this.payment = payment;
         this.status = status;
         this.isActive = isActive;
+        this.deliveryOption = deliveryOption;
     }
 
     public String generateReferenceNumber() {
@@ -172,5 +176,13 @@ public class OrderEntity {
 
     public void setActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public String getDeliveryOption() {
+        return deliveryOption;
+    }
+
+    public void setDeliveryOption(String deliveryOption) {
+        this.deliveryOption = deliveryOption;
     }
 }
