@@ -58,7 +58,10 @@ public class CarController {
 		@RequestParam("carYear") String carYear,
 		@RequestParam("address") String address,
 		@RequestParam("rentPrice") float rentPrice,
-		@RequestParam("carDescription") String carDescription,  // Add carDescription parameter
+		@RequestParam("carDescription") String carDescription,
+		@RequestParam("color") String color,
+		@RequestParam("plateNumber") String plateNumber,
+		@RequestParam("maxSeatingCapacity") int maxSeatingCapacity,
 		@RequestParam(value = "carImage", required = false) MultipartFile carImage,
 		@RequestParam(value = "carOR", required = false) MultipartFile carOR,
 		@RequestParam(value = "carCR", required = false) MultipartFile carCR
@@ -69,7 +72,10 @@ public class CarController {
 		car.setCarYear(carYear);
 		car.setAddress(address);
 		car.setRentPrice(rentPrice);
-		car.setCarDescription(carDescription);  // Set carDescription
+		car.setCarDescription(carDescription);
+		car.setColor(color);
+		car.setPlateNumber(plateNumber);
+		car.setMaxSeatingCapacity(maxSeatingCapacity);
 
 		if (carImage != null) {
 			car.setCarImage(convertToBlob(carImage));

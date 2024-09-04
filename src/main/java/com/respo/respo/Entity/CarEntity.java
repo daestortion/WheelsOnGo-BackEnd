@@ -81,11 +81,14 @@ public class CarEntity {
 	@Column(name = "maxSeatingCapacity")
 	private int maxSeatingCapacity;
 
+	@Column(name = "plateNumber")
+	private String plateNumber;
+
     public CarEntity() {}
 
 	public CarEntity(int carId, String carBrand, String carModel, String carDescription, UserEntity owner, 
                      String carYear, String Address, float rentPrice, byte[] carImage, byte[] carOR, byte[] carCR, 
-                     boolean isApproved, String color, int maxSeatingCapacity) {
+                     boolean isApproved, String color, int maxSeatingCapacity, String plateNumber) {
 		super();
 		this.carId = carId;
 		this.carBrand = carBrand;
@@ -101,6 +104,7 @@ public class CarEntity {
 		this.isApproved = isApproved;
 		this.color = color;
 		this.maxSeatingCapacity = maxSeatingCapacity;
+		this.plateNumber = plateNumber;
 		this.isDeleted = false;
 		this.isRented = false;
 	}
@@ -223,6 +227,14 @@ public class CarEntity {
 
 	public void setMaxSeatingCapacity(int maxSeatingCapacity) {
 		this.maxSeatingCapacity = maxSeatingCapacity;
+	}
+
+	public String getPlateNumber() {
+		return plateNumber;
+	}
+	
+	public void setPlateNumber(String plateNumber) {
+		this.plateNumber = plateNumber;
 	}
 
 	public UserEntity getOwner() {
