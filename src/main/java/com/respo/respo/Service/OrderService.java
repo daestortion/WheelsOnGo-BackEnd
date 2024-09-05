@@ -1,17 +1,17 @@
 package com.respo.respo.Service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.CarRepository;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import com.respo.respo.Repository.OrderRepository;
 
 @Service
 public class OrderService {
@@ -130,5 +130,10 @@ public class OrderService {
 	public OrderEntity getOrderById(int orderId) {
 		return orepo.findById(orderId).orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
 	}
+
+	public List<OrderEntity> getOrdersByCar(CarEntity car) {
+		return orepo.findByCar(car);
+	}
+	
 	
 }
