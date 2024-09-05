@@ -63,6 +63,18 @@ public class CarService {
 			car.setAddress(newCarDetails.getAddress());
 		}
 
+		if (newCarDetails.getColor() != null) {
+			car.setColor(newCarDetails.getColor());
+		}
+	
+		if (newCarDetails.getPlateNumber() != null) {
+			car.setPlateNumber(newCarDetails.getPlateNumber());
+		}
+	
+		if (newCarDetails.getMaxSeatingCapacity() != 0) {
+			car.setMaxSeatingCapacity(newCarDetails.getMaxSeatingCapacity());
+		}
+
 		if (newCarDetails.getCarImage() != null && newCarDetails.getCarImage().length > 0) {
 			car.setCarImage(newCarDetails.getCarImage());
 		}
