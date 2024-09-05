@@ -3,6 +3,7 @@ package com.respo.respo.Controller;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.stream.Collectors;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -30,7 +31,6 @@ import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
 import com.respo.respo.Service.UserService;
-import org.springframework.util.StreamUtils;
 
 @RestController
 @RequestMapping("/order")
@@ -217,4 +217,21 @@ public class OrderController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getOrdersByCarId/{carId}")
+    public ResponseEntity<List<OrderEntity>> getOrdersByCarId(@PathVariable int carId) {
+        try {
+            // Use CarService to get the car entity by carId
+            CarEntity car = cserv.getCarById(carId);
+
+            // Use OrderRepository to find orders by car
+            List<OrderEntity> orders = oserv.getOrdersByCar(car);
+
+            // Return the list of orders
+            return new ResponseEntity<>(orders, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
