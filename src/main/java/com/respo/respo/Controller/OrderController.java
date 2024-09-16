@@ -1,8 +1,10 @@
 package com.respo.respo.Controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.stream.Collectors;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -30,7 +32,6 @@ import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
 import com.respo.respo.Service.UserService;
-import org.springframework.util.StreamUtils;
 
 @RestController
 @RequestMapping("/order")
@@ -46,12 +47,12 @@ public class OrderController {
     @Autowired
     private CarService cserv;
 
-        @PostMapping("/insertOrder")
+    @PostMapping("/insertOrder")
     public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
-                                        @RequestParam("carId") int carId,
-                                        @RequestPart(value = "order", required = false) OrderEntity order,
-                                        @RequestPart(value = "file", required = false) MultipartFile file,
-                                        HttpServletRequest request) {
+            @RequestParam("carId") int carId,
+            @RequestPart(value = "order", required = false) OrderEntity order,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            HttpServletRequest request) {
         try {
             String contentType = request.getContentType();
             System.out.println("Request Content-Type: " + contentType);
@@ -102,8 +103,8 @@ public class OrderController {
 
     @PostMapping("/insertCashOrder")
     public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
-                                            @RequestParam("carId") int carId,
-                                            @RequestBody OrderEntity order) {
+            @RequestParam("carId") int carId,
+            @RequestBody OrderEntity order) {
         try {
             if (order == null) {
                 System.out.println("Order entity is null. Exiting.");
@@ -147,7 +148,7 @@ public class OrderController {
         try {
             OrderEntity order = oserv.getOrderById(orderId);
             byte[] imageBytes = order.getPayment();
-    
+
             if (imageBytes != null) {
                 response.setContentType("image/jpeg");
                 StreamUtils.copy(imageBytes, response.getOutputStream());
@@ -178,7 +179,8 @@ public class OrderController {
     }
 
     @GetMapping("/getOrdersByUserId/{userId}")
-    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
+    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId,
+            @RequestParam(required = false) Boolean active) {
         UserEntity user = userv.getUserById(userId);
         List<OrderEntity> orders = oserv.getOrdersByUserId(user);
         if (active != null && active) {
@@ -215,6 +217,34 @@ public class OrderController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getOrdersByCarId/{carId}")
+    public ResponseEntity<List<OrderEntity>> getOrdersByCarId(@PathVariable int carId) {
+        try {
+            // Use CarService to get the car entity by carId
+            CarEntity car = cserv.getCarById(carId);
+
+            // Use OrderRepository to find orders by car
+            List<OrderEntity> orders = oserv.getOrdersByCar(car);
+
+            // Return the list of orders
+            return new ResponseEntity<>(orders, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/extendOrder/{orderId}")
+    public ResponseEntity<OrderEntity> extendOrder(@PathVariable int orderId,
+            @RequestParam("newEndDate") String newEndDateStr) {
+        try {
+            LocalDate newEndDate = LocalDate.parse(newEndDateStr);
+            OrderEntity updatedOrder = oserv.extendOrder(orderId, newEndDate);
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 }

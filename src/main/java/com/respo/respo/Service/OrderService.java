@@ -1,17 +1,18 @@
 package com.respo.respo.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.CarRepository;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import com.respo.respo.Repository.OrderRepository;
 
 @Service
 public class OrderService {
@@ -130,5 +131,40 @@ public class OrderService {
 	public OrderEntity getOrderById(int orderId) {
 		return orepo.findById(orderId).orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
 	}
+
+	public List<OrderEntity> getOrdersByCar(CarEntity car) {
+		return orepo.findByCar(car);
+	}
+	
+	    public OrderEntity extendOrder(int orderId, LocalDate newEndDate) {
+        // Find the order by its ID
+        OrderEntity order = orepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+
+        // Get the current end date of the order
+        LocalDate currentEndDate = order.getEndDate();
+        
+        // Check if the new end date is after the current end date
+        if (newEndDate.isBefore(currentEndDate)) {
+            throw new IllegalArgumentException("New end date must be after the current end date");
+        }
+
+        // Get the car associated with the order
+        CarEntity car = order.getCar();
+        float dailyRate = car.getRentPrice();
+
+        // Calculate the additional days
+        long additionalDays = currentEndDate.until(newEndDate).getDays();
+        
+        // Recalculate the total price (adding additional days' rent to the current total)
+        float newTotalPrice = order.getTotalPrice() + (dailyRate * additionalDays);
+
+        // Update the order's end date and total price
+        order.setEndDate(newEndDate);
+        order.setTotalPrice(newTotalPrice);
+
+        // Save and return the updated order
+        return orepo.save(order);
+    }
 	
 }
