@@ -1,6 +1,7 @@
 package com.respo.respo.Controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -46,12 +47,12 @@ public class OrderController {
     @Autowired
     private CarService cserv;
 
-        @PostMapping("/insertOrder")
+    @PostMapping("/insertOrder")
     public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
-                                        @RequestParam("carId") int carId,
-                                        @RequestPart(value = "order", required = false) OrderEntity order,
-                                        @RequestPart(value = "file", required = false) MultipartFile file,
-                                        HttpServletRequest request) {
+            @RequestParam("carId") int carId,
+            @RequestPart(value = "order", required = false) OrderEntity order,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            HttpServletRequest request) {
         try {
             String contentType = request.getContentType();
             System.out.println("Request Content-Type: " + contentType);
@@ -102,8 +103,8 @@ public class OrderController {
 
     @PostMapping("/insertCashOrder")
     public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
-                                            @RequestParam("carId") int carId,
-                                            @RequestBody OrderEntity order) {
+            @RequestParam("carId") int carId,
+            @RequestBody OrderEntity order) {
         try {
             if (order == null) {
                 System.out.println("Order entity is null. Exiting.");
@@ -147,7 +148,7 @@ public class OrderController {
         try {
             OrderEntity order = oserv.getOrderById(orderId);
             byte[] imageBytes = order.getPayment();
-    
+
             if (imageBytes != null) {
                 response.setContentType("image/jpeg");
                 StreamUtils.copy(imageBytes, response.getOutputStream());
@@ -178,7 +179,8 @@ public class OrderController {
     }
 
     @GetMapping("/getOrdersByUserId/{userId}")
-    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId, @RequestParam(required = false) Boolean active) {
+    public List<OrderEntity> getOrdersByUserId(@PathVariable int userId,
+            @RequestParam(required = false) Boolean active) {
         UserEntity user = userv.getUserById(userId);
         List<OrderEntity> orders = oserv.getOrdersByUserId(user);
         if (active != null && active) {
@@ -234,4 +236,15 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/extendOrder/{orderId}")
+    public ResponseEntity<OrderEntity> extendOrder(@PathVariable int orderId,
+            @RequestParam("newEndDate") String newEndDateStr) {
+        try {
+            LocalDate newEndDate = LocalDate.parse(newEndDateStr);
+            OrderEntity updatedOrder = oserv.extendOrder(orderId, newEndDate);
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
