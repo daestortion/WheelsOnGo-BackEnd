@@ -1,5 +1,7 @@
 package com.respo.respo.Entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -37,17 +41,22 @@ public class VerificationEntity {
     @Column(name = "driversLicense")
     private byte[] driversLicense;
 
+	@CreationTimestamp
+    @Column(name = "timeStamp", updatable = false)
+    private LocalDateTime timeStamp;
+
 	public VerificationEntity() {
 	super();
 	}
 	
-	public VerificationEntity(int vId, UserEntity user, byte[] govId, byte[] driversLicense) {
+	public VerificationEntity(int vId, UserEntity user, byte[] govId, byte[] driversLicense, LocalDateTime timestamp) {
 		super();
 		this.vId = vId;
 		this.user = user;
 		this.status = 0;
 		this.govId = govId;
 		this.driversLicense = driversLicense;
+		this.timeStamp = timestamp;
 	}
 
 	public int getVId() {
@@ -89,4 +98,22 @@ public class VerificationEntity {
 	public void setDriversLicense(byte[] driversLicense) {
 		this.driversLicense = driversLicense;
 	}
+
+	public int getvId() {
+		return vId;
+	}
+
+	public void setvId(int vId) {
+		this.vId = vId;
+	}
+
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(LocalDateTime timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	
 }

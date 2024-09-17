@@ -1,5 +1,7 @@
 package com.respo.respo.Entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -35,11 +39,16 @@ public class ReportEntity {
     private UserEntity user;
 
     
-    public ReportEntity(int reportId, String title, String description, UserEntity user) {
+    @CreationTimestamp
+    @Column(name = "timeStamp", updatable = false)
+    private LocalDateTime timeStamp;
+
+    public ReportEntity(int reportId, String title, String description, UserEntity user, LocalDateTime timestamp) {
         this.reportId = reportId;
         this.title = title;
         this.description = description;
         this.user = user;
+        this.timeStamp = timestamp;
     }
 
     
@@ -89,4 +98,16 @@ public class ReportEntity {
     public void setStatus(int status) {
         this.status = status;
     }
+
+
+    public LocalDateTime getTimeStamp() {
+        return timeStamp;
+    }
+
+
+    public void setTimeStamp(LocalDateTime timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    
 }

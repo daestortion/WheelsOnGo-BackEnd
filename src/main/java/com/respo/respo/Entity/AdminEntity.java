@@ -1,11 +1,15 @@
 package com.respo.respo.Entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "tblAdmins")
@@ -24,14 +28,19 @@ public class AdminEntity {
 	@Column(name = "isDeleted")
 	private boolean isDeleted = false;
 
+	@CreationTimestamp
+    @Column(name = "timeStamp", updatable = false)
+    private LocalDateTime timeStamp;
+
 	public AdminEntity() {}
 
-	public AdminEntity(int adminId, String username, String pWord, boolean isDeleted) {
+	public AdminEntity(int adminId, String username, String pWord, boolean isDeleted, LocalDateTime timestamp) {
 		super();
 		this.adminId = adminId;
 		this.username = username;
 		this.pWord = pWord;
 		this.isDeleted = isDeleted;
+		this.timeStamp = timestamp;
 	}
 
 	public int getAdminId() {
@@ -65,4 +74,22 @@ public class AdminEntity {
 	public void setisDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(LocalDateTime timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	
 }
