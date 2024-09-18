@@ -259,5 +259,17 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // Internal server error
         }
     }
+
+    @PostMapping("/logUserAction")
+    public ResponseEntity<String> logUserAction(@RequestBody Map<String, Object> logData) {
+        System.out.println("Log User Action:");
+        System.out.println("Action: " + logData.get("action"));
+        System.out.println("Timestamp: " + logData.get("timestamp"));
+        System.out.println("User Data: " + logData.get("userData"));
+        
+        // You can extend this to save the logs into a file, database, etc.
+        
+        return new ResponseEntity<>("User action logged successfully", HttpStatus.OK);
+    }
 }
 
