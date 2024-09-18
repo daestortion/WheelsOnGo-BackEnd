@@ -1,5 +1,6 @@
 package com.respo.respo.Entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.ManyToOne;
@@ -23,57 +26,57 @@ import javax.persistence.Lob;
 @Table(name = "tblCars")
 public class CarEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int carId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int carId;
 
-    @Column(name = "carBrand")
-    private String carBrand;
-    
-    @Column(name = "carModel")
-    private String carModel;
+	@Column(name = "carBrand")
+	private String carBrand;
+
+	@Column(name = "carModel")
+	private String carModel;
 
 	@Column(name = "carDescription")
-    private String carDescription;
+	private String carDescription;
 
 	@Column(name = "isRented")
 	private boolean isRented = false;
-		
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ownerId", referencedColumnName = "userId")  // Make sure 'userId' is correct
-    @JsonIgnoreProperties({"cars","orders"})
-    private UserEntity owner;
 
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties({"car", "user"})
-    private List<OrderEntity> orders = new ArrayList<>();
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "ownerId", referencedColumnName = "userId") // Make sure 'userId' is correct
+	@JsonIgnoreProperties({ "cars", "orders" })
+	private UserEntity owner;
+
+	@OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+	@JsonIgnoreProperties({ "car", "user" })
+	private List<OrderEntity> orders = new ArrayList<>();
 
 	@Column(name = "carYear")
-    private String carYear;
+	private String carYear;
 
 	@Column(name = "Address")
-    private String Address;
+	private String Address;
 
 	@Column(name = "rentPrice")
-    private float rentPrice;
-    
-    @Lob
+	private float rentPrice;
+
+	@Lob
 	@Column(name = "carImage")
 	private byte[] carImage;
-    
-    @Lob
+
+	@Lob
 	@Column(name = "carOR")
 	private byte[] carOR;
-    
-    @Lob
+
+	@Lob
 	@Column(name = "carCR")
 	private byte[] carCR;
 
 	@Column(name = "isApproved")
-    private boolean isApproved = false;
+	private boolean isApproved = false;
 
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+	@Column(name = "is_deleted")
+	private boolean isDeleted = false;
 
 	@Column(name = "color")
 	private String color;
@@ -84,11 +87,16 @@ public class CarEntity {
 	@Column(name = "plateNumber")
 	private String plateNumber;
 
-    public CarEntity() {}
+	@CreationTimestamp
+	@Column(name = "timeStamp", updatable = false)
+	private LocalDateTime timeStamp;
 
-	public CarEntity(int carId, String carBrand, String carModel, String carDescription, UserEntity owner, 
-                     String carYear, String Address, float rentPrice, byte[] carImage, byte[] carOR, byte[] carCR, 
-                     boolean isApproved, String color, int maxSeatingCapacity, String plateNumber) {
+	public CarEntity() {
+	}
+
+	public CarEntity(int carId, String carBrand, String carModel, String carDescription, UserEntity owner,
+			String carYear, String Address, float rentPrice, byte[] carImage, byte[] carOR, byte[] carCR,
+			boolean isApproved, String color, int maxSeatingCapacity, String plateNumber, LocalDateTime timestamp) {
 		super();
 		this.carId = carId;
 		this.carBrand = carBrand;
@@ -107,6 +115,7 @@ public class CarEntity {
 		this.plateNumber = plateNumber;
 		this.isDeleted = false;
 		this.isRented = false;
+		this.timeStamp = timestamp;
 	}
 
 	public int getCarId() {
@@ -232,7 +241,7 @@ public class CarEntity {
 	public String getPlateNumber() {
 		return plateNumber;
 	}
-	
+
 	public void setPlateNumber(String plateNumber) {
 		this.plateNumber = plateNumber;
 	}
@@ -245,7 +254,7 @@ public class CarEntity {
 		this.owner = owner;
 	}
 
-    public List<OrderEntity> getOrders() {
+	public List<OrderEntity> getOrders() {
 		return orders;
 	}
 
@@ -253,12 +262,10 @@ public class CarEntity {
 		this.orders = orders;
 	}
 
-    public void addOrder(OrderEntity order) {
-        if (orders == null) {
-            orders = new ArrayList<>();
-        }
-        orders.add(order);
-    }
+	public void addOrder(OrderEntity order) {
+		if (orders == null) {
+			orders = new ArrayList<>();
+		}
+		orders.add(order);
+	}
 }
-
-	

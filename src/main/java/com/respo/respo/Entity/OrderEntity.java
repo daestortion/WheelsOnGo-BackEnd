@@ -1,9 +1,12 @@
 package com.respo.respo.Entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -56,11 +59,15 @@ public class OrderEntity {
     @Column(name = "deliveryOption")
     private String deliveryOption; // New attribute for delivery option
 
+    @CreationTimestamp
+    @Column(name = "timeStamp", updatable = false)
+    private LocalDateTime timeStamp;
+    
     public OrderEntity() {}
     
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
                        String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive,
-                       String deliveryOption) {
+                       String deliveryOption, LocalDateTime timestamp) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -74,6 +81,7 @@ public class OrderEntity {
         this.status = status;
         this.isActive = isActive;
         this.deliveryOption = deliveryOption;
+        this.timeStamp = timestamp;
     }
 
     public String generateReferenceNumber() {
@@ -185,4 +193,14 @@ public class OrderEntity {
     public void setDeliveryOption(String deliveryOption) {
         this.deliveryOption = deliveryOption;
     }
+
+    public LocalDateTime getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(LocalDateTime timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    
 }

@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.OneToMany;
@@ -15,7 +17,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.CascadeType;
 import javax.persistence.FetchType;
 import java.util.List;
-
+import java.time.LocalDateTime;
 import java.util.Base64; // Import Base64
 
 @Entity
@@ -63,6 +65,10 @@ public class UserEntity {
         this.orders = orders;
     }
 
+	@CreationTimestamp
+    @Column(name = "timeStamp", updatable = false)
+    private LocalDateTime timeStamp;
+
 	@Lob
 	@Column(name = "profilePic")
 	private byte[] profilePic;
@@ -85,7 +91,7 @@ public class UserEntity {
 	public UserEntity() {}
 	
 	public UserEntity(int userId, String username, String fName, List<CarEntity> cars, byte[] profilePic, String lName,
-			String email, String pWord, String pNum, List<OrderEntity> orders) {
+			String email, String pWord, String pNum, List<OrderEntity> orders, LocalDateTime timestamp) {
 		super();
 		this.userId = userId;
 		this.username = username;
@@ -99,6 +105,7 @@ public class UserEntity {
 		this.pWord = pWord;
 		this.pNum = pNum;
 		this.isDeleted = false;
+		this.timeStamp = timestamp;
 	}
 
 	public int getUserId() {
@@ -216,4 +223,14 @@ public class UserEntity {
     public void setVerification(VerificationEntity verification) {
         this.verification = verification;
     }
+
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(LocalDateTime timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	
 }
