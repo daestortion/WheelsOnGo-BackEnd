@@ -63,11 +63,14 @@ public class OrderEntity {
     @Column(name = "timeStamp", updatable = false)
     private LocalDateTime timeStamp;
     
+    @Column(name = "deliveryAddress")
+    private String deliveryAddress; // New attribute for delivery address
+
     public OrderEntity() {}
     
-    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
+       public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
                        String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive,
-                       String deliveryOption, LocalDateTime timestamp) {
+                       String deliveryOption, String deliveryAddress, LocalDateTime timestamp) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -81,7 +84,16 @@ public class OrderEntity {
         this.status = status;
         this.isActive = isActive;
         this.deliveryOption = deliveryOption;
+        this.deliveryAddress = deliveryAddress;
         this.timeStamp = timestamp;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
     }
 
     public String generateReferenceNumber() {
