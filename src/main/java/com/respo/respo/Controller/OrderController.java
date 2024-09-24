@@ -3,6 +3,7 @@ package com.respo.respo.Controller;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -100,6 +101,35 @@ public class OrderController {
             return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+        @PostMapping("/updatePaymentStatus")
+        public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
+            try {
+                // Extract order ID and transaction details from the request body
+                int orderId = (Integer) paymentData.get("orderId");
+                String transactionId = (String) paymentData.get("transactionId");
+        
+                // Retrieve the order by its ID
+                OrderEntity order = oserv.getOrderById(orderId);
+        
+                // Update payment details in the order entity
+                order.setStatus(1);  // Set the order status as paid
+                order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
+                order.setPaymentOption("PayPal");  // Set payment method as PayPal
+                order.setPayment(null);  // Ensure payment screenshot remains null
+        
+                // Save the updated order back to the database
+                oserv.insertOrder(order);
+        
+                return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+    
+    
+
 
     @PostMapping("/insertCashOrder")
     public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
