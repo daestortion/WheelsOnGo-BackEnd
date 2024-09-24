@@ -167,4 +167,16 @@ public class OrderService {
         return orepo.save(order);
     }
 	
+	 // Method to update the delivery address of an order
+	 public OrderEntity updateDeliveryAddress(int orderId, String newAddress) {
+        // Fetch the order by ID
+        OrderEntity order = orepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " not found"));
+
+        // Set the new delivery address
+        order.setDeliveryAddress(newAddress);
+
+        // Save and return the updated order
+        return orepo.save(order);
+    }
 }

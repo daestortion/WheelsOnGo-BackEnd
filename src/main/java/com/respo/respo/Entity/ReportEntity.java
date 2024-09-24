@@ -2,6 +2,7 @@ package com.respo.respo.Entity;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -38,17 +40,21 @@ public class ReportEntity {
     @JsonIgnoreProperties({ "reports" }) // Prevent recursion
     private UserEntity user;
 
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ChatEntity chat; // One-to-one relationship with ChatEntity
+
     
     @CreationTimestamp
     @Column(name = "timeStamp", updatable = false)
     private LocalDateTime timeStamp;
 
-    public ReportEntity(int reportId, String title, String description, UserEntity user, LocalDateTime timestamp) {
+    public ReportEntity(int reportId, String title, String description, UserEntity user, LocalDateTime timestamp, ChatEntity chat) {
         this.reportId = reportId;
         this.title = title;
         this.description = description;
         this.user = user;
         this.timeStamp = timestamp;
+        this.chat = chat;
     }
 
     

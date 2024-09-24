@@ -20,12 +20,12 @@ public class OrderEntity {
 
     @ManyToOne
     @JoinColumn(name = "userId")
-    @JsonIgnoreProperties({"cars", "verification", "orders"}) // Ignore specific nested objects during serialization
+    @JsonIgnoreProperties({ "cars", "verification", "orders" }) // Ignore specific nested objects during serialization
     private UserEntity user;
-    
+
     @ManyToOne
     @JoinColumn(name = "carId")
-    @JsonIgnoreProperties({"orders"})
+    @JsonIgnoreProperties({ "orders" })
     private CarEntity car;
 
     @Column(name = "startDate")
@@ -45,14 +45,14 @@ public class OrderEntity {
 
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
-    
+
     @Lob
     @Column(name = "payment")
     private byte[] payment;
 
     @Column(name = "status")
     private int status;
-    
+
     @Column(name = "active")
     private boolean isActive = false;
 
@@ -62,12 +62,30 @@ public class OrderEntity {
     @CreationTimestamp
     @Column(name = "timeStamp", updatable = false)
     private LocalDateTime timeStamp;
-    
-    public OrderEntity() {}
-    
-    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate, float totalPrice, 
-                       String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status, boolean isActive,
-                       String deliveryOption, LocalDateTime timestamp) {
+
+    @Column(name = "deliveryAddress")
+    private String deliveryAddress; // New attribute for delivery address
+
+    @Column(name = "isReturned")
+    private boolean isReturned = false; // New attribute for return status
+
+    @Column(name = "returnDate")
+    private LocalDate returnDate; // New attribute for return date
+
+    @Lob
+    @Column(name = "proofOfReturn")
+    private byte[] proofOfReturn; // New attribute for proof of return
+
+    @Column(name = "isPaid")
+    private boolean isPaid = false; // New attribute for payment status
+
+    public OrderEntity() {
+    }
+
+    public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
+            float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, 
+            int status, boolean isActive, String deliveryOption, String deliveryAddress, LocalDateTime timestamp, 
+            boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -81,14 +99,59 @@ public class OrderEntity {
         this.status = status;
         this.isActive = isActive;
         this.deliveryOption = deliveryOption;
+        this.deliveryAddress = deliveryAddress;
         this.timeStamp = timestamp;
+        this.isReturned = isReturned;
+        this.returnDate = returnDate;
+        this.proofOfReturn = proofOfReturn;
+        this.isPaid = isPaid;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public boolean isReturned() {
+        return isReturned;
+    }
+
+    public void setReturned(boolean isReturned) {
+        this.isReturned = isReturned;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public byte[] getProofOfReturn() {
+        return proofOfReturn;
+    }
+
+    public void setProofOfReturn(byte[] proofOfReturn) {
+        this.proofOfReturn = proofOfReturn;
+    }
+
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean isPaid) {
+        this.isPaid = isPaid;
     }
 
     public String generateReferenceNumber() {
         Random random = new Random();
         return String.format("%08d", random.nextInt(100000000)); // Generates an 8-digit random number
     }
-    
+
     public int getOrderId() {
         return orderId;
     }
@@ -202,5 +265,4 @@ public class OrderEntity {
         this.timeStamp = timeStamp;
     }
 
-    
 }
