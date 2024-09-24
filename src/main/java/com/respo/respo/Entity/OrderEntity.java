@@ -76,15 +76,16 @@ public class OrderEntity {
     @Column(name = "proofOfReturn")
     private byte[] proofOfReturn; // New attribute for proof of return
 
+    @Column(name = "isPaid")
+    private boolean isPaid = false; // New attribute for payment status
+
     public OrderEntity() {
     }
 
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
-            float totalPrice,
-            String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, int status,
-            boolean isActive,
-            String deliveryOption, String deliveryAddress, LocalDateTime timestamp, boolean isReturned,
-            LocalDate returnDate, byte[] proofOfReturn) {
+            float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, 
+            int status, boolean isActive, String deliveryOption, String deliveryAddress, LocalDateTime timestamp, 
+            boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -103,6 +104,7 @@ public class OrderEntity {
         this.isReturned = isReturned;
         this.returnDate = returnDate;
         this.proofOfReturn = proofOfReturn;
+        this.isPaid = isPaid;
     }
 
     public String getDeliveryAddress() {
@@ -135,6 +137,14 @@ public class OrderEntity {
 
     public void setProofOfReturn(byte[] proofOfReturn) {
         this.proofOfReturn = proofOfReturn;
+    }
+
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean isPaid) {
+        this.isPaid = isPaid;
     }
 
     public String generateReferenceNumber() {
