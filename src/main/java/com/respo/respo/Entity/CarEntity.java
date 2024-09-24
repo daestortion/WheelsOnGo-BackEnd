@@ -121,7 +121,11 @@ public class CarEntity {
 	public int getCarId() {
 		return carId;
 	}
-
+	
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
+	}
+	
 	public void setCarId(int carId) {
 		this.carId = carId;
 	}
