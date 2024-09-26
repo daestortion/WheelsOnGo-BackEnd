@@ -54,7 +54,7 @@ public class OrderService {
 	public List<OrderEntity> getAllOrders() {
 		return orepo.findAll();
 	}
-
+	
 	// U - update
 	@SuppressWarnings("finally")
 	public OrderEntity updateOrder(int orderId, OrderEntity newOrderDetails) {
