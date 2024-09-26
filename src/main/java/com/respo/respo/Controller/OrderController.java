@@ -2,7 +2,9 @@ package com.respo.respo.Controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -98,6 +100,36 @@ public class OrderController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/updatePaymentStatus")
+    public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
+        try {
+            // Extract order ID and transaction details from the request body
+            int orderId = (Integer) paymentData.get("orderId");
+            String transactionId = (String) paymentData.get("transactionId");
+
+            // Retrieve the order by its ID
+            OrderEntity order = oserv.getOrderById(orderId);
+
+            // Update payment details in the order entity
+            order.setStatus(1);  // Set the order status as paid
+            order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
+            order.setPaymentOption("PayPal");  // Set payment method as PayPal
+            
+            // Automatically set paid to true if payment option is PayPal
+            if ("PayPal".equalsIgnoreCase(order.getPaymentOption())) {
+                order.setPaid(true);  // Mark order as paid
+            }
+
+            // Save the updated order back to the database
+            oserv.insertOrder(order);
+
+            return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -245,6 +277,30 @@ public class OrderController {
             return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/markAsReturned/{orderId}")
+    public ResponseEntity<String> markAsReturned(@PathVariable int orderId) {
+        try {
+            // Retrieve the order by its ID
+            OrderEntity order = oserv.getOrderById(orderId);
+
+            if (order == null) {
+                return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
+            }
+
+            // Mark order as returned and set the current date
+            order.setReturned(true); 
+            order.setReturnDate(LocalDate.now());  // Use LocalDate for date only
+
+            // Save the updated order back to the database
+            oserv.insertOrder(order);
+
+            return new ResponseEntity<>("Order marked as returned successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
