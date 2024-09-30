@@ -224,7 +224,18 @@ public class OrderController {
     @PutMapping("/approveOrder/{orderId}")
     public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
         try {
-            OrderEntity updatedOrder = oserv.approveOrder(orderId);
+            // Fetch the order by its ID
+            OrderEntity order = oserv.getOrderById(orderId);
+            
+            // Set the order status to approved
+            order.setStatus(1); // Assuming 1 represents 'approved'
+            
+            // Set the 'paid' status to true when the order is approved
+            order.setPaid(true);
+            
+            // Save the updated order
+            OrderEntity updatedOrder = oserv.insertOrder(order);
+            
             return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
