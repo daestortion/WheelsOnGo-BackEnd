@@ -1,17 +1,20 @@
 package com.respo.respo.Service;
 
-import com.respo.respo.Entity.ChatEntity;
-import com.respo.respo.Entity.MessageEntity;
-import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Repository.ChatRepository;
-import com.respo.respo.Repository.MessageRepository;
-import com.respo.respo.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.respo.respo.Entity.ChatEntity;
+import com.respo.respo.Entity.MessageEntity;
+import com.respo.respo.Entity.ReportEntity;
+import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Repository.ChatRepository;
+import com.respo.respo.Repository.MessageRepository;
+import com.respo.respo.Repository.ReportRepository;
+import com.respo.respo.Repository.UserRepository;
 
 @Service
 public class ChatService {
@@ -24,6 +27,9 @@ public class ChatService {
 
     @Autowired
     private UserRepository userRepository;
+
+     @Autowired
+    private ReportRepository reportRepository;
 
     public List<MessageEntity> getMessagesByChatId(int chatId) {
         Optional<ChatEntity> chat = chatRepository.findById(chatId);
@@ -51,5 +57,30 @@ public class ChatService {
         } else {
             throw new IllegalArgumentException("Chat not found");
         }
+    }
+
+     // Method to create a new chat
+    public ChatEntity createChat(int reportId, List<Integer> userIds) {
+        // Fetch the report using the reportId
+        Optional<ReportEntity> report = reportRepository.findById(reportId);
+        if (report.isEmpty()) {
+            throw new IllegalArgumentException("Report not found");
+        }
+
+        // Fetch users by their IDs
+        List<UserEntity> users = userRepository.findAllById(userIds);
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("No valid users found");
+        }
+
+        // Create a new ChatEntity
+        ChatEntity chat = new ChatEntity();
+        chat.setReport(report.get());
+        chat.setUsers(users);
+        chat.setStatus("pending");
+        chat.setCreatedAt(LocalDateTime.now());
+
+        // Save and return the new chat entity
+        return chatRepository.save(chat);
     }
 }
