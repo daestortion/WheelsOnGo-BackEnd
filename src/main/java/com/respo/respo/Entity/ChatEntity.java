@@ -23,6 +23,7 @@ public class ChatEntity {
         joinColumns = @JoinColumn(name = "chatId"),
         inverseJoinColumns = @JoinColumn(name = "userId")
     )
+    
     private List<UserEntity> users = new ArrayList<>(); // Many-to-many relationship with users
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
