@@ -41,9 +41,10 @@ public class ReportEntity {
     private UserEntity user;
 
     @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"report"}) // Ignore the 'report' field in ChatEntity during serialization
     private ChatEntity chat; // One-to-one relationship with ChatEntity
 
-    
+
     @CreationTimestamp
     @Column(name = "timeStamp", updatable = false)
     private LocalDateTime timeStamp;
@@ -62,7 +63,6 @@ public class ReportEntity {
     }
 
 
-    // Getters and Setters
     public int getReportId() {
         return reportId;
     }
@@ -113,6 +113,16 @@ public class ReportEntity {
 
     public void setTimeStamp(LocalDateTime timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+
+    public ChatEntity getChat() {
+        return chat;
+    }
+
+
+    public void setChat(ChatEntity chat) {
+        this.chat = chat;
     }
 
     

@@ -1,6 +1,11 @@
 package com.respo.respo.Entity;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +20,8 @@ public class ChatEntity {
 
     @OneToOne
     @JoinColumn(name = "reportId", referencedColumnName = "reportId")
-    private ReportEntity report; // One-to-one relationship with ReportEntity
+    @JsonIgnoreProperties({"chat", "user"}) // Ignore chat and user in ReportEntity
+    private ReportEntity report;
 
     @ManyToMany
     @JoinTable(
@@ -23,25 +29,32 @@ public class ChatEntity {
         joinColumns = @JoinColumn(name = "chatId"),
         inverseJoinColumns = @JoinColumn(name = "userId")
     )
-    
+    @JsonIgnoreProperties({"report", "chat"}) // Ignore 'report' and 'chat' in UserEntity
     private List<UserEntity> users = new ArrayList<>(); // Many-to-many relationship with users
+
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MessageEntity> messages = new ArrayList<>(); // Messages exchanged in the chat
 
+    @ManyToOne
+    @JoinColumn(name = "adminId", referencedColumnName = "adminId")
+    private AdminEntity admin; // Many-to-one relationship with AdminEntity
+
     @Column(name = "status")
     private String status; // Status attribute (e.g., "pending", "resolved")
 
-    @Column(name = "createdAt")
+	@CreationTimestamp
+	@Column(name = "timeStamp", updatable = false)
     private LocalDateTime createdAt;
 
     // Constructors, getters, and setters
     public ChatEntity() {
     }
 
-    public ChatEntity(ReportEntity report, List<UserEntity> users, String status, LocalDateTime createdAt) {
+    public ChatEntity(ReportEntity report, List<UserEntity> users, AdminEntity admin, String status, LocalDateTime createdAt) {
         this.report = report;
         this.users = users;
+        this.admin = admin;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -76,6 +89,14 @@ public class ChatEntity {
 
     public void setMessages(List<MessageEntity> messages) {
         this.messages = messages;
+    }
+
+    public AdminEntity getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminEntity admin) {
+        this.admin = admin;
     }
 
     public String getStatus() {
