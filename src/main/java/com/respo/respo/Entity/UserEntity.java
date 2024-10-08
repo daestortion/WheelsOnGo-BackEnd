@@ -46,7 +46,7 @@ public class UserEntity {
     private VerificationEntity verification;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"user"})
+	@JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity
     private List<ReportEntity> reports; // List to store reports associated with the user
 
 	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

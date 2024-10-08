@@ -1,6 +1,9 @@
 package com.respo.respo.Entity;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,9 +13,10 @@ public class MessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int messageId;
-
+    
     @ManyToOne
     @JoinColumn(name = "chatId")
+    @JsonIgnore // Prevent recursive serialization
     private ChatEntity chat; // Many-to-one relationship with ChatEntity
 
     @ManyToOne
