@@ -62,15 +62,40 @@ public class ChatService {
         return chat.map(ChatEntity::getMessages).orElseThrow(() -> new IllegalArgumentException("Chat not found"));
     }
 
-    public MessageEntity sendMessage(int chatId, int userId, String messageContent) {
+    public MessageEntity sendMessage(int chatId, Integer userId, Integer adminId, String messageContent) {
         Optional<ChatEntity> chat = chatRepository.findById(chatId);
-        Optional<UserEntity> sender = userRepository.findById(userId);
-        if (chat.isEmpty() || sender.isEmpty()) {
-            throw new IllegalArgumentException("Chat or user not found");
+        
+        if (chat.isEmpty()) {
+            throw new IllegalArgumentException("Chat not found");
         }
-        MessageEntity message = new MessageEntity(chat.get(), sender.get(), messageContent, LocalDateTime.now());
+    
+        MessageEntity message;
+    
+        if (adminId != null) {
+            // If the sender is an admin
+            Optional<AdminEntity> adminSender = adminRepository.findById(adminId);
+            if (adminSender.isPresent()) {
+                message = new MessageEntity(chat.get(), null, adminSender.get(), messageContent, LocalDateTime.now());
+            } else {
+                throw new IllegalArgumentException("Admin not found");
+            }
+        } else if (userId != null) {
+            // If the sender is a user
+            Optional<UserEntity> userSender = userRepository.findById(userId);
+            if (userSender.isPresent()) {
+                message = new MessageEntity(chat.get(), userSender.get(), null, messageContent, LocalDateTime.now());
+            } else {
+                throw new IllegalArgumentException("User not found");
+            }
+        } else {
+            throw new IllegalArgumentException("Sender not provided");
+        }
+    
         return messageRepository.save(message);
     }
+    
+    
+    
 
     public ChatEntity updateChatStatus(int chatId, String status) {
         Optional<ChatEntity> chat = chatRepository.findById(chatId);

@@ -35,9 +35,13 @@ public class ChatController {
 
     // Send a message in a chat
     @PostMapping("/{chatId}/send")
-    public MessageEntity sendMessage(@PathVariable int chatId, @RequestParam int userId, @RequestParam String messageContent) {
-        return chatService.sendMessage(chatId, userId, messageContent);
+    public MessageEntity sendMessage(@PathVariable int chatId, 
+                                     @RequestParam(required = false) Integer userId, 
+                                     @RequestParam(required = false) Integer adminId, 
+                                     @RequestParam String messageContent) {
+        return chatService.sendMessage(chatId, userId, adminId, messageContent);
     }
+    
 
     
     // Create a new chat using @RequestBody with adminId and reportId as @RequestParam
