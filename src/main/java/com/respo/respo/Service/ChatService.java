@@ -1,5 +1,12 @@
 package com.respo.respo.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.respo.respo.Entity.AdminEntity;
 import com.respo.respo.Entity.ChatEntity;
 import com.respo.respo.Entity.MessageEntity;
@@ -10,12 +17,6 @@ import com.respo.respo.Repository.ChatRepository;
 import com.respo.respo.Repository.MessageRepository;
 import com.respo.respo.Repository.ReportRepository;
 import com.respo.respo.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -32,34 +33,28 @@ public class ChatService {
         return chatRepository.findAll();
     }
 
-    private ReportRepository reportRepository; // You need this repository for fetching ReportEntity
+    @Autowired
+    private ReportRepository reportRepository; // Make sure this is autowired
 
     public ChatEntity createChat(ChatEntity chatEntity, int adminId, int reportId) {
-        // Fetch the admin by ID
+        // Check if a chat already exists for this report
+        Optional<ChatEntity> existingChat = chatRepository.findByReport_ReportId(reportId);
+        if (existingChat.isPresent()) {
+            return existingChat.get(); // Return the existing chat if found
+        }
+
+        // Otherwise, proceed to create a new chat
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-
-        // Fetch the report by ID
+        
         ReportEntity report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
-        // Set the admin to the chat
         chatEntity.setAdmin(admin);
-
-        // Set the report to the chat
         chatEntity.setReport(report);
 
-        // Save the chatEntity to ensure it has a chatId before assigning it to the
-        // report
-        ChatEntity savedChat = chatRepository.save(chatEntity);
-
-        // Update the report with the chat
-        report.setChat(savedChat);
-
-        // Save the report (this will also save the chat because of the cascade setting)
-        reportRepository.save(report);
-
-        return savedChat;
+        // Save the chat entity
+        return chatRepository.save(chatEntity);
     }
 
     public List<MessageEntity> getMessagesByChatId(int chatId) {
@@ -87,4 +82,9 @@ public class ChatService {
             throw new IllegalArgumentException("Chat not found");
         }
     }
+
+        // Method to check if a chat exists for the given reportId
+        public Optional<ChatEntity> findChatByReportId(int reportId) {
+            return chatRepository.findByReport_ReportId(reportId);
+        }
 }

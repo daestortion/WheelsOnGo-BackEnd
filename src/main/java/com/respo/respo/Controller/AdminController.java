@@ -2,6 +2,7 @@ package com.respo.respo.Controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.respo.respo.Entity.AdminEntity;
 import com.respo.respo.Service.AdminService;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -59,21 +58,23 @@ public class AdminController {
 	}
 
 	    // Login
-    @PostMapping("/login")
-    public Map<String, Object> loginAdmin(@RequestBody Map<String, String> loginData) {
-        String username = loginData.get("username");
-        String password = loginData.get("password");
-        int loginResult = aserv.loginAdmin(username, password);
-
-        Map<String, Object> response = new HashMap<>();
-        if (loginResult == 1) {
-            response.put("message", "Login successful");
-            response.put("status", "success");
-        } else {
-            response.put("message", "Invalid username or password");
-            response.put("status", "failure");
-        }
-
-        return response;
-    }
+        @PostMapping("/login")
+        public Map<String, Object> loginAdmin(@RequestBody Map<String, String> loginData) {
+            String username = loginData.get("username");
+            String password = loginData.get("password");
+            int loginResult = aserv.loginAdmin(username, password);
+        
+            Map<String, Object> response = new HashMap<>();
+            if (loginResult == 1) {
+                AdminEntity admin = aserv.getAdminByIdentifier(username); // Fetch admin details
+                response.put("message", "Login successful");
+                response.put("status", "success");
+                response.put("adminId", admin.getAdminId()); // Include adminId in the response
+            } else {
+                response.put("message", "Invalid username or password");
+                response.put("status", "failure");
+            }
+        
+            return response;
+        }        
 }

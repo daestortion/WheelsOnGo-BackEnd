@@ -1,12 +1,20 @@
 package com.respo.respo.Controller;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.respo.respo.Entity.ChatEntity;
 import com.respo.respo.Entity.MessageEntity;
 import com.respo.respo.Service.ChatService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/chat")
@@ -38,7 +46,12 @@ public class ChatController {
             @RequestBody ChatEntity chatEntity,
             @RequestParam int adminId,
             @RequestParam int reportId) {
+        // Call the service to create the chat or return an existing one
         return chatService.createChat(chatEntity, adminId, reportId);
     }
 
+    @GetMapping("/check")
+    public Optional<ChatEntity> checkIfChatExists(@RequestParam int reportId) {
+        return chatService.findChatByReportId(reportId);
+    }
 }
