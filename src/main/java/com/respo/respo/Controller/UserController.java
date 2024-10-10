@@ -26,9 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Entity.WalletEntity;
 import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.UserRepository;
 import com.respo.respo.Service.UserService;
+import com.respo.respo.Service.WalletService;
 
 import java.util.Optional;
 import com.respo.respo.Configuration.TokenGenerator; // Import TokenGenerator class
@@ -49,6 +51,9 @@ public class UserController {
 
     @Autowired
     private OrderRepository orepo;
+
+    @Autowired
+    private WalletService walletService;
 
     @GetMapping("/print")
     public String itWorks() {
@@ -165,14 +170,39 @@ public class UserController {
 
 
     @PutMapping("/updateIsOwner/{userId}")
-    public ResponseEntity<?> updateIsRenting(@PathVariable int userId, @RequestBody Map<String, Boolean> updates) {
+    public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Map<String, Boolean> updates) {
         try {
+            // Get the user by ID
             UserEntity user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            // Check if "isOwner" key exists in the request body
             if (updates.containsKey("isOwner")) {
-                user.setOwner(updates.get("isOwner"));
+                boolean isOwner = updates.get("isOwner");
+
+                // Update the isOwner flag
+                user.setOwner(isOwner);
                 userService.updateUser(user);
+
+                // If the user is now an owner and doesn't already have a wallet, create one
+                if (isOwner && user.getWallet() == null) {
+                    WalletEntity wallet = new WalletEntity(); // Create a new wallet
+                    wallet.setUser(user);  // Associate the wallet with the user
+                    wallet.setBalance(0.0);  // Initialize the wallet with 0 balance
+                    wallet.setActive(true);  // Mark the wallet as active
+
+                    walletService.createWallet(wallet); // Save the wallet
+
+                    // Update the user's wallet reference and save the user again
+                    user.setWallet(wallet);
+                    userService.updateUser(user);
+                }
+
                 return ResponseEntity.ok(user);
             }
+
             return ResponseEntity.badRequest().body("Invalid request");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

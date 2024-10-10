@@ -58,4 +58,6 @@ public class ChatController {
     public Optional<ChatEntity> checkIfChatExists(@RequestParam int reportId) {
         return chatService.findChatByReportId(reportId);
     }
+
+    
 }
