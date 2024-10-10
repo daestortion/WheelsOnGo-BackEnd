@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -14,47 +15,50 @@ import com.respo.respo.Repository.AdminRepository;
 @Service
 public class AdminService {
 
-	@Autowired
-    AdminRepository arepo;
-	
-	// Create
-	public AdminEntity insertAdmin(AdminEntity admin) {
-		return arepo.save(admin);
+    @Autowired
+    private AdminRepository arepo;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    // Create
+    public AdminEntity insertAdmin(AdminEntity admin) {
+        // Hash the password before saving
+        admin.setpWord(passwordEncoder.encode(admin.getpWord()));
+        return arepo.save(admin);
     }
-	
-	// Read
+
+    // Read
     public List<AdminEntity> getAllAdmins() {
         return arepo.findAll();
     }
-    
+
     // Update
-        public AdminEntity updateAdmin(int adminId, AdminEntity newAdminDetails) {
-            AdminEntity admin = arepo.findById(adminId).orElseThrow(() ->
-                new NoSuchElementException("Admin " + adminId + " does not exist!"));
+    public AdminEntity updateAdmin(int adminId, AdminEntity newAdminDetails) {
+        AdminEntity admin = arepo.findById(adminId).orElseThrow(() ->
+            new NoSuchElementException("Admin " + adminId + " does not exist!"));
 
-            // Check for non-null and non-empty username
-            if (newAdminDetails.getUsername() != null && !newAdminDetails.getUsername().isEmpty()) {
-                // Ensure the new username is unique and not the current user's username
-                if (!newAdminDetails.getUsername().equals(admin.getUsername()) && 
-                    arepo.existsByUsername(newAdminDetails.getUsername())) {
-                    throw new IllegalStateException("Username already exists. Please choose a different username.");
-                }
-                admin.setUsername(newAdminDetails.getUsername());
+        // Check for non-null and non-empty username
+        if (newAdminDetails.getUsername() != null && !newAdminDetails.getUsername().isEmpty()) {
+            // Ensure the new username is unique and not the current user's username
+            if (!newAdminDetails.getUsername().equals(admin.getUsername()) &&
+                arepo.existsByUsername(newAdminDetails.getUsername())) {
+                throw new IllegalStateException("Username already exists. Please choose a different username.");
             }
-                
-            if (newAdminDetails.getUsername() != null && !newAdminDetails.getUsername().isEmpty()) {
-                admin.setUsername(newAdminDetails.getUsername());
-            }
-            if (newAdminDetails.getpWord() != null && !newAdminDetails.getpWord().isEmpty()) {
-                admin.setpWord(newAdminDetails.getpWord());
-            }
-
-            return arepo.save(admin);
+            admin.setUsername(newAdminDetails.getUsername());
         }
-    
+
+        // Update password if present and hash it
+        if (newAdminDetails.getpWord() != null && !newAdminDetails.getpWord().isEmpty()) {
+            admin.setpWord(passwordEncoder.encode(newAdminDetails.getpWord()));
+        }
+
+        return arepo.save(admin);
+    }
+
     // Delete
     public String deleteAdmin(int adminId) {
-    	AdminEntity admin = arepo.findById(adminId)
+        AdminEntity admin = arepo.findById(adminId)
             .orElseThrow(() -> new NoSuchElementException("Admin " + adminId + " does not exist"));
 
         if (admin.getisDeleted()) {
@@ -66,15 +70,16 @@ public class AdminService {
         }
     }
 
-	public int loginAdmin(String username, String password) {
+    // Login
+    public int loginAdmin(String username, String password) {
         Optional<AdminEntity> adminOpt = arepo.findByUsername(username);
-    
-        if (adminOpt.isPresent() && adminOpt.get().getpWord().equals(password)) {
+
+        if (adminOpt.isPresent() && passwordEncoder.matches(password, adminOpt.get().getpWord())) {
             return 1; // Login successful
         }
         return 0; // Login unsuccessful, either username not found or password incorrect
     }
-    
+
     public AdminEntity getAdminByIdentifier(String username) {
         if (StringUtils.hasText(username)) {
             return arepo.findByUsername(username)
@@ -84,6 +89,7 @@ public class AdminService {
     }
 
     public AdminEntity getAdminById(int adminId) {
-        return arepo.findById(adminId).orElseThrow(() -> new NoSuchElementException("User not found with id: " + adminId));
+        return arepo.findById(adminId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with id: " + adminId));
     }
 }
