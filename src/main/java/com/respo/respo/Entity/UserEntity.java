@@ -57,6 +57,10 @@ public class UserEntity {
     @JsonIgnoreProperties({"user"}) // Prevent recursion
     private List<OrderEntity> orders; // List to store orders associated with the user
 	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user"}) // Prevent recursion
+    private WalletEntity wallet; // Reference to the WalletEntity
+	
 	public List<OrderEntity> getOrders() {
         return orders;
     }
@@ -230,6 +234,14 @@ public class UserEntity {
 
 	public void setTimeStamp(LocalDateTime timeStamp) {
 		this.timeStamp = timeStamp;
+	}
+
+	public WalletEntity getWallet() {
+		return wallet;
+	}
+
+	public void setWallet(WalletEntity wallet) {
+		this.wallet = wallet;
 	}
 
 	
