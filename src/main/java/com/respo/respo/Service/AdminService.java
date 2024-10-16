@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -15,11 +15,12 @@ import com.respo.respo.Repository.AdminRepository;
 @Service
 public class AdminService {
 
+  
     @Autowired
     private AdminRepository arepo;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;  // Updated to use PasswordEncoder
 
     // Create
     public AdminEntity insertAdmin(AdminEntity admin) {
