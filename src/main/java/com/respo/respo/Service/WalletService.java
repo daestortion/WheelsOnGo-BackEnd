@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,37 +52,98 @@ public class WalletService {
 
     // Method to get paid orders for a specific user
     public List<OrderEntity> getPaidOrdersForUser(int userId) {
+        return orderRepository.findAllByUser_UserIdAndIsPaid(userId, true);
+    }
+
+    public List<OrderEntity> getOrdersForOwnedCars(int userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null; // User not found
         }
 
-        // Get all cars owned by the user
-        List<CarEntity> ownedCars = user.getCars();
-
-        // Get orders for each car where isPaid is true
-        List<OrderEntity> paidOrders = ownedCars.stream()
-                .flatMap(car -> car.getOrders().stream()) // Get orders for each car
-                .filter(order -> order.isPaid()) // Filter orders with isPaid = true
+        // Get all orders for the cars owned by the user
+        return user.getCars().stream()
+                .flatMap(car -> car.getOrders().stream())
                 .collect(Collectors.toList());
-
-        return paidOrders;
     }
 
-    @Scheduled(fixedRate = 300000) // 5 minutes
-    @Transactional // Ensure this method runs within a transaction
-    public void scanPaidOrdersForAllOwners() {
-        // Retrieve all users
-        List<UserEntity> allOwners = userRepository.findAll()
-            .stream()
-            .filter(UserEntity::isOwner) // Filter users who are owners
-            .collect(Collectors.toList());
+      @Transactional
+    public float getCredit(int userId) {
+        List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
 
-        allOwners.forEach(user -> {
-            List<OrderEntity> paidOrders = getPaidOrdersForUser(user.getUserId());
-            // Process paid orders, for example, update wallet balances
-            System.out.println("Paid orders for user " + user.getUsername() + ": " + paidOrders.size());
-        });
+        if (carOrders == null || carOrders.isEmpty()) {
+            return 0;
+        }
+
+        // Calculate total credit (online payments)
+        return (float) carOrders.stream()
+                .filter(order -> "online".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
+                .mapToDouble(OrderEntity::getTotalPrice)
+                .sum();
     }
 
+    @Transactional
+    public float getDebit(int userId) {
+        List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
+
+        if (carOrders == null || carOrders.isEmpty()) {
+            return 0;
+        }
+
+        // Calculate total debit (cash payments)
+        return (float) carOrders.stream()
+                .filter(order -> "cash".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
+                .mapToDouble(OrderEntity::getTotalPrice)
+                .sum();
+    }
+
+    @Transactional
+    public float getRefundable(int userId) {
+        List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
+
+        if (carOrders == null || carOrders.isEmpty()) {
+            return 0;
+        }
+
+        // Calculate refundable amount for terminated orders
+        return (float) carOrders.stream()
+                .filter(OrderEntity::isTerminated)
+                .mapToDouble(order -> {
+                    long daysBeforeStart = ChronoUnit.DAYS.between(order.getTerminationDate(), order.getStartDate());
+                    if (daysBeforeStart >= 3) {
+                        return order.getTotalPrice(); // 100% refund if 3 or more days before start date
+                    } else if (daysBeforeStart > 0 && daysBeforeStart < 3) {
+                        return order.getTotalPrice() * 0.2; // 20% refund if less than 3 days before start date
+                    } else {
+                        return 0; // No refund if on the start date
+                    }
+                })
+                .sum();
+    }
+
+    @Transactional
+    public void updateWalletBalances(int userId) {
+        WalletEntity wallet = walletRepository.findByUser_UserId(userId);
+        if (wallet == null) {
+            throw new RuntimeException("Wallet not found for user ID: " + userId);
+        }
+
+        // Calculate credit, debit, and refundable based on the cars owned by the user
+        float credit = getCredit(userId);
+        float debit = getDebit(userId);
+        float refundable = getRefundable(userId);
+
+        // Reset the wallet totals to zero before updating
+        wallet.setCredit(0);
+        wallet.setDebit(0);
+        wallet.setRefundable(0);
+
+        // Update wallet entity with recalculated balances
+        wallet.setCredit(credit);
+        wallet.setDebit(debit);
+        wallet.setRefundable(refundable);
+
+        // Save the updated wallet back to the repository
+        walletRepository.save(wallet);
+    }
 }

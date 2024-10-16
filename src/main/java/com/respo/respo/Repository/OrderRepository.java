@@ -11,4 +11,6 @@ import com.respo.respo.Entity.CarEntity;
 public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
     List<OrderEntity> findByUser(UserEntity user);
     List<OrderEntity> findByCar(CarEntity car); // Add this method
+    List<OrderEntity> findAllByUser_UserIdAndIsPaid(int userId, boolean isPaid);
+
 }
