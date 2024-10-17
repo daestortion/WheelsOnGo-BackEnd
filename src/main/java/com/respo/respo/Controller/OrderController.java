@@ -319,4 +319,29 @@ public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
             return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getOrderById/{orderId}")
+    public ResponseEntity<OrderEntity> getOrderById(@PathVariable int orderId) {
+        try {
+            OrderEntity order = oserv.getOrderById(orderId);  // Fetch the order by its ID
+            return new ResponseEntity<>(order, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/terminateOrder/{orderId}")
+    public ResponseEntity<OrderEntity> terminateOrder(@PathVariable int orderId) {
+        try {
+            // Call the service to terminate the order
+            OrderEntity terminatedOrder = oserv.terminateOrder(orderId);
+            return new ResponseEntity<>(terminatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            // Catch any other potential errors and return a bad request
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
