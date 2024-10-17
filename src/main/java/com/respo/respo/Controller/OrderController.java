@@ -330,4 +330,18 @@ public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
         }
     }
 
+    @PutMapping("/terminateOrder/{orderId}")
+    public ResponseEntity<OrderEntity> terminateOrder(@PathVariable int orderId) {
+        try {
+            // Call the service to terminate the order
+            OrderEntity terminatedOrder = oserv.terminateOrder(orderId);
+            return new ResponseEntity<>(terminatedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            // Catch any other potential errors and return a bad request
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

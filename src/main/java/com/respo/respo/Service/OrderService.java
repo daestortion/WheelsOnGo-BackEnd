@@ -1,9 +1,13 @@
 package com.respo.respo.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -179,4 +183,29 @@ public class OrderService {
         // Save and return the updated order
         return orepo.save(order);
     }
+
+	public OrderEntity terminateOrder(int orderId) {
+		OrderEntity order = orepo.findById(orderId)
+				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+	
+		// Set order as terminated and capture the current date in the Philippines timezone
+		order.setTerminated(true);
+		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
+		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
+	
+		// Optionally, you could set the user's and car's status to non-active here
+		CarEntity car = order.getCar();
+		if (car != null) {
+			car.setRented(false);
+		}
+	
+		UserEntity user = order.getUser();
+		if (user != null) {
+			user.setRenting(false);
+		}
+	
+		// Save the updated order back to the repository
+		return orepo.save(order);
+	}
+	
 }
