@@ -314,4 +314,15 @@ public class OrderController {
             return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getOrderById/{orderId}")
+    public ResponseEntity<OrderEntity> getOrderById(@PathVariable int orderId) {
+        try {
+            OrderEntity order = oserv.getOrderById(orderId);  // Fetch the order by its ID
+            return new ResponseEntity<>(order, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
 }

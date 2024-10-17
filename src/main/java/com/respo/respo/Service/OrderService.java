@@ -136,7 +136,7 @@ public class OrderService {
 		return orepo.findByCar(car);
 	}
 	
-	    public OrderEntity extendOrder(int orderId, LocalDate newEndDate) {
+	public OrderEntity extendOrder(int orderId, LocalDate newEndDate) {
         // Find the order by its ID
         OrderEntity order = orepo.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
