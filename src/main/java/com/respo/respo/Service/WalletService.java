@@ -1,22 +1,20 @@
 package com.respo.respo.Service;
 
-import com.respo.respo.Entity.OrderEntity;
-import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Entity.WalletEntity;
-import com.respo.respo.Entity.CarEntity;
-import com.respo.respo.Repository.WalletRepository;
-import com.respo.respo.Repository.UserRepository;
-import com.respo.respo.Repository.OrderRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Entity.WalletEntity;
+import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.UserRepository;
+import com.respo.respo.Repository.WalletRepository;
 
 @Service
 public class WalletService {
@@ -67,20 +65,21 @@ public class WalletService {
                 .collect(Collectors.toList());
     }
 
-      @Transactional
+    @Transactional
     public float getCredit(int userId) {
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-
+    
         if (carOrders == null || carOrders.isEmpty()) {
             return 0;
         }
-
-        // Calculate total credit (online payments)
+    
+        // Update logic to include PayPal payments for credit
         return (float) carOrders.stream()
-                .filter(order -> "online".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
-                .mapToDouble(OrderEntity::getTotalPrice)
-                .sum();
+            .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption()) || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
+            .mapToDouble(OrderEntity::getTotalPrice)
+            .sum();
     }
+    
 
     @Transactional
     public float getDebit(int userId) {
