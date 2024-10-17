@@ -79,13 +79,36 @@ public class OrderEntity {
     @Column(name = "isPaid")
     private boolean isPaid = false; // New attribute for payment status
 
+    @Column(name = "isTerminated")
+    private boolean isTerminated = false; // New attribute for termination status
+
+    @Column(name = "terminationDate")
+    private LocalDate terminationDate; // New attribute for termination date
+    
+    public boolean isTerminated() {
+        return isTerminated;
+    }
+
+    public void setTerminated(boolean isTerminated) {
+        this.isTerminated = isTerminated;
+    }
+
+    public LocalDate getTerminationDate() {
+        return terminationDate;
+    }
+
+    public void setTerminationDate(LocalDate terminationDate) {
+        this.terminationDate = terminationDate;
+    }
+
     public OrderEntity() {
     }
 
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
             float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, 
             int status, boolean isActive, String deliveryOption, String deliveryAddress, LocalDateTime timestamp, 
-            boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid) {
+            boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid, boolean isTerminated, 
+            LocalDate terminationDate) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -105,6 +128,8 @@ public class OrderEntity {
         this.returnDate = returnDate;
         this.proofOfReturn = proofOfReturn;
         this.isPaid = isPaid;
+        this.isTerminated = isTerminated; // New field initialization
+        this.terminationDate = terminationDate; // New field initialization
     }
 
     public String getDeliveryAddress() {
