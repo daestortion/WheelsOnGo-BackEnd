@@ -46,7 +46,7 @@ public class ChatService {
         // Otherwise, proceed to create a new chat
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-        
+
         ReportEntity report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
@@ -64,13 +64,13 @@ public class ChatService {
 
     public MessageEntity sendMessage(int chatId, Integer userId, Integer adminId, String messageContent) {
         Optional<ChatEntity> chat = chatRepository.findById(chatId);
-        
+
         if (chat.isEmpty()) {
             throw new IllegalArgumentException("Chat not found");
         }
-    
+
         MessageEntity message;
-    
+
         if (adminId != null) {
             // If the sender is an admin
             Optional<AdminEntity> adminSender = adminRepository.findById(adminId);
@@ -90,12 +90,9 @@ public class ChatService {
         } else {
             throw new IllegalArgumentException("Sender not provided");
         }
-    
+
         return messageRepository.save(message);
     }
-    
-    
-    
 
     public ChatEntity updateChatStatus(int chatId, String status) {
         Optional<ChatEntity> chat = chatRepository.findById(chatId);
@@ -108,13 +105,12 @@ public class ChatService {
         }
     }
 
-        // Method to check if a chat exists for the given reportId
-        public Optional<ChatEntity> findChatByReportId(int reportId) {
-            return chatRepository.findByReport_ReportId(reportId);
-        }
+    // Method to check if a chat exists for the given reportId
+    public Optional<ChatEntity> findChatByReportId(int reportId) {
+        return chatRepository.findByReport_ReportId(reportId);
+    }
 
-        
-    // Method to add a user to a chat
+    // Method to add a user to a chat and save the chat to the user's side
     public ChatEntity addUserToChat(int chatId, int userId) {
         // Fetch the chat by chatId
         ChatEntity chat = chatRepository.findById(chatId)
@@ -124,12 +120,18 @@ public class ChatService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Add the user to the chat's user list
+        // Add the user to the chat's user list if not already present
         if (!chat.getUsers().contains(user)) {
             chat.getUsers().add(user);
         }
 
-        // Save and return the updated chat entity
-        return chatRepository.save(chat);
+        // Add the chat to the user's chat list if not already present
+        if (!user.getChats().contains(chat)) {
+            user.getChats().add(chat);
+        }
+
+        // Save both the updated user and chat entities to ensure consistency
+        userRepository.save(user); // Save user entity with updated chat list
+        return chatRepository.save(chat); // Save chat entity with updated user list
     }
 }
