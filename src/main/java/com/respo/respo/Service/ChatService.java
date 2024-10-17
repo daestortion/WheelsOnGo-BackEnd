@@ -112,4 +112,24 @@ public class ChatService {
         public Optional<ChatEntity> findChatByReportId(int reportId) {
             return chatRepository.findByReport_ReportId(reportId);
         }
+
+        
+    // Method to add a user to a chat
+    public ChatEntity addUserToChat(int chatId, int userId) {
+        // Fetch the chat by chatId
+        ChatEntity chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+
+        // Fetch the user by userId
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Add the user to the chat's user list
+        if (!chat.getUsers().contains(user)) {
+            chat.getUsers().add(user);
+        }
+
+        // Save and return the updated chat entity
+        return chatRepository.save(chat);
+    }
 }

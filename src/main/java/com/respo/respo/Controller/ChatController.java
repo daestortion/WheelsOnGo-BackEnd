@@ -19,7 +19,7 @@ import com.respo.respo.Service.ChatService;
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
-    
+
     @GetMapping("/all")
     public List<ChatEntity> getAllChats() {
         return chatService.getAllChats();
@@ -27,6 +27,7 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
+
     // Retrieve all messages in a chat by chatId
     @GetMapping("/{chatId}/messages")
     public List<MessageEntity> getMessages(@PathVariable int chatId) {
@@ -35,16 +36,15 @@ public class ChatController {
 
     // Send a message in a chat
     @PostMapping("/{chatId}/send")
-    public MessageEntity sendMessage(@PathVariable int chatId, 
-                                     @RequestParam(required = false) Integer userId, 
-                                     @RequestParam(required = false) Integer adminId, 
-                                     @RequestParam String messageContent) {
+    public MessageEntity sendMessage(@PathVariable int chatId,
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) Integer adminId,
+            @RequestParam String messageContent) {
         return chatService.sendMessage(chatId, userId, adminId, messageContent);
     }
-    
 
-    
-    // Create a new chat using @RequestBody with adminId and reportId as @RequestParam
+    // Create a new chat using @RequestBody with adminId and reportId as
+    // @RequestParam
     @PostMapping("/create")
     public ChatEntity createChat(
             @RequestBody ChatEntity chatEntity,
@@ -59,5 +59,10 @@ public class ChatController {
         return chatService.findChatByReportId(reportId);
     }
 
-    
+    // Endpoint to add a user to a chat
+    @PostMapping("/{chatId}/addUser")
+    public ChatEntity addUserToChat(@PathVariable int chatId, @RequestParam int userId) {
+        // Call the service to add the user to the chat
+        return chatService.addUserToChat(chatId, userId);
+    }
 }
