@@ -108,7 +108,6 @@ public class CarController {
 			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 		}
 	}
-
 	
 
 	// D - Delete 
@@ -168,17 +167,4 @@ public class CarController {
 		}
 	}
 
-	@PostMapping("/logCarAction")
-    public ResponseEntity<?> registerCar(@RequestBody CarEntity car, @RequestParam int userId) {
-        // Fetch the user who is registering the car
-        UserEntity owner = userService.getUserById(userId);
-        if (owner == null) {
-            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-        }
-
-        // Register the car using insertCar method
-        CarEntity savedCar = cserv.insertCar(car, owner);
-
-        return new ResponseEntity<>(savedCar, HttpStatus.CREATED);
-    }
 }

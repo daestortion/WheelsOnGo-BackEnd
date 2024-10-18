@@ -30,31 +30,16 @@ public class CarService {
 	@Autowired
 	OrderRepository orderRepository;
 
-	@Autowired
-    private ActivityLogService logService;
-
 	public List<CarEntity> getAllCarsWithOwner() {
 		return crepo.findAll(); // Implement this method in your repository
 	}
 
 	// Create a car and assign an owner
 	public CarEntity insertCar(CarEntity car, UserEntity owner) {
-        // Step 1: Set the owner of the car
-        car.setOwner(owner);
-
-        // Step 2: Save the updated owner
-        userRepository.save(owner);
-
-        // Step 3: Save the car
-        CarEntity savedCar = crepo.save(car);  // crepo.save(car) in your original code
-
-        // Step 4: Log the car registration
-        String logMessage = owner.getUsername() + " has registered " + savedCar.getCarBrand() + " " + savedCar.getCarModel() + ".";
-        logService.logActivity(logMessage, owner.getUsername());
-
-        // Step 5: Return the saved car
-        return savedCar;
-    }
+		car.setOwner(owner); // Set the owner of the car
+		userRepository.save(owner); // Save the updated owner
+		return crepo.save(car); // Save the car
+	}
 
 	// Read
 	public List<CarEntity> getAllCars() {
@@ -66,7 +51,6 @@ public class CarService {
 		CarEntity car = crepo.findById(carId)
 				.orElseThrow(() -> new NoSuchElementException("Car " + carId + " does not exist!"));
 
-		// Update car details based on newCarDetails
 		if (newCarDetails.getCarDescription() != null) {
 			car.setCarDescription(newCarDetails.getCarDescription());
 		}
@@ -82,11 +66,11 @@ public class CarService {
 		if (newCarDetails.getColor() != null) {
 			car.setColor(newCarDetails.getColor());
 		}
-
+	
 		if (newCarDetails.getPlateNumber() != null) {
 			car.setPlateNumber(newCarDetails.getPlateNumber());
 		}
-
+	
 		if (newCarDetails.getMaxSeatingCapacity() != 0) {
 			car.setMaxSeatingCapacity(newCarDetails.getMaxSeatingCapacity());
 		}
@@ -95,20 +79,8 @@ public class CarService {
 			car.setCarImage(newCarDetails.getCarImage());
 		}
 
-		// Save the updated car
-		CarEntity updatedCar = crepo.save(car);
-
-		// Log the car update
-		UserEntity owner = car.getOwner(); // Assuming the car has an owner
-		if (owner != null) {
-			String logMessage = owner.getUsername() + " has updated Car " + updatedCar.getCarId() + ": " +
-					updatedCar.getCarBrand() + " " + updatedCar.getCarModel();
-			logService.logActivity(logMessage, owner.getUsername());
-		}
-
-		return updatedCar;
+		return crepo.save(car);
 	}
-
 
 	// Delete
 	public String deleteCar(int carId) {

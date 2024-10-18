@@ -49,14 +49,15 @@ public class VerificationController {
         }
         byte[] govIdBytes = govId.getBytes();
         byte[] driversLicenseBytes = driversLicense.getBytes();
-        VerificationEntity verification = new VerificationEntity();
+        VerificationEntity verification = new VerificationEntity();  // Create an empty VerificationEntity
         verification.setUser(userEntity);
         verification.setStatus(status);
         verification.setGovId(govIdBytes);
         verification.setDriversLicense(driversLicenseBytes);
         
-        return vserv.insertVerification(verification);  // Now logs activity after saving
+        return vserv.insertVerification(verification);
     }
+
 
     @GetMapping("/getAllVerification")
     public List<VerificationEntity> getAllVerifications() {
@@ -121,4 +122,5 @@ public class VerificationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Verification record not found for user ID: " + userId);
         }
     }
+
 }
