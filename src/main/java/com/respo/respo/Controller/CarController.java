@@ -124,16 +124,16 @@ public class CarController {
     }
 	
 	@PutMapping("/approveCar/{carId}")
-    public ResponseEntity<String> approveCar(@PathVariable int carId) {
-        try {
-            cserv.approveCar(carId);
-            return new ResponseEntity<>("Car approved successfully", HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<String> approveCar(@PathVariable int carId) {
+		try {
+			cserv.approveCar(carId);
+			return new ResponseEntity<>("Car approved successfully", HttpStatus.OK);
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 
 	@GetMapping("/getAllCarsForUser/{userId}")
@@ -166,5 +166,17 @@ public class CarController {
 			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 		}
 	}
+
+	@PostMapping("/logCarAction")
+    public ResponseEntity<?> registerCar(@RequestBody CarEntity car, @RequestParam int userId) {
+        // Fetch the user who is registering the car
+        UserEntity owner = userService.getUserById(userId);
+        if (owner == null) {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+        // Register the car using insertCar method
+        CarEntity savedCar = cserv.insertCar(car, owner);
+        return new ResponseEntity<>(savedCar, HttpStatus.CREATED);
+    }
 
 }

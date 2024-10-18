@@ -26,6 +26,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
             @Autowired
             private JavaMailSender mailSender;
+
+            @Autowired
+            private ActivityLogService logService;
             
             private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -43,9 +46,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
                 user.setpWord(encodedPassword); // Set the hashed password
                 
                 UserEntity savedUser = urepo.save(user);
-                // Handle profile pic saving logic if needed
-                // Example: saveProfilePic(savedUser, user.getProfilePic());
-                return savedUser;  // Save the user if checks pass
+                
+                // Log the user creation
+                logService.logActivity("User " + savedUser.getUsername() + " has registered to WheelsOnGo.", savedUser.getUsername());
+
+                return savedUser;  // Return the saved user
             }
 
             public boolean checkPassword(String rawPassword, String encodedPassword) {
@@ -88,7 +93,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
                     user.setProfilePic(newUserDetails.getProfilePic());
                 }
 
-                return urepo.save(user);
+                // Save the updated user entity
+                UserEntity updatedUser = urepo.save(user);
+        
+                // Log the user profile update activity
+                String logMessage = updatedUser.getUsername() + " updated their profile.";
+                logService.logActivity(logMessage, updatedUser.getUsername());
+        
+                return updatedUser;
             }
 
             // Delete
@@ -224,5 +236,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
                     return userOpt.get().getOrders(); // Get orders directly from the UserEntity
                 }
                 return Collections.emptyList(); // Return an empty list if user is not found
+            }
+
+            public UserEntity updateIsOwner(int userId, boolean isOwner) {
+                UserEntity user = urepo.findById(userId).orElseThrow(() ->
+                    new NoSuchElementException("User with ID " + userId + " does not exist"));
+        
+                // Update the isOwner status
+                user.setOwner(isOwner);
+                UserEntity updatedUser = urepo.save(user);
+        
+                // Log the action if the user has applied to become an owner
+                if (isOwner) {
+                    String logMessage = user.getUsername() + " has applied as owner.";
+                    logService.logActivity(logMessage, user.getUsername());
+                }
+        
+                return updatedUser;
             }
 }

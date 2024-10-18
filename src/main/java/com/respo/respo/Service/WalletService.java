@@ -1,22 +1,20 @@
 package com.respo.respo.Service;
 
-import com.respo.respo.Entity.OrderEntity;
-import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Entity.WalletEntity;
-import com.respo.respo.Entity.CarEntity;
-import com.respo.respo.Repository.WalletRepository;
-import com.respo.respo.Repository.UserRepository;
-import com.respo.respo.Repository.OrderRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Entity.WalletEntity;
+import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.UserRepository;
+import com.respo.respo.Repository.WalletRepository;
 
 @Service
 public class WalletService {
@@ -63,15 +61,14 @@ public class WalletService {
                 .collect(Collectors.toList());
     }
 
-      @Transactional
+    @Transactional
     public float getCredit(int userId) {
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-
+    
         if (carOrders == null || carOrders.isEmpty()) {
             System.out.println("No orders found for user ID: " + userId);
             return 0;
         }
-<<<<<<< HEAD
     
         // Calculate total credit (online payments)
         float credit = (float) carOrders.stream()
@@ -95,15 +92,6 @@ public class WalletService {
         return credit;
     }
 
-=======
-
-        // Calculate total credit (online payments)
-        return (float) carOrders.stream()
-                .filter(order -> "online".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
-                .mapToDouble(OrderEntity::getTotalPrice)
-                .sum();
-    }
->>>>>>> 4c948a95112a3aea462f4bd166de7a40e83c37ee
 
     @Transactional
     public float getDebit(int userId) {
@@ -182,9 +170,5 @@ public class WalletService {
         walletRepository.save(wallet);
         System.out.println("Updated wallet saved for user ID: " + userId);
     }
-<<<<<<< HEAD
     
 }
-=======
-}
->>>>>>> 4c948a95112a3aea462f4bd166de7a40e83c37ee
