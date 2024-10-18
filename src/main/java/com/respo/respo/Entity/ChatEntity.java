@@ -42,7 +42,7 @@ public class ChatEntity {
         joinColumns = @JoinColumn(name = "chatId"),
         inverseJoinColumns = @JoinColumn(name = "userId")
     )
-    @JsonIgnoreProperties({"report", "chat"}) // Ignore 'report' and 'chat' in UserEntity
+    @JsonIgnoreProperties({"report", "chat", "cars", "verification"}) // Ignore 'report', 'chat', and 'cars' in UserEntity
     private List<UserEntity> users = new ArrayList<>(); // Many-to-many relationship with users
 
 

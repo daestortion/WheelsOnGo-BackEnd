@@ -4,7 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Random;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -20,7 +28,7 @@ public class OrderEntity {
 
     @ManyToOne
     @JoinColumn(name = "userId")
-    @JsonIgnoreProperties({ "cars", "verification", "orders" }) // Ignore specific nested objects during serialization
+    @JsonIgnoreProperties({ "cars", "verification", "orders", "chat", "report"}) // Ignore specific nested objects during serialization
     private UserEntity user;
 
     @ManyToOne

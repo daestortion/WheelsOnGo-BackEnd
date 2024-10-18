@@ -1,26 +1,26 @@
 package com.respo.respo.Entity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import java.util.List;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Base64; // Import Base64
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Import Base64
 
 @Entity
 @Table(name = "tblUsers")
@@ -48,21 +48,21 @@ public class UserEntity {
     private VerificationEntity verification;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity
-    private List<ReportEntity> reports; // List to store reports associated with the user
+    @JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity to prevent recursion
+    private List<ReportEntity> reports;
 
-	// Add ManyToMany relationship with ChatEntity
+    // Add ManyToMany relationship with ChatEntity, ignore 'users', 'messages', and 'report'
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"users", "messages"}) // Prevent recursion
-    private List<ChatEntity> chats = new ArrayList<>(); // Many-to-many relationship with chats
-	
-	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"users", "messages", "report"}) // Prevent recursion and ignore 'report' in ChatEntity
+    private List<ChatEntity> chats = new ArrayList<>();
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"owner"}) // Prevent recursion
-    private List<CarEntity> cars; // List to store cars associated with the user
-	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CarEntity> cars;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"user"}) // Prevent recursion
-    private List<OrderEntity> orders; // List to store orders associated with the user
+    private List<OrderEntity> orders;
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"user"}) // Prevent recursion

@@ -45,9 +45,13 @@ public class RequestFormEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "status", nullable = false)
+    private String status; // New status field for request tracking
+
     // Default constructor
     public RequestFormEntity() {
         this.createdAt = LocalDateTime.now(); // Automatically set the creation time
+        this.status = "pending"; // Default status for a new request
     }
 
     // Unified constructor for both GCash and Bank requests
@@ -60,6 +64,7 @@ public class RequestFormEntity {
         this.accountNumber = accountNumber;
         this.amount = amount;
         this.createdAt = LocalDateTime.now(); // Automatically set the creation time
+        this.status = "pending"; // Default status for a new request
     }
 
     // Getters and Setters
@@ -133,5 +138,13 @@ public class RequestFormEntity {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

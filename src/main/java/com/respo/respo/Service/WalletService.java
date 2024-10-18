@@ -21,44 +21,40 @@ public class WalletService {
 
     @Autowired
     private WalletRepository walletRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private OrderRepository orderRepository;
-
     public List<WalletEntity> getAllWallets() {
         return walletRepository.findAll();
     }
-
     public WalletEntity getWalletById(int id) {
         return walletRepository.findById(id).orElse(null);
     }
-
     public WalletEntity createWallet(WalletEntity walletEntity) {
         return walletRepository.save(walletEntity);
+    }
+
+    // Fetch wallet by user ID
+    public WalletEntity getWalletByUserId(int userId) {
+        return walletRepository.findByUser_UserId(userId);
     }
 
     public WalletEntity updateWallet(WalletEntity walletEntity) {
         return walletRepository.save(walletEntity);
     }
-
     public void deleteWallet(int id) {
         walletRepository.deleteById(id);
     }
-
     // Method to get paid orders for a specific user
     public List<OrderEntity> getPaidOrdersForUser(int userId) {
         return orderRepository.findAllByUser_UserIdAndIsPaid(userId, true);
     }
-
     public List<OrderEntity> getOrdersForOwnedCars(int userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null; // User not found
         }
-
         // Get all orders for the cars owned by the user
         return user.getCars().stream()
                 .flatMap(car -> car.getOrders().stream())
@@ -70,40 +66,69 @@ public class WalletService {
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
     
         if (carOrders == null || carOrders.isEmpty()) {
+            System.out.println("No orders found for user ID: " + userId);
             return 0;
         }
     
-        // Update logic to include PayPal payments for credit
-        return (float) carOrders.stream()
+        // Calculate total credit (online payments)
+        float credit = (float) carOrders.stream()
             .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption()) || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
             .mapToDouble(OrderEntity::getTotalPrice)
             .sum();
+        
+        System.out.println("Credit calculated for user ID: " + userId + " = " + credit);
+
+        // Save the recalculated credit to the wallet entity
+        WalletEntity wallet = walletRepository.findByUser_UserId(userId);
+        if (wallet == null) {
+            System.out.println("Wallet not found for user ID: " + userId);
+            throw new RuntimeException("Wallet not found for user ID: " + userId);
+        }
+
+        wallet.setCredit(credit);
+        walletRepository.save(wallet);
+        System.out.println("Credit updated in the database for user ID: " + userId);
+
+        return credit;
     }
-    
+
 
     @Transactional
     public float getDebit(int userId) {
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-
         if (carOrders == null || carOrders.isEmpty()) {
+            System.out.println("No orders found for user ID: " + userId);
             return 0;
         }
 
         // Calculate total debit (cash payments)
-        return (float) carOrders.stream()
+        float debit = (float) carOrders.stream()
                 .filter(order -> "cash".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
                 .mapToDouble(OrderEntity::getTotalPrice)
                 .sum();
+        
+        System.out.println("Debit calculated for user ID: " + userId + " = " + debit);
+
+        // Save the recalculated debit to the wallet entity
+        WalletEntity wallet = walletRepository.findByUser_UserId(userId);
+        if (wallet == null) {
+            System.out.println("Wallet not found for user ID: " + userId);
+            throw new RuntimeException("Wallet not found for user ID: " + userId);
+        }
+
+        wallet.setDebit(debit);
+        walletRepository.save(wallet);
+        System.out.println("Debit updated in the database for user ID: " + userId);
+
+        return debit;
     }
 
     @Transactional
     public float getRefundable(int userId) {
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-
         if (carOrders == null || carOrders.isEmpty()) {
             return 0;
         }
-
         // Calculate refundable amount for terminated orders
         return (float) carOrders.stream()
                 .filter(OrderEntity::isTerminated)
@@ -119,23 +144,22 @@ public class WalletService {
                 })
                 .sum();
     }
-
     @Transactional
     public void updateWalletBalances(int userId) {
         WalletEntity wallet = walletRepository.findByUser_UserId(userId);
         if (wallet == null) {
+            System.out.println("Wallet not found for user ID: " + userId);
             throw new RuntimeException("Wallet not found for user ID: " + userId);
         }
 
         // Calculate credit, debit, and refundable based on the cars owned by the user
-        float credit = getCredit(userId);
-        float debit = getDebit(userId);
+        float credit = getCredit(userId);  // Credit recalculated and saved here
+        float debit = getDebit(userId);    // Debit recalculated and saved here
         float refundable = getRefundable(userId);
 
-        // Reset the wallet totals to zero before updating
-        wallet.setCredit(0);
-        wallet.setDebit(0);
-        wallet.setRefundable(0);
+        // Log calculated values
+        System.out.println("Recalculating wallet for user ID: " + userId);
+        System.out.println("Credit: " + credit + ", Debit: " + debit + ", Refundable: " + refundable);
 
         // Update wallet entity with recalculated balances
         wallet.setCredit(credit);
@@ -144,7 +168,7 @@ public class WalletService {
 
         // Save the updated wallet back to the repository
         walletRepository.save(wallet);
+        System.out.println("Updated wallet saved for user ID: " + userId);
     }
-
-
+    
 }

@@ -1,9 +1,21 @@
 package com.respo.respo.Entity;
 
-import javax.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "tblWallets")
@@ -29,7 +41,7 @@ public class WalletEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    // New attributes
+    // New attributes for credit, debit, and refundable amounts
     @Column(name = "credit", nullable = false)
     private float credit;
 
@@ -39,6 +51,7 @@ public class WalletEntity {
     @Column(name = "refundable", nullable = false)
     private float refundable;
 
+    // Default constructor
     public WalletEntity() {}
 
     public WalletEntity(int walletId, UserEntity user, double balance, boolean isActive, float credit, float debit, float refundable) {
@@ -80,6 +93,10 @@ public class WalletEntity {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -110,9 +127,5 @@ public class WalletEntity {
 
     public void setRefundable(float refundable) {
         this.refundable = refundable;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
