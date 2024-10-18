@@ -6,7 +6,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,7 +18,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.FetchType;
 import java.util.List;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Base64; // Import Base64
 
 @Entity
@@ -51,11 +49,6 @@ public class UserEntity {
 	@JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity
     private List<ReportEntity> reports; // List to store reports associated with the user
 
-	// Add ManyToMany relationship with ChatEntity
-    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"users", "messages"}) // Prevent recursion
-    private List<ChatEntity> chats = new ArrayList<>(); // Many-to-many relationship with chats
-	
 	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"owner"}) // Prevent recursion
     private List<CarEntity> cars; // List to store cars associated with the user
@@ -251,12 +244,5 @@ public class UserEntity {
 		this.wallet = wallet;
 	}
 
-	public List<ChatEntity> getChats() {
-		return chats;
-	}
-
-	public void setChats(List<ChatEntity> chats) {
-		this.chats = chats;
-	}
-
+	
 }
