@@ -16,6 +16,7 @@ public class MyCorsConfiguration {
         corsConfig.addAllowedOriginPattern("*"); // Or specify allowed origins like "http://localhost:3000"
         corsConfig.addAllowedHeader("*");
         corsConfig.addAllowedMethod("*");
+        corsConfig.addAllowedOrigin("http://localhost:3000");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
