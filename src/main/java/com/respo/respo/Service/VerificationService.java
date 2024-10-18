@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Entity.VerificationEntity;
 import com.respo.respo.Repository.VerificationRepository;
 
@@ -15,8 +16,16 @@ public class VerificationService {
     @Autowired
     VerificationRepository vrepo;
 
+    @Autowired
+    private ActivityLogService logService;
+
     public VerificationEntity insertVerification(VerificationEntity verification) {
-        return vrepo.save(verification);
+        // Save the verification in the database
+        VerificationEntity savedVerification = vrepo.save(verification);
+        // Log the activity: "user.username submitted a verification"
+        String logMessage = verification.getUser().getUsername() + " submitted a verification.";
+        logService.logActivity(logMessage, verification.getUser().getUsername());
+        return savedVerification;
     }
 
     public List<VerificationEntity> getAllVerifications() {
@@ -56,8 +65,25 @@ public class VerificationService {
         VerificationEntity verification = vrepo.findById(vId)
                 .orElseThrow(() -> new NoSuchElementException("Verification with ID " + vId + " does not exist."));
 
+        // Update verification status
         verification.setStatus(newStatus);
-        return vrepo.save(verification);
+        VerificationEntity updatedVerification = vrepo.save(verification);
+
+        // Get the user associated with the verification
+        UserEntity user = verification.getUser();
+
+        // Log the appropriate message based on the new status
+        if (newStatus == 1) {
+            // Approved: Log "user.username has been successfully verified."
+            String logMessage = user.getUsername() + " has been successfully verified.";
+            logService.logActivity(logMessage, user.getUsername());
+        } else if (newStatus == 2) {
+            // Denied: Log "The verification of user.username is unsuccessful"
+            String logMessage = "The verification of " + user.getUsername() + " is unsuccessful.";
+            logService.logActivity(logMessage, user.getUsername());
+        }
+
+        return updatedVerification;
     }
 
     public VerificationEntity getVerificationByUserId(int userId) {
