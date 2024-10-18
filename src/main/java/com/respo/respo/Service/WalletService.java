@@ -40,13 +40,34 @@ public class WalletService {
 
     // Fetch wallet by user ID
     public WalletEntity getWalletByUserId(int userId) {
-        return walletRepository.findByUser_UserId(userId);
+        System.out.println("Fetching wallet for user ID: " + userId);
+        WalletEntity wallet = walletRepository.findByUser_UserId(userId);
+        if (wallet == null || wallet.getUser() == null) {
+            System.out.println("Wallet not found or wallet is not associated with a user");
+            throw new RuntimeException("Wallet not found or wallet is not associated with a user");
+        }
+        System.out.println("Wallet found for user ID: " + userId);
+        return wallet;
     }
 
     public WalletEntity updateWallet(WalletEntity walletEntity) {
-        return walletRepository.save(walletEntity);
+        // Check if wallet is associated with a user before updating
+        if (walletEntity.getUser() == null) {
+            System.out.println("Error: User is not associated with the wallet.");
+            throw new RuntimeException("User must be associated with the wallet.");
+        }
+    
+        // Log the user details for debugging
+        System.out.println("Updating wallet for user: " + walletEntity.getUser().getUserId());
+    
+        // Proceed with saving the updated wallet
+        WalletEntity updatedWallet = walletRepository.save(walletEntity);
+        System.out.println("Wallet updated successfully for user: " + walletEntity.getUser().getUserId());
+        
+        return updatedWallet;
     }
-
+    
+    
     public void deleteWallet(int id) {
         walletRepository.deleteById(id);
     }
@@ -70,35 +91,32 @@ public class WalletService {
 
     @Transactional
     public float getCredit(int userId) {
-        List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-
-        if (carOrders == null || carOrders.isEmpty()) {
-            System.out.println("No orders found for user ID: " + userId);
-            return 0;
-        }
-
-        // Calculate total credit (online payments)
-        float credit = (float) carOrders.stream()
-                .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption())
-                        || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
-                .mapToDouble(OrderEntity::getTotalPrice)
-                .sum();
-
-        System.out.println("Credit calculated for user ID: " + userId + " = " + credit);
-
-        // Save the recalculated credit to the wallet entity
         WalletEntity wallet = walletRepository.findByUser_UserId(userId);
         if (wallet == null) {
-            System.out.println("Wallet not found for user ID: " + userId);
             throw new RuntimeException("Wallet not found for user ID: " + userId);
         }
-
-        wallet.setCredit(credit);
-        walletRepository.save(wallet);
-        System.out.println("Credit updated in the database for user ID: " + userId);
-
-        return credit;
+    
+        // Recalculate credit if orders exist, but prioritize manually adjusted balance
+        List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
+        if (carOrders == null || carOrders.isEmpty()) {
+            return wallet.getCredit();  // Return the manually adjusted balance if no orders
+        }
+    
+        // Calculate the credit based on orders
+        float recalculatedCredit = (float) carOrders.stream()
+            .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption()) || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
+            .mapToDouble(OrderEntity::getTotalPrice)
+            .sum();
+    
+        // Only update the credit if recalculated credit is higher than the current credit
+        if (wallet.getCredit() < recalculatedCredit) {
+            wallet.setCredit(recalculatedCredit);
+            walletRepository.save(wallet);  // Save updated balance
+        }
+    
+        return wallet.getCredit();  // Return the final balance
     }
+    
 
     @Transactional
     public float getDebit(int userId) {
@@ -156,27 +174,42 @@ public class WalletService {
     public void updateWalletBalances(int userId) {
         WalletEntity wallet = walletRepository.findByUser_UserId(userId);
         if (wallet == null) {
-            System.out.println("Wallet not found for user ID: " + userId);
             throw new RuntimeException("Wallet not found for user ID: " + userId);
         }
-
-        // Calculate credit, debit, and refundable based on the cars owned by the user
-        float credit = getCredit(userId); // Credit recalculated and saved here
-        float debit = getDebit(userId); // Debit recalculated and saved here
-        float refundable = getRefundable(userId);
-
-        // Log calculated values
+    
+        // Ensure recalculated credit respects the most recent manually updated balance
+        float recalculatedCredit = getCredit(userId);
+        float recalculatedDebit = getDebit(userId);
+        float recalculatedRefundable = getRefundable(userId);
+    
         System.out.println("Recalculating wallet for user ID: " + userId);
-        System.out.println("Credit: " + credit + ", Debit: " + debit + ", Refundable: " + refundable);
-
-        // Update wallet entity with recalculated balances
-        wallet.setCredit(credit);
-        wallet.setDebit(debit);
-        wallet.setRefundable(refundable);
-
-        // Save the updated wallet back to the repository
-        walletRepository.save(wallet);
-        System.out.println("Updated wallet saved for user ID: " + userId);
+        System.out.println("Credit: " + recalculatedCredit + ", Debit: " + recalculatedDebit + ", Refundable: " + recalculatedRefundable);
+    
+        // Only update wallet balances if recalculated values differ from the stored values
+        boolean walletUpdated = false;
+        if (Math.abs(wallet.getCredit() - recalculatedCredit) > 0.001 && wallet.getCredit() != recalculatedCredit) {
+            wallet.setCredit(recalculatedCredit);
+            walletUpdated = true;
+        }
+    
+        if (Math.abs(wallet.getDebit() - recalculatedDebit) > 0.001) {
+            wallet.setDebit(recalculatedDebit);
+            walletUpdated = true;
+        }
+    
+        if (Math.abs(wallet.getRefundable() - recalculatedRefundable) > 0.001) {
+            wallet.setRefundable(recalculatedRefundable);
+            walletUpdated = true;
+        }
+    
+        if (walletUpdated) {
+            walletRepository.save(wallet);
+            System.out.println("Updated wallet balances saved for user ID: " + userId);
+        } else {
+            System.out.println("No changes detected in wallet for user ID: " + userId);
+        }
     }
+    
 
+    
 }

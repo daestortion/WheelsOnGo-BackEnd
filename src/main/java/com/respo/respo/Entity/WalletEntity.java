@@ -26,7 +26,7 @@ public class WalletEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int walletId;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     @JsonIgnoreProperties({"wallet", "hibernateLazyInitializer", "handler"})
     private UserEntity user;
@@ -41,7 +41,6 @@ public class WalletEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    // New attributes for credit, debit, and refundable amounts
     @Column(name = "credit", nullable = false)
     private float credit;
 
