@@ -50,63 +50,49 @@ public class OrderController {
     private CarService cserv;
 
     @PostMapping("/insertOrder")
-public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
-                                     @RequestParam("carId") int carId,
-                                     @RequestPart(value = "order", required = false) OrderEntity order,
-                                     @RequestPart(value = "file", required = false) MultipartFile file,
-                                     HttpServletRequest request) {
-    try {
-        String contentType = request.getContentType();
-        System.out.println("Request Content-Type: " + contentType);
+    public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
+                                        @RequestParam("carId") int carId,
+                                        @RequestPart(value = "order", required = false) OrderEntity order,
+                                        @RequestPart(value = "file", required = false) MultipartFile file,
+                                        HttpServletRequest request) {
+        try {
+            if (order == null) {
+                return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
+            }
 
-        if (order == null) {
-            System.out.println("Order entity is null. Exiting.");
-            return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
+            // Fetch user and car entities
+            UserEntity user = userv.getUserById(userId);
+            CarEntity car = cserv.getCarById(carId);
+            order.setUser(user);
+            order.setCar(car);
+
+            // Process payment logic based on the provided payment option
+            if ("Paymongo".equalsIgnoreCase(order.getPaymentOption())) {
+                order.setStatus(1); // Status 1 for paid orders
+                order.setPaid(true); // Mark as paid
+            } else if (file != null && !file.isEmpty()) {
+                order.setPayment(file.getBytes()); // Save proof of payment file
+                order.setStatus(0); // Status 0 for pending orders
+            } else {
+                order.setStatus(0); // Status 0 for pending orders if no file
+            }
+
+            // Set the user renting status and car rented status
+            user.setRenting(true);
+            car.setRented(true);
+
+            // Insert the order
+            OrderEntity savedOrder = oserv.insertOrder(order);
+
+            // Log order activity only once
+            oserv.logOrderActivity(savedOrder);
+
+            return new ResponseEntity<>(savedOrder, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        System.out.println("Order Details: ");
-        System.out.println("Start Date: " + order.getStartDate());
-        System.out.println("End Date: " + order.getEndDate());
-        System.out.println("Total Price: " + order.getTotalPrice());
-        System.out.println("Payment Option: " + order.getPaymentOption());
-        System.out.println("Is Deleted: " + order.isDeleted());
-        System.out.println("Reference Number: " + order.getReferenceNumber());
-
-        UserEntity user = userv.getUserById(userId);
-        CarEntity car = cserv.getCarById(carId);
-        order.setUser(user);
-        order.setCar(car);
-
-        System.out.println("User Details: " + user.getUsername());
-        System.out.println("Car Details: " + car.getCarModel());
-
-        // Handle Paymongo or other payment methods
-        if ("Paymongo".equalsIgnoreCase(order.getPaymentOption())) {
-            order.setStatus(1); // Assuming 1 is the status for paid orders
-            order.setPaid(true); // Mark as paid
-        } else if (file != null && !file.isEmpty()) {
-            System.out.println("Received file with size: " + file.getSize());
-            order.setPayment(file.getBytes());
-            order.setStatus(0); // Assuming 0 is for pending orders
-        } else {
-            System.out.println("No file received, payment option: Cash");
-            order.setStatus(0); // Assuming 0 is for pending orders
-        }
-
-        user.setRenting(true); // Set the user's renting status to true
-
-        OrderEntity savedOrder = oserv.insertOrder(order);
-
-        System.out.println("Saved Order Details: ");
-        System.out.println("Order ID: " + savedOrder.getOrderId());
-        System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
-
-        return new ResponseEntity<>(savedOrder, HttpStatus.OK);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
 
     @PostMapping("/updatePaymentStatus")
     public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
@@ -294,7 +280,7 @@ public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-    }
+    }    
 
     @PutMapping("/markAsReturned/{orderId}")
     public ResponseEntity<String> markAsReturned(@PathVariable int orderId) {
@@ -343,5 +329,6 @@ public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
+
 
 }

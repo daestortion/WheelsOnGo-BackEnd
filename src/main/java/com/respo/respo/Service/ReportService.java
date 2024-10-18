@@ -12,6 +12,9 @@ public class ReportService {
     @Autowired
     private ReportRepository reportRepository;
 
+    @Autowired
+    private ActivityLogService logService;
+
     public List<ReportEntity> getAllReports() {
         return reportRepository.findAll();
     }
@@ -21,7 +24,14 @@ public class ReportService {
     }
 
     public ReportEntity createReport(ReportEntity report) {
-        return reportRepository.save(report);
+        ReportEntity savedReport = reportRepository.save(report);
+
+        // Log the report creation
+        String logMessage = "User " + report.getUser().getUsername() + 
+                            " has submitted a report. Title: " + report.getTitle();
+        logService.logActivity(logMessage, report.getUser().getUsername());
+
+        return savedReport;
     }
 
     public ReportEntity updateReport(int id, ReportEntity reportDetails) {
