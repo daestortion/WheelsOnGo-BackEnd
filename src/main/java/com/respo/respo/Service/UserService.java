@@ -1,22 +1,23 @@
         package com.respo.respo.Service;
 
         import java.io.IOException;
+        import java.util.Base64;
+        import java.util.Collections;
         import java.util.List;
         import java.util.NoSuchElementException;
         import java.util.Optional;
+
         import org.springframework.beans.factory.annotation.Autowired;
         import org.springframework.mail.SimpleMailMessage;
-        import org.springframework.stereotype.Service;
-        import org.springframework.util.StringUtils;
-        import org.springframework.web.multipart.MultipartFile;
-        import java.util.Base64;
-import java.util.Collections;
-
-import com.respo.respo.Entity.OrderEntity;
-import com.respo.respo.Entity.UserEntity;
-        import com.respo.respo.Repository.UserRepository;
         import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+        import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+        import com.respo.respo.Entity.OrderEntity;
+        import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Repository.UserRepository;
 
         @Service
         public class UserService {
