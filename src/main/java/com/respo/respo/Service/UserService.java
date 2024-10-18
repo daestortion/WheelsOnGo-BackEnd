@@ -1,23 +1,22 @@
         package com.respo.respo.Service;
 
         import java.io.IOException;
-        import java.util.Base64;
-        import java.util.Collections;
         import java.util.List;
         import java.util.NoSuchElementException;
         import java.util.Optional;
-
         import org.springframework.beans.factory.annotation.Autowired;
         import org.springframework.mail.SimpleMailMessage;
-        import org.springframework.mail.javamail.JavaMailSender;
-        import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
+        import org.springframework.stereotype.Service;
+        import org.springframework.util.StringUtils;
+        import org.springframework.web.multipart.MultipartFile;
+        import java.util.Base64;
+import java.util.Collections;
 
-        import com.respo.respo.Entity.OrderEntity;
-        import com.respo.respo.Entity.UserEntity;
-import com.respo.respo.Repository.UserRepository;
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
+        import com.respo.respo.Repository.UserRepository;
+        import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
         @Service
         public class UserService {
@@ -30,9 +29,7 @@ import com.respo.respo.Repository.UserRepository;
             
             private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-            @Autowired
-            private ActivityLogService logService;
-
+            // Create
             public UserEntity insertUser(UserEntity user) throws IllegalArgumentException {
                 // Check if username or email already exists
                 if (urepo.existsByUsername(user.getUsername())) {
@@ -41,20 +38,15 @@ import com.respo.respo.Repository.UserRepository;
                 if (urepo.findByEmail(user.getEmail()).isPresent()) {
                     throw new IllegalArgumentException("Email already registered.");
                 }
-
                 // Hash the password before saving it
                 String encodedPassword = passwordEncoder.encode(user.getpWord());
                 user.setpWord(encodedPassword); // Set the hashed password
-
-                // Save the user
-                UserEntity savedUser = urepo.save(user);
                 
-                // Log the user creation
-                logService.logActivity("User " + savedUser.getUsername() + " has registered to WheelsOnGo.", savedUser.getUsername());
-
-                return savedUser;  // Return the saved user
+                UserEntity savedUser = urepo.save(user);
+                // Handle profile pic saving logic if needed
+                // Example: saveProfilePic(savedUser, user.getProfilePic());
+                return savedUser;  // Save the user if checks pass
             }
-
 
             public boolean checkPassword(String rawPassword, String encodedPassword) {
                 return passwordEncoder.matches(rawPassword, encodedPassword);
@@ -71,16 +63,17 @@ import com.respo.respo.Repository.UserRepository;
             public UserEntity updateUser(int userId, UserEntity newUserDetails) {
                 UserEntity user = urepo.findById(userId).orElseThrow(() ->
                     new NoSuchElementException("User " + userId + " does not exist!"));
-        
-                // Check for non-null and non-empty fields and update user details
+
+                // Check for non-null and non-empty username
                 if (newUserDetails.getUsername() != null && !newUserDetails.getUsername().isEmpty()) {
-                    if (!newUserDetails.getUsername().equals(user.getUsername()) &&
+                    // Ensure the new username is unique and not the current user's username
+                    if (!newUserDetails.getUsername().equals(user.getUsername()) && 
                         urepo.existsByUsername(newUserDetails.getUsername())) {
                         throw new IllegalStateException("Username already exists. Please choose a different username.");
                     }
                     user.setUsername(newUserDetails.getUsername());
                 }
-        
+
                 if (newUserDetails.getEmail() != null && !newUserDetails.getEmail().isEmpty()) {
                     user.setEmail(newUserDetails.getEmail());
                 }
@@ -91,17 +84,11 @@ import com.respo.respo.Repository.UserRepository;
                     user.setpNum(newUserDetails.getpNum());
                 }
                 if (newUserDetails.getProfilePic() != null && newUserDetails.getProfilePic().length > 0) {
+                    // Update the user's profile pic
                     user.setProfilePic(newUserDetails.getProfilePic());
                 }
-        
-                // Save the updated user entity
-                UserEntity updatedUser = urepo.save(user);
-        
-                // Log the user profile update activity
-                String logMessage = updatedUser.getUsername() + " updated their profile.";
-                logService.logActivity(logMessage, updatedUser.getUsername());
-        
-                return updatedUser;
+
+                return urepo.save(user);
             }
 
             // Delete
@@ -237,22 +224,5 @@ import com.respo.respo.Repository.UserRepository;
                     return userOpt.get().getOrders(); // Get orders directly from the UserEntity
                 }
                 return Collections.emptyList(); // Return an empty list if user is not found
-            }
-            
-            public UserEntity updateIsOwner(int userId, boolean isOwner) {
-                UserEntity user = urepo.findById(userId).orElseThrow(() ->
-                    new NoSuchElementException("User with ID " + userId + " does not exist"));
-        
-                // Update the isOwner status
-                user.setOwner(isOwner);
-                UserEntity updatedUser = urepo.save(user);
-        
-                // Log the action if the user has applied to become an owner
-                if (isOwner) {
-                    String logMessage = user.getUsername() + " has applied as owner.";
-                    logService.logActivity(logMessage, user.getUsername());
-                }
-        
-                return updatedUser;
             }
 }

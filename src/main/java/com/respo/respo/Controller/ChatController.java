@@ -19,21 +19,14 @@ import com.respo.respo.Service.ChatService;
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
-
-    @Autowired
-    private ChatService chatService;
-
-    // Endpoint to fetch all chats for a specific user
-    @GetMapping("/getUserChats/{userId}")
-    public List<ChatEntity> getUserChats(@PathVariable int userId) {
-        return chatService.getChatsForUser(userId);
-    }
-
+    
     @GetMapping("/all")
     public List<ChatEntity> getAllChats() {
         return chatService.getAllChats();
     }
 
+    @Autowired
+    private ChatService chatService;
     // Retrieve all messages in a chat by chatId
     @GetMapping("/{chatId}/messages")
     public List<MessageEntity> getMessages(@PathVariable int chatId) {
@@ -42,18 +35,22 @@ public class ChatController {
 
     // Send a message in a chat
     @PostMapping("/{chatId}/send")
-    public MessageEntity sendMessage(@PathVariable int chatId,
-                                     @RequestParam(required = false) Integer userId,
-                                     @RequestParam(required = false) Integer adminId,
+    public MessageEntity sendMessage(@PathVariable int chatId, 
+                                     @RequestParam(required = false) Integer userId, 
+                                     @RequestParam(required = false) Integer adminId, 
                                      @RequestParam String messageContent) {
         return chatService.sendMessage(chatId, userId, adminId, messageContent);
     }
+    
 
+    
     // Create a new chat using @RequestBody with adminId and reportId as @RequestParam
     @PostMapping("/create")
-    public ChatEntity createChat(@RequestBody ChatEntity chatEntity,
-                                 @RequestParam int adminId,
-                                 @RequestParam int reportId) {
+    public ChatEntity createChat(
+            @RequestBody ChatEntity chatEntity,
+            @RequestParam int adminId,
+            @RequestParam int reportId) {
+        // Call the service to create the chat or return an existing one
         return chatService.createChat(chatEntity, adminId, reportId);
     }
 
@@ -62,9 +59,5 @@ public class ChatController {
         return chatService.findChatByReportId(reportId);
     }
 
-    // Endpoint to add a user to a chat
-    @PostMapping("/{chatId}/addUser")
-    public ChatEntity addUserToChat(@PathVariable int chatId, @RequestParam int userId) {
-        return chatService.addUserToChat(chatId, userId);
-    }
+    
 }

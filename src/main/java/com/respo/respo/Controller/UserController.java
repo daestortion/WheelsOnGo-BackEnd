@@ -77,19 +77,11 @@ public class UserController {
     
     // U - Update a user record
     @PutMapping("/updateUser")
-    public ResponseEntity<?> updateUser(
-            @RequestParam int userId, 
-            @RequestParam(required = false) String pNum,
-            @RequestParam(required = false) String email,
-            @RequestPart(value = "profilePic", required = false) MultipartFile profilePic) {
-        
-        // Fetch the user from the database
+    public UserEntity updateUser(@RequestParam int userId, 
+                                 @RequestParam(required = false) String pNum,
+                                 @RequestParam(required = false) String email,
+                                 @RequestPart(value = "profilePic", required = false) MultipartFile profilePic) {
         UserEntity user = userService.getUserById(userId);
-        if (user == null) {
-            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-        }
-
-        // Update the user's details
         if (email != null && !email.isEmpty()) user.setEmail(email);
         if (pNum != null && !pNum.isEmpty()) user.setpNum(pNum);
         if (profilePic != null && !profilePic.isEmpty()) {
@@ -100,12 +92,7 @@ public class UserController {
                 e.printStackTrace();  // handle the exception
             }
         }
-
-        // Call the service to update the user and log the profile update
-        UserEntity updatedUser = userService.updateUser(userId, user);
-
-        // Return the updated user with a success response
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        return userService.updateUser(userId, user);  // Ensure that this method accepts both the userId and UserEntity.
     }
 
     // D - Delete a user record
@@ -185,14 +172,35 @@ public class UserController {
     @PutMapping("/updateIsOwner/{userId}")
     public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Map<String, Boolean> updates) {
         try {
+            // Get the user by ID
+            UserEntity user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
             // Check if "isOwner" key exists in the request body
             if (updates.containsKey("isOwner")) {
                 boolean isOwner = updates.get("isOwner");
 
-                // Call the service to update the user's ownership status
-                UserEntity updatedUser = userService.updateIsOwner(userId, isOwner);
+                // Update the isOwner flag
+                user.setOwner(isOwner);
+                userService.updateUser(user);
 
-                return ResponseEntity.ok(updatedUser);
+                // If the user is now an owner and doesn't already have a wallet, create one
+                if (isOwner && user.getWallet() == null) {
+                    WalletEntity wallet = new WalletEntity(); // Create a new wallet
+                    wallet.setUser(user);  // Associate the wallet with the user
+                    wallet.setBalance(0.0);  // Initialize the wallet with 0 balance
+                    wallet.setActive(true);  // Mark the wallet as active
+
+                    walletService.createWallet(wallet); // Save the wallet
+
+                    // Update the user's wallet reference and save the user again
+                    user.setWallet(wallet);
+                    userService.updateUser(user);
+                }
+
+                return ResponseEntity.ok(user);
             }
 
             return ResponseEntity.badRequest().body("Invalid request");
@@ -200,7 +208,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
 
     @GetMapping("/getUserById/{userId}")
     public ResponseEntity<UserEntity> getUserById(@PathVariable int userId) {

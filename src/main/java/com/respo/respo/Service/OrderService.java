@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.respo.respo.Entity.ActivityLogEntity;
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.UserEntity;
@@ -26,9 +25,8 @@ public class OrderService {
 	OrderRepository orepo;
 	CarRepository crepo;
 
-	@Autowired
-    ActivityLogService logService;
-
+	// Create
+	// Create
 	// Create
 	public OrderEntity insertOrder(OrderEntity order) {
 	    // Check if the reference number is already set and is not empty, generate if necessary
@@ -54,22 +52,6 @@ public class OrderService {
 	    // Save the order with the reference number and updated entity statuses
 	    return orepo.save(order);
 	}
-
-	public void logOrderActivity(OrderEntity order) {
-        CarEntity car = order.getCar();
-        UserEntity user = order.getUser();
-
-        String logMessage = car.getCarModel() + " " + car.getCarBrand() + " has been rented by " +
-                            user.getUsername() + " from " + order.getStartDate() + " to " + order.getEndDate();
-
-        // Avoid duplicate logs by checking if the log already exists
-        List<ActivityLogEntity> existingLogs = logService.getLogsByAction("has been rented by " + user.getUsername());
-        boolean logExists = existingLogs.stream().anyMatch(log -> log.getAction().contains(car.getCarModel()));
-
-        if (!logExists) {
-            logService.logActivity(logMessage, user.getUsername());
-        }
-    }
 
 
 	// Read
@@ -159,42 +141,35 @@ public class OrderService {
 	}
 	
 	public OrderEntity extendOrder(int orderId, LocalDate newEndDate) {
-		// Find the order by its ID
-		OrderEntity order = orepo.findById(orderId)
-				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
-	
-		// Get the current end date of the order
-		LocalDate currentEndDate = order.getEndDate();
-		
-		// Check if the new end date is after the current end date
-		if (newEndDate.isBefore(currentEndDate)) {
-			throw new IllegalArgumentException("New end date must be after the current end date");
-		}
-	
-		// Calculate the additional days
-		long additionalDays = currentEndDate.until(newEndDate).getDays();
-		
-		// Get the car associated with the order
-		CarEntity car = order.getCar();
-		float dailyRate = car.getRentPrice();
-	
-		// Recalculate the total price (adding additional days' rent to the current total)
-		float newTotalPrice = order.getTotalPrice() + (dailyRate * additionalDays);
-	
-		// Update the order's end date and total price
-		order.setEndDate(newEndDate);
-		order.setTotalPrice(newTotalPrice);
-	
-		// Save the updated order
-		OrderEntity updatedOrder = orepo.save(order);
-	
-		// Log the order extension
-		String logMessage = "Order " + order.getOrderId() + " has been extended from " +
-							currentEndDate + " to " + newEndDate + ". Days: " + additionalDays;
-		logService.logActivity(logMessage, order.getUser().getUsername());
-	
-		return updatedOrder;
-	}	
+        // Find the order by its ID
+        OrderEntity order = orepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+
+        // Get the current end date of the order
+        LocalDate currentEndDate = order.getEndDate();
+        
+        // Check if the new end date is after the current end date
+        if (newEndDate.isBefore(currentEndDate)) {
+            throw new IllegalArgumentException("New end date must be after the current end date");
+        }
+
+        // Get the car associated with the order
+        CarEntity car = order.getCar();
+        float dailyRate = car.getRentPrice();
+
+        // Calculate the additional days
+        long additionalDays = currentEndDate.until(newEndDate).getDays();
+        
+        // Recalculate the total price (adding additional days' rent to the current total)
+        float newTotalPrice = order.getTotalPrice() + (dailyRate * additionalDays);
+
+        // Update the order's end date and total price
+        order.setEndDate(newEndDate);
+        order.setTotalPrice(newTotalPrice);
+
+        // Save and return the updated order
+        return orepo.save(order);
+    }
 	
 	 // Method to update the delivery address of an order
 	 public OrderEntity updateDeliveryAddress(int orderId, String newAddress) {
@@ -213,31 +188,24 @@ public class OrderService {
 		OrderEntity order = orepo.findById(orderId)
 				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
 	
-		// Set order as terminated and inactive, and capture the current date in the Philippines timezone
+		// Set order as terminated and capture the current date in the Philippines timezone
 		order.setTerminated(true);
-		order.setActive(false);  // Set the order as inactive
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
 		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
 	
-		// Optionally, set the user's and car's status to non-active
+		// Optionally, you could set the user's and car's status to non-active here
 		CarEntity car = order.getCar();
 		if (car != null) {
-			car.setRented(false);  // Set the car as not rented
+			car.setRented(false);
 		}
 	
 		UserEntity user = order.getUser();
 		if (user != null) {
-			user.setRenting(false);  // Set the user as not renting
+			user.setRenting(false);
 		}
 	
-		// Save the updated order
-		OrderEntity terminatedOrder = orepo.save(order);
-	
-		// Log the order termination activity
-		String logMessage = user.getUsername() + " has terminated Order " + order.getOrderId();
-		logService.logActivity(logMessage, user.getUsername());
-	
-		return terminatedOrder;
-	}	
+		// Save the updated order back to the repository
+		return orepo.save(order);
+	}
 	
 }

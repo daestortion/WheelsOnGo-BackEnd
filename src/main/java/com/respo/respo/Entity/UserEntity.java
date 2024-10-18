@@ -13,14 +13,29 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+<<<<<<< HEAD
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+=======
+>>>>>>> 4c948a95112a3aea462f4bd166de7a40e83c37ee
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Import Base64
+=======
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Base64; // Import Base64
+>>>>>>> 4c948a95112a3aea462f4bd166de7a40e83c37ee
 
 @Entity
 @Table(name = "tblUsers")
@@ -51,12 +66,16 @@ public class UserEntity {
     @JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity to prevent recursion
     private List<ReportEntity> reports;
 
+<<<<<<< HEAD
     // Add ManyToMany relationship with ChatEntity, ignore 'users', 'messages', and 'report'
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"users", "messages", "report"}) // Prevent recursion and ignore 'report' in ChatEntity
     private List<ChatEntity> chats = new ArrayList<>();
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+=======
+	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+>>>>>>> 4c948a95112a3aea462f4bd166de7a40e83c37ee
     @JsonIgnoreProperties({"owner"}) // Prevent recursion
     private List<CarEntity> cars;
 
@@ -251,12 +270,5 @@ public class UserEntity {
 		this.wallet = wallet;
 	}
 
-	public List<ChatEntity> getChats() {
-		return chats;
-	}
-
-	public void setChats(List<ChatEntity> chats) {
-		this.chats = chats;
-	}
-
+	
 }
