@@ -21,7 +21,7 @@ import com.respo.respo.Service.AdminService;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"http://main--wheelsongo.netlify.app", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:3000"})
 public class AdminController {
 
 	@Autowired
