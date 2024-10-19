@@ -201,4 +201,9 @@ public class WalletController {
             System.out.println("Request denied successfully for ID: " + requestId);
             return ResponseEntity.ok("Request denied successfully");
         }
+
+        @PutMapping("/increment/{walletId}/{amount}")
+    public WalletEntity incrementWalletBalance(@PathVariable int walletId, @PathVariable double amount) {
+        return walletService.incrementWalletBalance(walletId, amount);
+    }
 }

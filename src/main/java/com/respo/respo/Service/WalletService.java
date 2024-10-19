@@ -171,45 +171,36 @@ public class WalletService {
     }
 
     @Transactional
-    public void updateWalletBalances(int userId) {
-        WalletEntity wallet = walletRepository.findByUser_UserId(userId);
-        if (wallet == null) {
-            throw new RuntimeException("Wallet not found for user ID: " + userId);
-        }
-    
-        // Ensure recalculated credit respects the most recent manually updated balance
-        float recalculatedCredit = getCredit(userId);
-        float recalculatedDebit = getDebit(userId);
-        float recalculatedRefundable = getRefundable(userId);
-    
-        System.out.println("Recalculating wallet for user ID: " + userId);
-        System.out.println("Credit: " + recalculatedCredit + ", Debit: " + recalculatedDebit + ", Refundable: " + recalculatedRefundable);
-    
-        // Only update wallet balances if recalculated values differ from the stored values
-        boolean walletUpdated = false;
-        if (Math.abs(wallet.getCredit() - recalculatedCredit) > 0.001 && wallet.getCredit() != recalculatedCredit) {
-            wallet.setCredit(recalculatedCredit);
-            walletUpdated = true;
-        }
-    
-        if (Math.abs(wallet.getDebit() - recalculatedDebit) > 0.001) {
-            wallet.setDebit(recalculatedDebit);
-            walletUpdated = true;
-        }
-    
-        if (Math.abs(wallet.getRefundable() - recalculatedRefundable) > 0.001) {
-            wallet.setRefundable(recalculatedRefundable);
-            walletUpdated = true;
-        }
-    
-        if (walletUpdated) {
-            walletRepository.save(wallet);
-            System.out.println("Updated wallet balances saved for user ID: " + userId);
-        } else {
-            System.out.println("No changes detected in wallet for user ID: " + userId);
-        }
+public void updateWalletBalances(int userId) {
+    WalletEntity wallet = walletRepository.findByUser_UserId(userId);
+    if (wallet == null) {
+        throw new RuntimeException("Wallet not found for user ID: " + userId);
     }
-    
 
+    float recalculatedCredit = getCredit(userId);  // Recalculate credit based on transactions
+    float recalculatedDebit = getDebit(userId);    // Recalculate debit for cash transactions
+    float recalculatedRefundable = getRefundable(userId); // Recalculate refundable based on canceled/terminated orders
+
+    // Update wallet if new values differ
+    if (wallet.getCredit() != recalculatedCredit) {
+        wallet.setCredit(recalculatedCredit);
+    }
+    if (wallet.getDebit() != recalculatedDebit) {
+        wallet.setDebit(recalculatedDebit);
+    }
+    if (wallet.getRefundable() != recalculatedRefundable) {
+        wallet.setRefundable(recalculatedRefundable);
+    }
+
+    // Save updated balances
+    walletRepository.save(wallet);
+}
+
+    
+        public WalletEntity incrementWalletBalance(int walletId, double amount) {
+        WalletEntity wallet = walletRepository.findById(walletId).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        wallet.setBalance(wallet.getBalance() + amount);
+        return walletRepository.save(wallet);
+    }
     
 }
