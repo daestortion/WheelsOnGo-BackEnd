@@ -10,22 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class AppConfig {
 
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-	    return new WebMvcConfigurer() {
-	        @Override
-	        public void addCorsMappings(CorsRegistry registry) {
-	            registry.addMapping("/**")
-	                    .allowedOrigins("https://localhost:3000") // Ensure this matches your client URL exactly
-	                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-	                    .allowedHeaders("*")
-	                    .allowCredentials(true)
-	                    .exposedHeaders("Header1", "Header2") // Add headers that you want to expose to the client
-	                    .maxAge(3600); // Max age for the cache of preflight response
-	        }
-	    };
-	}
-
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

@@ -29,9 +29,11 @@ public class WalletService {
     public List<WalletEntity> getAllWallets() {
         return walletRepository.findAll();
     }
+
     public WalletEntity getWalletById(int id) {
         return walletRepository.findById(id).orElse(null);
     }
+
     public WalletEntity createWallet(WalletEntity walletEntity) {
         return walletRepository.save(walletEntity);
     }
@@ -69,18 +71,21 @@ public class WalletService {
     public void deleteWallet(int id) {
         walletRepository.deleteById(id);
     }
+
     // Method to get paid orders for a specific user
     public List<OrderEntity> getPaidOrdersForUser(int userId) {
         return orderRepository.findAllByUser_UserIdAndIsPaid(userId, true);
     }
+
     public List<OrderEntity> getOrdersForOwnedCars(int userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null; // User not found
         }
-        // Get all orders for the cars owned by the user
+        // Get all paid orders for the cars owned by the user
         return user.getCars().stream()
                 .flatMap(car -> car.getOrders().stream())
+                .filter(OrderEntity::isPaid) // Filter to only return paid orders
                 .collect(Collectors.toList());
     }
 
@@ -126,7 +131,7 @@ public class WalletService {
                 .filter(order -> "cash".equalsIgnoreCase(order.getPaymentOption()) && !order.isTerminated())
                 .mapToDouble(OrderEntity::getTotalPrice)
                 .sum();
-        
+
         System.out.println("Debit calculated for user ID: " + userId + " = " + debit);
 
         // Save the recalculated debit to the wallet entity
