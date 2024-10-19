@@ -25,6 +25,7 @@ public class WalletService {
     private UserRepository userRepository;
     @Autowired
     private OrderRepository orderRepository;
+    
     public List<WalletEntity> getAllWallets() {
         return walletRepository.findAll();
     }

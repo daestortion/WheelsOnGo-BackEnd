@@ -112,4 +112,36 @@ public class ChatService {
         public Optional<ChatEntity> findChatByReportId(int reportId) {
             return chatRepository.findByReport_ReportId(reportId);
         }
+
+        public ChatEntity addUserToChat(int chatId, int userId) {
+            ChatEntity chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+        
+            UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+            // Check if the user is already in the chat
+            if (chat.getUsers().stream().anyMatch(u -> u.getUserId() == userId)) {
+                throw new IllegalArgumentException("User is already in the chat");
+            }
+        
+            // Add the user to the chat
+            chat.getUsers().add(user);
+            return chatRepository.save(chat);
+        }
+        
+
+        public Optional<ChatEntity> getChatById(int chatId) {
+            return chatRepository.findById(chatId);
+        }
+
+        public List<ChatEntity> getChatsByUserId(int userId) {
+            UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+            return chatRepository.findAllByUsersContaining(user);
+        }
+        
+        
+        
 }

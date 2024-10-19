@@ -59,5 +59,21 @@ public class ChatController {
         return chatService.findChatByReportId(reportId);
     }
 
+    @GetMapping("/{chatId}")
+    public ChatEntity getChatById(@PathVariable int chatId) {
+        return chatService.getChatById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+    }
+
+    @PostMapping("/{chatId}/addUser")
+    public ChatEntity addUserToChat(@PathVariable int chatId, @RequestParam int userId) {
+        return chatService.addUserToChat(chatId, userId);
+    }
+
+    @GetMapping("/user/{userId}/chats")
+    public List<ChatEntity> getUserChats(@PathVariable int userId) {
+        return chatService.getChatsByUserId(userId);
+    }
+
     
 }
