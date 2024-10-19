@@ -202,8 +202,10 @@ public class WalletController {
             return ResponseEntity.ok("Request denied successfully");
         }
 
-        @PutMapping("/increment/{walletId}/{amount}")
+            // Increment wallet balance by specified amount for a specific wallet
+    @PutMapping("/increment/{walletId}/{amount}")
     public WalletEntity incrementWalletBalance(@PathVariable int walletId, @PathVariable double amount) {
         return walletService.incrementWalletBalance(walletId, amount);
     }
+        
 }
