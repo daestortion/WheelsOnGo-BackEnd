@@ -12,7 +12,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ChatWebSocketHandler(), "/ws/chat/{chatId}")  // Adding chatId as a path variable
-                .setAllowedOrigins("*");
+        registry.addHandler(new ChatWebSocketHandler(), "/ws/chat/{chatId}")
+        .setAllowedOrigins("https://wheels-on-go-front-end.vercel.app", "http://localhost:3000");
     }
 }
