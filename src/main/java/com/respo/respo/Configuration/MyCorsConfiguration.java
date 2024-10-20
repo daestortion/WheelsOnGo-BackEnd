@@ -12,14 +12,14 @@ public class MyCorsConfiguration {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowCredentials(true); 
-        corsConfig.addAllowedOrigin("http://localhost:3000"); // Allow localhost for testing
-        corsConfig.addAllowedOrigin("https://wheels-on-go-front-end.vercel.app"); // Allow Vercel frontend
-        corsConfig.addAllowedHeader("*"); // Allow all headers
-        corsConfig.addAllowedMethod("*"); // Allow all methods (GET, POST, etc.)
+        corsConfig.setAllowCredentials(true);
+        corsConfig.addAllowedOriginPattern("*"); // Or specify allowed origins like "http://localhost:3000"
+        corsConfig.addAllowedHeader("*");
+        corsConfig.addAllowedMethod("*");
+        corsConfig.addAllowedOrigin("http://localhost:3000");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig); // Apply CORS to all paths
+        source.registerCorsConfiguration("/**", corsConfig);
 
         return new CorsFilter(source);
     }

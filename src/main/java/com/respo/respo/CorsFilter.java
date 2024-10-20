@@ -25,8 +25,7 @@ public class CorsFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
         HttpServletRequest req = (HttpServletRequest) request;
 
-        // Update to allow both localhost and Vercel frontend
-        res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000, https://wheels-on-go-front-end.vercel.app");
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
         res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT, PATCH");
         res.setHeader("Access-Control-Max-Age", "3600");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
