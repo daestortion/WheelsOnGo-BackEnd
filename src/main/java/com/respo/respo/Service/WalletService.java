@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.RequestFormEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Entity.WalletEntity;
 import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.RequestFormRepository;
 import com.respo.respo.Repository.UserRepository;
 import com.respo.respo.Repository.WalletRepository;
+
 
 @Service
 public class WalletService {
@@ -25,6 +28,8 @@ public class WalletService {
     private UserRepository userRepository;
     @Autowired
     private OrderRepository orderRepository;
+    @Autowired
+    private RequestFormRepository requestFormRepository;
     
     public List<WalletEntity> getAllWallets() {
         return walletRepository.findAll();
@@ -95,27 +100,40 @@ public class WalletService {
         if (wallet == null) {
             throw new RuntimeException("Wallet not found for user ID: " + userId);
         }
-    
-        // Recalculate credit if orders exist, but prioritize manually adjusted balance
+
+        // Recalculate credit from orders
         List<OrderEntity> carOrders = getOrdersForOwnedCars(userId);
-        if (carOrders == null || carOrders.isEmpty()) {
-            return wallet.getCredit();  // Return the manually adjusted balance if no orders
+        float recalculatedCredit = 0;
+        
+        if (carOrders != null && !carOrders.isEmpty()) {
+            recalculatedCredit = (float) carOrders.stream()
+                .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption()) || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
+                .mapToDouble(OrderEntity::getTotalPrice)
+                .sum();
         }
-    
-        // Calculate the credit based on orders
-        float recalculatedCredit = (float) carOrders.stream()
-            .filter(order -> ("online".equalsIgnoreCase(order.getPaymentOption()) || "PayPal".equalsIgnoreCase(order.getPaymentOption())) && !order.isTerminated())
-            .mapToDouble(OrderEntity::getTotalPrice)
-            .sum();
-    
+
+        // Subtract any approved withdrawal amounts
+        float totalWithdrawals = getTotalApprovedWithdrawals(userId);
+
+        float finalCredit = recalculatedCredit - totalWithdrawals;
+
         // Only update the credit if recalculated credit is higher than the current credit
-        if (wallet.getCredit() < recalculatedCredit) {
-            wallet.setCredit(recalculatedCredit);
+        if (wallet.getCredit() != finalCredit) {
+            wallet.setCredit(finalCredit);
             walletRepository.save(wallet);  // Save updated balance
         }
-    
+
         return wallet.getCredit();  // Return the final balance
     }
+
+    // Helper method to get the total approved withdrawals for the user
+    public float getTotalApprovedWithdrawals(int userId) {
+        List<RequestFormEntity> approvedRequests = requestFormRepository.findAllByUser_UserIdAndStatus(userId, "approved");
+        return (float) approvedRequests.stream()
+            .mapToDouble(RequestFormEntity::getAmount)
+            .sum();
+    }
+
     
 
     @Transactional
