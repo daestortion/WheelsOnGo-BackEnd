@@ -4,13 +4,16 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.respo.respo.Entity.ActivityLogEntity;
 import com.respo.respo.Entity.CarEntity;
@@ -29,6 +32,9 @@ public class OrderService {
 	@Autowired
     ActivityLogService logService;
 
+	@Autowired
+    WalletService walletService; // Inject walletService to update wallet balances
+	
 	// Create
 	public OrderEntity insertOrder(OrderEntity order) {
 	    // Check if the reference number is already set and is not empty, generate if necessary
@@ -244,5 +250,34 @@ public class OrderService {
 		}
 	}
 	
-	
+	@PostMapping("/updatePaymentStatus")
+    public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
+        try {
+            // Extract order ID and transaction details from the request body
+            int orderId = (Integer) paymentData.get("orderId");
+            String transactionId = (String) paymentData.get("transactionId");
+
+            // Retrieve the order by its ID
+            OrderEntity order = orepo.findById(orderId)
+                    .orElseThrow(() -> new NoSuchElementException("Order not found"));
+
+            // Update payment details in the order entity
+            order.setStatus(1);  // Set the order status as paid
+            order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
+            order.setPaymentOption("PayPal");  // Set payment method as PayPal
+            order.setPaid(true); // Mark order as paid
+
+            // Save the updated order back to the database
+            orepo.save(order);
+
+            // Update the wallet balance for the car owner (trigger recalculation)
+            int carOwnerId = order.getCar().getOwner().getUserId();
+            walletService.updateWalletBalances(carOwnerId); // Recalculate wallet balances for the car owner
+
+            return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
