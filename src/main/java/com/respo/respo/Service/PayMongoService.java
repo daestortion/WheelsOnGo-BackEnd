@@ -65,14 +65,11 @@ public class PayMongoService {
     public void insertOrderAfterPayment(int userId, int carId, int amount) {
         // Fetch the user and car entities (you can adjust this logic as needed)
         UserEntity user = userService.getUserById(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found with id: " + userId);
-        }
         CarEntity car = carService.getCarById(carId);
-        if (car == null) {
-            throw new IllegalArgumentException("Car not found with id: " + carId);
-        }
-
+    
+        // Log the details before order insertion
+        System.out.println("Inserting order for User ID: " + userId + ", Car ID: " + carId + ", Amount: " + amount);
+    
         // Create the order entity and set the status as paid
         OrderEntity order = new OrderEntity();
         order.setUser(user);
@@ -81,8 +78,10 @@ public class PayMongoService {
         order.setPaymentOption("Paymongo");
         order.setStatus(1); // 1 for paid status
         order.setPaid(true); // Mark as paid
-
-        // Insert the order into the database
+    
+        // Insert the order into the database and log the result
         orderService.insertOrder(order);
+        System.out.println("Order inserted successfully: " + order);
     }
+    
 }
