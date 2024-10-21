@@ -13,11 +13,15 @@ public class MyCorsConfiguration {
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowCredentials(true);
-        corsConfig.addAllowedOriginPattern("*"); // Or specify allowed origins like "http://localhost:3000"
-        corsConfig.addAllowedHeader("*");
-        corsConfig.addAllowedMethod("*");
-        corsConfig.addAllowedOrigin("http://localhost:3000");
+        
+        // Allow specific origins (add Railway and Vercel domains)
+        corsConfig.addAllowedOriginPattern("https://*.vercel.app");
+        corsConfig.addAllowedOriginPattern("https://*.railway.app");
+        corsConfig.addAllowedOriginPattern("http://localhost:3000");  // Keep localhost for development
 
+        corsConfig.addAllowedHeader("*");
+        corsConfig.addAllowedMethod("*");  // Allow all HTTP methods (GET, POST, etc.)
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
 

@@ -1,8 +1,17 @@
 package com.respo.respo.Service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.respo.respo.Entity.CarEntity;
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Service.UserService;
+import com.respo.respo.Service.CarService;
+import com.respo.respo.Service.OrderService;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +21,15 @@ public class PayMongoService {
 
     private static final String PAYMONGO_URL = "https://api.paymongo.com/v1/links";
     private static final String API_KEY = "sk_test_3mN2xCjzWs14ur254hi39QmF";  // Replace with your secret key
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CarService carService;
+
+    @Autowired
+    private OrderService orderService;
 
     public String createPaymentLink(int amount, String description) {
         RestTemplate restTemplate = new RestTemplate();
@@ -41,5 +59,24 @@ public class PayMongoService {
         ResponseEntity<String> response = restTemplate.postForEntity(PAYMONGO_URL, request, String.class);
 
         return response.getBody();  // You can handle the response as needed
+    }
+
+    // New method to handle order creation after payment confirmation
+    public void insertOrderAfterPayment(int userId, int carId, int amount) {
+        // Fetch the user and car entities (you can adjust this logic as needed)
+        UserEntity user = userService.getUserById(userId);
+        CarEntity car = carService.getCarById(carId);
+
+        // Create the order entity and set the status as paid
+        OrderEntity order = new OrderEntity();
+        order.setUser(user);
+        order.setCar(car);
+        order.setTotalPrice((float) amount / 100); // Cast amount to float before dividing
+        order.setPaymentOption("Paymongo");
+        order.setStatus(1); // 1 for paid status
+        order.setPaid(true); // Mark as paid
+
+        // Insert the order into the database
+        orderService.insertOrder(order);
     }
 }
