@@ -31,25 +31,42 @@ public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> pay
         // Log the incoming webhook payload
         System.out.println("Webhook received: " + payload);
 
+        // Check if 'data' exists in the payload
+        if (!payload.containsKey("data")) {
+            System.out.println("Error: 'data' object not found in the payload");
+            return new ResponseEntity<>("Missing 'data' object", HttpStatus.BAD_REQUEST);
+        }
+
         // Access the 'data' object first
         Map<String, Object> data = (Map<String, Object>) payload.get("data");
-        
-        // Log the data object
         System.out.println("Data object: " + data);
+
+        // Check if 'type' exists in the 'data' object
+        if (!data.containsKey("type")) {
+            System.out.println("Error: 'type' not found in 'data' object");
+            return new ResponseEntity<>("Missing 'type' in 'data'", HttpStatus.BAD_REQUEST);
+        }
 
         // Extract the 'type' from the 'data' object
         String eventType = (String) data.get("type");
-
-        // Log the event type
         System.out.println("Event Type: " + eventType);
 
         if ("payment.paid".equals(eventType)) {
-            Map<String, Object> attributes = (Map<String, Object>) data.get("attributes");
+            // Check if 'attributes' exists in 'data' object
+            if (!data.containsKey("attributes")) {
+                System.out.println("Error: 'attributes' object not found in 'data'");
+                return new ResponseEntity<>("Missing 'attributes' in 'data'", HttpStatus.BAD_REQUEST);
+            }
 
-            // Extract necessary details from the webhook payload
+            Map<String, Object> attributes = (Map<String, Object>) data.get("attributes");
+            System.out.println("Attributes: " + attributes);
+
+            // Extract necessary details from the attributes
             int userId = extractAsInt(attributes, "userId");
             int carId = extractAsInt(attributes, "carId");
             int amount = extractAsInt(attributes, "amount");
+
+            System.out.println("User ID: " + userId + ", Car ID: " + carId + ", Amount: " + amount);
 
             // Call the service method to insert the order after payment confirmation
             payMongoService.insertOrderAfterPayment(userId, carId, amount);
@@ -63,6 +80,7 @@ public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> pay
         return new ResponseEntity<>("Error processing webhook: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
+
 
 
 
