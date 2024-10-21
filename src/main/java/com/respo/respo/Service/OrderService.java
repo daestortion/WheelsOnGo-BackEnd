@@ -280,4 +280,25 @@ public class OrderService {
             return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+	public OrderEntity markAsReturned(int orderId) {
+        OrderEntity order = orepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
+
+        // Mark the order as returned
+        order.setReturned(true);
+        order.setReturnDate(LocalDate.now());
+
+        // Save the order
+        OrderEntity savedOrder = orepo.save(order);
+
+        // Log the car return activity
+        String logMessage = order.getUser().getUsername() + " has successfully returned Car " +
+                            " " + order.getCar().getCarId() + ": " + order.getCar().getCarBrand() + " " + 
+                            order.getCar().getCarModel() + " in Order " + order.getOrderId() + ".";
+        
+        logService.logActivity(logMessage, order.getUser().getUsername());
+
+        return savedOrder;
+    }
 }
