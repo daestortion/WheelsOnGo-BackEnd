@@ -19,6 +19,7 @@ public class MyCorsConfiguration {
         corsConfig.addAllowedOriginPattern("https://*.railway.app");
         corsConfig.addAllowedOriginPattern("http://localhost:3000");  // Keep localhost for development
         corsConfig.addAllowedOriginPattern("https://*.paymongo.com");
+        corsConfig.addAllowedOrigin("https://api.paymongo.com"); // Allow PayMongo API
 
         corsConfig.addAllowedHeader("*");
         corsConfig.addAllowedMethod("*");  // Allow all HTTP methods (GET, POST, etc.)
