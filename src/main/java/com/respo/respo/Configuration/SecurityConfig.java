@@ -18,15 +18,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .cors()  // Use the CORS configuration set in MyCorsConfiguration
-            .and()
-            .csrf().disable()  // Disable CSRF protection for testing or APIs
-            .authorizeHttpRequests(authz -> authz
-                .anyRequest().permitAll()  // Allow all requests
-            );
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .cors()  // Use the CORS configuration set in MyCorsConfiguration
+        .and()
+        .csrf().disable()  // Disable CSRF protection, appropriate for APIs
+        .authorizeRequests(authz -> authz
+            .antMatchers("/api/payment/**", "/webhook/**").permitAll()  // Use antMatchers to allow these paths
+            .anyRequest().authenticated()  // Secure other requests as necessary
+        );
 
-        return http.build();
-    }
+    return http.build();
+}
+
 }
