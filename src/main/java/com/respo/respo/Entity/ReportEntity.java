@@ -37,12 +37,12 @@ public class ReportEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties({ "reports" }) // Prevent recursion
+    @JsonIgnoreProperties({ "reports", "password", "messages", "chat"}) // Prevent recursion and sensitive info
     private UserEntity user;
 
     @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"report"}) // Ignore the 'report' field in ChatEntity during serialization
-    private ChatEntity chat; // One-to-one relationship with ChatEntity
+    @JsonIgnoreProperties({ "report", "messages" }) // Ignore 'report' field and 'messages' in ChatEntity
+    private ChatEntity chat;
 
 
     @CreationTimestamp

@@ -284,21 +284,12 @@ public class OrderController {
     @PutMapping("/markAsReturned/{orderId}")
     public ResponseEntity<String> markAsReturned(@PathVariable int orderId) {
         try {
-            // Retrieve the order by its ID
-            OrderEntity order = oserv.getOrderById(orderId);
-
-            if (order == null) {
-                return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
-            }
-
-            // Mark order as returned and set the current date
-            order.setReturned(true); 
-            order.setReturnDate(LocalDate.now());  // Use LocalDate for date only
-
-            // Save the updated order back to the database
-            oserv.insertOrder(order);
+            // Call the service to mark the order as returned and log the activity
+            oserv.markAsReturned(orderId);
 
             return new ResponseEntity<>("Order marked as returned successfully", HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
