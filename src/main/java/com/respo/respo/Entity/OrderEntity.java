@@ -33,7 +33,7 @@ public class OrderEntity {
 
     @ManyToOne
     @JoinColumn(name = "carId")
-    @JsonIgnoreProperties({ "orders" })
+    @JsonIgnoreProperties({ "orders", "report"})
     private CarEntity car;
 
     @Column(name = "startDate")

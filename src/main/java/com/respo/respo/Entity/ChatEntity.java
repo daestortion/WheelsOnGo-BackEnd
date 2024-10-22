@@ -42,11 +42,12 @@ public class ChatEntity {
         joinColumns = @JoinColumn(name = "chatId"),
         inverseJoinColumns = @JoinColumn(name = "userId")
     )
-    @JsonIgnoreProperties({"report", "chat", "cars", "verification"}) // Ignore 'report', 'chat', and 'cars' in UserEntity
+    @JsonIgnoreProperties({"report", "chat", "cars", "verification","orders"}) // Ignore 'report', 'chat', and 'cars' in UserEntity
     private List<UserEntity> users = new ArrayList<>(); // Many-to-many relationship with users
 
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"verification", "cars"})
     private List<MessageEntity> messages = new ArrayList<>(); // Messages exchanged in the chat
 
     @ManyToOne
