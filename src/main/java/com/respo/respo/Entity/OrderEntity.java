@@ -39,6 +39,14 @@ public class OrderEntity {
     @Column(name = "startDate")
     private LocalDate startDate;
 
+    
+    @Column(name = "type")
+    private int type;
+
+    public int getType() {
+        return type;
+    }
+
     @Column(name = "endDate")
     private LocalDate endDate;
 
@@ -116,7 +124,7 @@ public class OrderEntity {
             float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, 
             int status, boolean isActive, String deliveryOption, String deliveryAddress, LocalDateTime timestamp, 
             boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid, boolean isTerminated, 
-            LocalDate terminationDate) {
+            LocalDate terminationDate, int type) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -138,6 +146,7 @@ public class OrderEntity {
         this.isPaid = isPaid;
         this.isTerminated = isTerminated; // New field initialization
         this.terminationDate = terminationDate; // New field initialization
+        this.type = type;
     }
 
     public String getDeliveryAddress() {
