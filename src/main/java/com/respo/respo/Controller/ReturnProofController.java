@@ -1,13 +1,25 @@
 package com.respo.respo.Controller;
 
-import com.respo.respo.Entity.ReturnProofEntity;
-import com.respo.respo.Service.ReturnProofService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.respo.respo.Entity.ReturnProofEntity;
+import com.respo.respo.Service.ReturnProofService;
 
 @RestController
 @RequestMapping("/returnProof")
@@ -31,9 +43,21 @@ public class ReturnProofController {
         return returnProof.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ReturnProofEntity createReturnProof(@RequestBody ReturnProofEntity returnProof) {
-        return returnProofService.createReturnProof(returnProof);
+    @PostMapping("/createReturnProof")
+    public ReturnProofEntity createReturnProof(@RequestParam("proof") MultipartFile proof, 
+                                                @RequestParam("remarks") String remarks,
+                                                @RequestParam("returnDate") String returnDate, 
+                                                @RequestParam("orderId") int orderId) {
+        try {
+            ReturnProofEntity returnProof = new ReturnProofEntity();
+            returnProof.setProof(proof.getBytes()); // Convert MultipartFile to byte array
+            returnProof.setRemarks(remarks);
+            returnProof.setReturnDate(LocalDate.parse(returnDate));
+
+            return returnProofService.createReturnProof(returnProof, orderId);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process proof file", e);
+        }
     }
 
     @PutMapping("/{id}")
