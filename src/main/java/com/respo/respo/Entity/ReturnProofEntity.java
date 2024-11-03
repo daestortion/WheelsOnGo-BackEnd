@@ -15,6 +15,10 @@ public class ReturnProofEntity {
     @Column(name = "proof")
     private byte[] proof;
 
+    @Lob
+    @Column(name = "ownerProof")
+    private byte[] ownerProof;
+
     @Column(name = "remarks")
     private String remarks;
 
@@ -26,6 +30,12 @@ public class ReturnProofEntity {
 
     @Column(name = "penalty")
     private float penalty;
+
+    @Column(name = "ownerApproval")
+    private boolean ownerApproval;
+
+    @Column(name = "ownerRemark")
+    private String ownerRemark;
 
     @OneToOne
     @JoinColumn(name = "orderId", referencedColumnName = "orderId")
@@ -47,6 +57,14 @@ public class ReturnProofEntity {
 
     public void setProof(byte[] proof) {
         this.proof = proof;
+    }
+
+    public byte[] getOwnerProof() {
+        return ownerProof;
+    }
+
+    public void setOwnerProof(byte[] ownerProof) {
+        this.ownerProof = ownerProof;
     }
 
     public String getRemarks() {
@@ -79,6 +97,22 @@ public class ReturnProofEntity {
 
     public void setPenalty(float penalty) {
         this.penalty = penalty;
+    }
+
+    public boolean isOwnerApproval() {
+        return ownerApproval;
+    }
+
+    public void setOwnerApproval(boolean ownerApproval) {
+        this.ownerApproval = ownerApproval;
+    }
+
+    public String getOwnerRemark() {
+        return ownerRemark;
+    }
+
+    public void setOwnerRemark(String ownerRemark) {
+        this.ownerRemark = ownerRemark;
     }
 
     public OrderEntity getOrder() {
