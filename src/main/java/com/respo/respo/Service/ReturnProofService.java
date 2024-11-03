@@ -1,15 +1,16 @@
 package com.respo.respo.Service;
 
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.ReturnProofEntity;
 import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.ReturnProofRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ReturnProofService {
@@ -26,9 +27,10 @@ public class ReturnProofService {
     public ReturnProofEntity createReturnProof(ReturnProofEntity returnProof, int orderId) {
         OrderEntity order = orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
-
+    
         returnProof.setOrder(order);
-
+        returnProof.setEndDate(order.getEndDate()); // Set endDate from OrderEntity to ReturnProofEntity
+    
         // Calculate the penalty based on return date and order end date
         if (returnProof.getReturnDate() != null && order.getEndDate() != null) {
             long daysLate = ChronoUnit.DAYS.between(order.getEndDate(), returnProof.getReturnDate());
@@ -40,9 +42,9 @@ public class ReturnProofService {
         } else {
             returnProof.setPenalty(0); // Default to no penalty if dates are missing
         }
-
+    
         return returnProofRepository.save(returnProof);
-    }
+    }    
     
     public List<ReturnProofEntity> getAllReturnProofs() {
         return returnProofRepository.findAll();
