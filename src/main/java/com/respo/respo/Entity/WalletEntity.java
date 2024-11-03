@@ -38,29 +38,14 @@ public class WalletEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
-
-    @Column(name = "credit", nullable = false)
-    private float credit;
-
-    @Column(name = "debit", nullable = false)
-    private float debit;
-
-    @Column(name = "refundable", nullable = false)
-    private float refundable;
-
     // Default constructor
     public WalletEntity() {}
 
-    public WalletEntity(int walletId, UserEntity user, double balance, boolean isActive, float credit, float debit, float refundable) {
+    public WalletEntity(int walletId, UserEntity user, double balance, LocalDateTime createdAt) {
         this.walletId = walletId;
         this.user = user;
         this.balance = balance;
-        this.isActive = isActive;
-        this.credit = credit;
-        this.debit = debit;
-        this.refundable = refundable;
+        this.createdAt = createdAt;
     }
 
     // Getters and Setters
@@ -96,35 +81,4 @@ public class WalletEntity {
         this.createdAt = createdAt;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public float getCredit() {
-        return credit;
-    }
-
-    public void setCredit(float credit) {
-        this.credit = credit;
-    }
-
-    public float getDebit() {
-        return debit;
-    }
-
-    public void setDebit(float debit) {
-        this.debit = debit;
-    }
-
-    public float getRefundable() {
-        return refundable;
-    }
-
-    public void setRefundable(float refundable) {
-        this.refundable = refundable;
-    }
 }

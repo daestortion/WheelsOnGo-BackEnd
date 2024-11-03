@@ -25,10 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.OwnerWalletEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Entity.WalletEntity;
 import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Repository.UserRepository;
+import com.respo.respo.Service.OwnerWalletService;
 import com.respo.respo.Service.UserService;
 import com.respo.respo.Service.WalletService;
 
@@ -54,6 +56,9 @@ public class UserController {
 
     @Autowired
     private WalletService walletService;
+
+    @Autowired
+    private OwnerWalletService ownerWalletService;
 
     @GetMapping("/print")
     public String itWorks() {
@@ -174,8 +179,7 @@ public class UserController {
         }
     }
 
-
-    @PutMapping("/updateIsOwner/{userId}")
+@PutMapping("/updateIsOwner/{userId}")
 public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Map<String, Boolean> updates) {
     try {
         // Get the user by ID
@@ -191,17 +195,15 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
             // Update the isOwner flag
             userService.updateIsOwner(userId, isOwner);
 
-            // If the user is now an owner and doesn't already have a wallet, create one
-            if (isOwner && user.getWallet() == null) {
-                WalletEntity wallet = new WalletEntity();  // Create a new wallet
-                wallet.setUser(user);  // Associate the wallet with the user
-                wallet.setBalance(0.0);  // Initialize the wallet with 0 balance
-                wallet.setActive(true);  // Mark the wallet as active
+            // If the user is now an owner and doesn't already have an OwnerWallet, create one
+            if (isOwner && user.getOwnerWallet() == null) {
+                OwnerWalletEntity ownerWallet = new OwnerWalletEntity();  // Create a new OwnerWallet
+                ownerWallet.setUser(user);  // Associate the wallet with the user
 
-                walletService.createWallet(wallet);  // Save the wallet
+                ownerWalletService.createOrUpdateWallet(ownerWallet);  // Save the OwnerWallet
 
-                // Update the user's wallet reference and save the user again
-                user.setWallet(wallet);
+                // Update the user's OwnerWallet reference and save the user again
+                user.setOwnerWallet(ownerWallet);
                 userService.updateUser(user);
             }
 
@@ -213,6 +215,7 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
+
 
 
     @GetMapping("/getUserById/{userId}")

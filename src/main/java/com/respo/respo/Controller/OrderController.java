@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,9 +30,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.PaymentEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.CarService;
 import com.respo.respo.Service.OrderService;
+import com.respo.respo.Service.PaymentService;
 import com.respo.respo.Service.UserService;
 
 @RestController
@@ -48,43 +51,31 @@ public class OrderController {
     @Autowired
     private CarService cserv;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @PostMapping("/insertOrder")
     public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
-                                        @RequestParam("carId") int carId,
-                                        @RequestPart(value = "order", required = false) OrderEntity order,
-                                        @RequestPart(value = "file", required = false) MultipartFile file,
-                                        HttpServletRequest request) {
+            @RequestParam("carId") int carId,
+            @RequestPart("order") OrderEntity order,
+            @RequestPart("file") MultipartFile file,
+            HttpServletRequest request) {
         try {
-            if (order == null) {
-                return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
-            }
-
             // Fetch user and car entities
             UserEntity user = userv.getUserById(userId);
             CarEntity car = cserv.getCarById(carId);
             order.setUser(user);
             order.setCar(car);
 
-            // Process payment logic based on the provided payment option
-            if ("Paymongo".equalsIgnoreCase(order.getPaymentOption())) {
-                order.setStatus(1); // Status 1 for paid orders
-                order.setPaid(true); // Mark as paid
-            } else if (file != null && !file.isEmpty()) {
-                order.setPayment(file.getBytes()); // Save proof of payment file
-                order.setStatus(0); // Status 0 for pending orders
-            } else {
-                order.setStatus(0); // Status 0 for pending orders if no file
-            }
-
-            // Set the user renting status and car rented status
-            user.setRenting(true);
-            car.setRented(true);
-
             // Insert the order
             OrderEntity savedOrder = oserv.insertOrder(order);
 
-            // Log order activity only once
-            oserv.logOrderActivity(savedOrder);
+            // Add payment if applicable
+            if ("Paymongo".equalsIgnoreCase(order.getPaymentOption())) {
+                paymentService.createPayment(savedOrder, order.getTotalPrice(), "Paymongo", null, 1);
+            } else if (file != null && !file.isEmpty()) {
+                paymentService.createPayment(savedOrder, order.getTotalPrice(), "Cash", file.getBytes(), 0);
+            }
 
             return new ResponseEntity<>(savedOrder, HttpStatus.OK);
         } catch (Exception e) {
@@ -96,30 +87,15 @@ public class OrderController {
     @PostMapping("/updatePaymentStatus")
     public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
         try {
-            // Extract order ID and transaction details from the request body
-            int orderId = (Integer) paymentData.get("orderId");
-            String transactionId = (String) paymentData.get("transactionId");
+            int paymentId = (Integer) paymentData.get("paymentId");
+            int status = (Integer) paymentData.get("status");
 
-            // Retrieve the order by its ID
-            OrderEntity order = oserv.getOrderById(orderId);
-
-            // Update payment details in the order entity
-            order.setStatus(1);  // Set the order status as paid
-            order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
-            order.setPaymentOption("PayPal");  // Set payment method as PayPal
-            
-            // Automatically set paid to true if payment option is PayPal
-            if ("PayPal".equalsIgnoreCase(order.getPaymentOption())) {
-                order.setPaid(true);  // Mark order as paid
-            }
-
-            // Save the updated order back to the database
-            oserv.insertOrder(order);
-
+            paymentService.updatePaymentStatus(paymentId, status);
             return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -166,22 +142,33 @@ public class OrderController {
     }
 
     @GetMapping("/getProofOfPayment/{orderId}")
-    public void getProofOfPayment(@PathVariable int orderId, HttpServletResponse response) {
+    public ResponseEntity<byte[]> getProofOfPayment(@PathVariable int orderId) {
         try {
+            // Retrieve the order and associated payments
             OrderEntity order = oserv.getOrderById(orderId);
-            byte[] imageBytes = order.getPayment();
+            List<PaymentEntity> payments = paymentService.getPaymentsByOrder(order);
 
-            if (imageBytes != null) {
-                response.setContentType("image/jpeg");
-                StreamUtils.copy(imageBytes, response.getOutputStream());
-            } else {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
+            if (payments.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+            // Assume the latest or a specific payment is desired, e.g., the first one
+            PaymentEntity payment = payments.get(0); // You could select based on other criteria if needed
+            byte[] proofOfPayment = payment.getProofOfPayment();
+
+            if (proofOfPayment != null) {
+                return ResponseEntity
+                        .ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(proofOfPayment);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
         } catch (NoSuchElementException e) {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -209,37 +196,6 @@ public class OrderController {
             orders = orders.stream().filter(OrderEntity::isActive).collect(Collectors.toList());
         }
         return orders;
-    }
-
-    @PutMapping("/approveOrder/{orderId}")
-    public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
-        try {
-            // Fetch the order by its ID
-            OrderEntity order = oserv.getOrderById(orderId);
-            
-            // Set the order status to approved
-            order.setStatus(1); // Assuming 1 represents 'approved'
-            
-            // Set the 'paid' status to true when the order is approved
-            order.setPaid(true);
-            
-            // Save the updated order
-            OrderEntity updatedOrder = oserv.insertOrder(order);
-            
-            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping("/denyOrder/{orderId}")
-    public ResponseEntity<OrderEntity> denyOrder(@PathVariable int orderId) {
-        try {
-            OrderEntity updatedOrder = oserv.denyOrder(orderId);
-            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
     }
 
     @GetMapping("/getOrdersByCarOwnerId/{ownerId}")
@@ -292,14 +248,15 @@ public class OrderController {
             return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error marking order as returned: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/getOrderById/{orderId}")
     public ResponseEntity<OrderEntity> getOrderById(@PathVariable int orderId) {
         try {
-            OrderEntity order = oserv.getOrderById(orderId);  // Fetch the order by its ID
+            OrderEntity order = oserv.getOrderById(orderId); // Fetch the order by its ID
             return new ResponseEntity<>(order, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);

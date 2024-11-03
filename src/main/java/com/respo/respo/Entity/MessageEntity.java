@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "tblMessages")
@@ -61,24 +62,27 @@ public class MessageEntity {
         this.messageId = messageId;
     }
 
-    public ChatEntity getChat() {
-        return chat;
+    @JsonProperty("chatId")
+    public Integer getChatId() {
+        return chat != null ? chat.getChatId() : null;
     }
 
     public void setChat(ChatEntity chat) {
         this.chat = chat;
     }
 
-    public UserEntity getSender() {
-        return sender;
+    @JsonProperty("userId")
+    public Integer getUserId() {
+        return sender != null ? sender.getUserId() : null;
     }
 
     public void setSender(UserEntity sender) {
         this.sender = sender;
     }
 
-    public AdminEntity getAdminSender() {
-        return adminSender;
+    @JsonProperty("adminId")
+    public Integer getAdminId() {
+        return adminSender != null ? adminSender.getAdminId() : null;
     }
 
     public void setAdminSender(AdminEntity adminSender) {

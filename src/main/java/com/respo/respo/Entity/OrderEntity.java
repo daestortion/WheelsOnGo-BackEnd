@@ -2,6 +2,7 @@ package com.respo.respo.Entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 import javax.persistence.Column;
@@ -12,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -28,24 +30,16 @@ public class OrderEntity {
 
     @ManyToOne
     @JoinColumn(name = "userId")
-    @JsonIgnoreProperties({ "cars", "verification", "orders", "chat", "report"}) // Ignore specific nested objects during serialization
+    @JsonIgnoreProperties({"cars", "verification", "orders", "chat", "report"})
     private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "carId")
-    @JsonIgnoreProperties({ "orders", "report"})
+    @JsonIgnoreProperties({"orders", "report"})
     private CarEntity car;
 
     @Column(name = "startDate")
     private LocalDate startDate;
-
-    
-    @Column(name = "type")
-    private int type;
-
-    public int getType() {
-        return type;
-    }
 
     @Column(name = "endDate")
     private LocalDate endDate;
@@ -62,10 +56,6 @@ public class OrderEntity {
     @Column(name = "referenceNumber", unique = true)
     private String referenceNumber; // Unique reference number
 
-    @Lob
-    @Column(name = "payment")
-    private byte[] payment;
-
     @Column(name = "status")
     private int status;
 
@@ -73,58 +63,39 @@ public class OrderEntity {
     private boolean isActive = false;
 
     @Column(name = "deliveryOption")
-    private String deliveryOption; // New attribute for delivery option
+    private String deliveryOption;
 
     @CreationTimestamp
     @Column(name = "timeStamp", updatable = false)
     private LocalDateTime timeStamp;
 
     @Column(name = "deliveryAddress")
-    private String deliveryAddress; // New attribute for delivery address
+    private String deliveryAddress;
 
     @Column(name = "isReturned")
-    private boolean isReturned = false; // New attribute for return status
+    private boolean isReturned = false;
 
     @Column(name = "returnDate")
-    private LocalDate returnDate; // New attribute for return date
-
-    @Lob
-    @Column(name = "proofOfReturn")
-    private byte[] proofOfReturn; // New attribute for proof of return
-
-    @Column(name = "isPaid")
-    private boolean isPaid = false; // New attribute for payment status
+    private LocalDate returnDate;
 
     @Column(name = "isTerminated")
-    private boolean isTerminated = false; // New attribute for termination status
+    private boolean isTerminated = false;
 
     @Column(name = "terminationDate")
-    private LocalDate terminationDate; // New attribute for termination date
-    
-    public boolean isTerminated() {
-        return isTerminated;
-    }
+    private LocalDate terminationDate;
 
-    public void setTerminated(boolean isTerminated) {
-        this.isTerminated = isTerminated;
-    }
-
-    public LocalDate getTerminationDate() {
-        return terminationDate;
-    }
-
-    public void setTerminationDate(LocalDate terminationDate) {
-        this.terminationDate = terminationDate;
-    }
+    @OneToMany(mappedBy = "order")
+    @JsonIgnoreProperties("order")
+    private List<PaymentEntity> payments; // One-to-many relationship with PaymentEntity
 
     public OrderEntity() {
     }
-
+    
     public OrderEntity(int orderId, UserEntity user, CarEntity car, LocalDate startDate, LocalDate endDate,
-            float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, byte[] payment, 
-            int status, boolean isActive, String deliveryOption, String deliveryAddress, LocalDateTime timestamp, 
-            boolean isReturned, LocalDate returnDate, byte[] proofOfReturn, boolean isPaid, boolean isTerminated, 
-            LocalDate terminationDate, int type) {
+            float totalPrice, String paymentOption, boolean isDeleted, String referenceNumber, int status,
+            boolean isActive, String deliveryOption, LocalDateTime timeStamp, String deliveryAddress,
+            boolean isReturned, LocalDate returnDate, boolean isTerminated, LocalDate terminationDate,
+            List<PaymentEntity> payments) {
         this.orderId = orderId;
         this.user = user;
         this.car = car;
@@ -134,66 +105,23 @@ public class OrderEntity {
         this.paymentOption = paymentOption;
         this.isDeleted = isDeleted;
         this.referenceNumber = referenceNumber;
-        this.payment = payment;
         this.status = status;
         this.isActive = isActive;
         this.deliveryOption = deliveryOption;
+        this.timeStamp = timeStamp;
         this.deliveryAddress = deliveryAddress;
-        this.timeStamp = timestamp;
         this.isReturned = isReturned;
         this.returnDate = returnDate;
-        this.proofOfReturn = proofOfReturn;
-        this.isPaid = isPaid;
-        this.isTerminated = isTerminated; // New field initialization
-        this.terminationDate = terminationDate; // New field initialization
-        this.type = type;
+        this.isTerminated = isTerminated;
+        this.terminationDate = terminationDate;
+        this.payments = payments;
     }
-
-    public String getDeliveryAddress() {
-        return deliveryAddress;
-    }
-
-    public void setDeliveryAddress(String deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
-    }
-
-    public boolean isReturned() {
-        return isReturned;
-    }
-
-    public void setReturned(boolean isReturned) {
-        this.isReturned = isReturned;
-    }
-
-    public LocalDate getReturnDate() {
-        return returnDate;
-    }
-
-    public void setReturnDate(LocalDate returnDate) {
-        this.returnDate = returnDate;
-    }
-
-    public byte[] getProofOfReturn() {
-        return proofOfReturn;
-    }
-
-    public void setProofOfReturn(byte[] proofOfReturn) {
-        this.proofOfReturn = proofOfReturn;
-    }
-
-    public boolean isPaid() {
-        return isPaid;
-    }
-
-    public void setPaid(boolean isPaid) {
-        this.isPaid = isPaid;
-    }
-
+    
     public String generateReferenceNumber() {
         Random random = new Random();
         return String.format("%08d", random.nextInt(100000000)); // Generates an 8-digit random number
     }
-
+    
     public int getOrderId() {
         return orderId;
     }
@@ -266,21 +194,12 @@ public class OrderEntity {
         this.referenceNumber = referenceNumber;
     }
 
-    public byte[] getPayment() {
-        return payment;
-    }
-
-    public void setPayment(byte[] payment) {
-        this.payment = payment;
-    }
-
     public int getStatus() {
         return status;
     }
 
     public void setStatus(int status) {
         this.status = status;
-        this.isActive = status == 1;
     }
 
     public boolean isActive() {
@@ -307,5 +226,54 @@ public class OrderEntity {
         this.timeStamp = timeStamp;
     }
 
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
 
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public boolean isReturned() {
+        return isReturned;
+    }
+
+    public void setReturned(boolean isReturned) {
+        this.isReturned = isReturned;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public boolean isTerminated() {
+        return isTerminated;
+    }
+
+    public void setTerminated(boolean isTerminated) {
+        this.isTerminated = isTerminated;
+    }
+
+    public LocalDate getTerminationDate() {
+        return terminationDate;
+    }
+
+    public void setTerminationDate(LocalDate terminationDate) {
+        this.terminationDate = terminationDate;
+    }
+
+    public List<PaymentEntity> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<PaymentEntity> payments) {
+        this.payments = payments;
+    }
+
+    
+    
 }

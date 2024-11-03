@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Entity.VerificationEntity;
+import com.respo.respo.Entity.WalletEntity;
 import com.respo.respo.Repository.VerificationRepository;
 
 @Service
@@ -17,8 +18,14 @@ public class VerificationService {
     VerificationRepository vrepo;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private ActivityLogService logService;
 
+    @Autowired
+    private WalletService walletService;
+    
     public VerificationEntity insertVerification(VerificationEntity verification) {
         // Save the verification in the database
         VerificationEntity savedVerification = vrepo.save(verification);
@@ -40,16 +47,16 @@ public class VerificationService {
     // Update
     public VerificationEntity updateVerification(VerificationEntity verification) {
         VerificationEntity existingVerification = vrepo.findById(verification.getVId())
-                .orElseThrow(() -> new NoSuchElementException("Verification with ID " + verification.getVId() + " does not exist."));
-        
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Verification with ID " + verification.getVId() + " does not exist."));
+
         // Update fields accordingly
         existingVerification.setStatus(verification.getStatus());
         existingVerification.setGovId(verification.getGovId());
         existingVerification.setDriversLicense(verification.getDriversLicense());
-    
+
         return vrepo.save(existingVerification);
     }
-    
 
     // Delete
     public String deleteVerification(int vId) {
@@ -73,12 +80,23 @@ public class VerificationService {
         UserEntity user = verification.getUser();
 
         // Log the appropriate message based on the new status
-        if (newStatus == 1) {
-            // Approved: Log "user.username has been successfully verified."
+        if (newStatus == 1) { // Approved
             String logMessage = user.getUsername() + " has been successfully verified.";
             logService.logActivity(logMessage, user.getUsername());
-        } else if (newStatus == 2) {
-            // Denied: Log "The verification of user.username is unsuccessful"
+
+            // If the user is now verified and doesn't already have a Wallet, create one
+            if (user.getWallet() == null) {
+                WalletEntity wallet = new WalletEntity();
+                wallet.setUser(user); // Associate the wallet with the user
+                wallet.setBalance(0.0); // Initialize balance, if required
+
+                // Save the Wallet and set it to the user
+                walletService.createWallet(wallet);
+                user.setWallet(wallet);
+                userService.updateUser(user); // Update the user to include the new Wallet
+            }
+
+        } else if (newStatus == 2) { // Denied
             String logMessage = "The verification of " + user.getUsername() + " is unsuccessful.";
             logService.logActivity(logMessage, user.getUsername());
         }
@@ -88,7 +106,7 @@ public class VerificationService {
 
     public VerificationEntity getVerificationByUserId(int userId) {
         return vrepo.findByUser_UserId(userId)
-            .orElseThrow(() -> new NoSuchElementException("Verification record not found for user ID: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("Verification record not found for user ID: " + userId));
     }
-    
+
 }

@@ -1,6 +1,7 @@
 package com.respo.respo.Entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -22,67 +24,83 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "tblUsers")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Ignore Hibernate proxy properties
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" }) // Ignore Hibernate proxy properties
 public class UserEntity {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int userId;
-	
+
 	@Column(name = "username")
-	private String username; 
-	
+	private String username;
+
 	@Column(name = "fName")
 	private String fName;
-	
+
 	@Column(name = "isRenting")
 	private boolean isRenting = false;
-	
+
 	@Column(name = "isOwner")
 	private boolean isOwner = false;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"user"}) // Prevent recursion
-    private VerificationEntity verification;
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnoreProperties({ "user" }) // Prevent recursion
+	private VerificationEntity verification;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"user", "chat"}) // Ignore 'user' and 'chat' in ReportEntity to prevent recursion
-    private List<ReportEntity> reports;
+	@JsonIgnoreProperties({ "user", "chat" }) // Ignore 'user' and 'chat' in ReportEntity to prevent recursion
+	private List<ReportEntity> reports;
+
+	@ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+	@JsonIgnoreProperties({ "users", "messages", "report", "admin" }) // Prevent recursion
+	private List<ChatEntity> chats = new ArrayList<>(); // All chats the user is involved in
 
 	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"owner"}) // Prevent recursion
-    private List<CarEntity> cars;
+	@JsonIgnoreProperties({ "owner" }) // Prevent recursion
+	private List<CarEntity> cars;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"user"}) // Prevent recursion
-    private List<OrderEntity> orders;
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnoreProperties({ "user" }) // Prevent recursion
+	private List<OrderEntity> orders;
+
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnoreProperties({ "user" }) // Prevent recursion
+	private WalletEntity wallet; // Reference to the WalletEntity
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"user"}) // Prevent recursion
-    private WalletEntity wallet; // Reference to the WalletEntity
-	
-	public List<OrderEntity> getOrders() {
-        return orders;
-    }
+	@JsonIgnoreProperties({ "user" })
+	private OwnerWalletEntity ownerWallet;
 
-    public void setOrders(List<OrderEntity> orders) {
-        this.orders = orders;
-    }
+	public OwnerWalletEntity getOwnerWallet() {
+		return ownerWallet;
+	}
+
+	public void setOwnerWallet(OwnerWalletEntity ownerWallet) {
+		this.ownerWallet = ownerWallet;
+	}
+
+	public List<OrderEntity> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(List<OrderEntity> orders) {
+		this.orders = orders;
+	}
 
 	@CreationTimestamp
-    @Column(name = "timeStamp", updatable = false)
-    private LocalDateTime timeStamp;
+	@Column(name = "timeStamp", updatable = false)
+	private LocalDateTime timeStamp;
 
 	@Lob
 	@Column(name = "profilePic")
 	private byte[] profilePic;
-	
+
 	@Column(name = "lName")
 	private String lName;
-	
+
 	@Column(name = "email")
 	private String email;
-	
+
 	@Column(name = "pWord")
 	private String pWord;
 
@@ -91,25 +109,32 @@ public class UserEntity {
 
 	@Column(name = "is_deleted")
 	private boolean isDeleted = false;
-	
-	public UserEntity() {}
-	
-	public UserEntity(int userId, String username, String fName, List<CarEntity> cars, byte[] profilePic, String lName,
-			String email, String pWord, String pNum, List<OrderEntity> orders, LocalDateTime timestamp) {
-		super();
+
+	public UserEntity() {
+	}
+
+	public UserEntity(int userId, String username, String fName, boolean isRenting, boolean isOwner,
+			VerificationEntity verification, List<ReportEntity> reports, List<ChatEntity> chats, List<CarEntity> cars,
+			List<OrderEntity> orders, WalletEntity wallet, LocalDateTime timeStamp, byte[] profilePic, String lName,
+			String email, String pWord, String pNum, boolean isDeleted) {
 		this.userId = userId;
 		this.username = username;
-		this.orders = orders;
 		this.fName = fName;
-		this.isRenting = false;
+		this.isRenting = isRenting;
+		this.isOwner = isOwner;
+		this.verification = verification;
+		this.reports = reports;
+		this.chats = chats;
 		this.cars = cars;
+		this.orders = orders;
+		this.wallet = wallet;
+		this.timeStamp = timeStamp;
 		this.profilePic = profilePic;
 		this.lName = lName;
 		this.email = email;
 		this.pWord = pWord;
 		this.pNum = pNum;
-		this.isDeleted = false;
-		this.timeStamp = timestamp;
+		this.isDeleted = isDeleted;
 	}
 
 	public int getUserId() {
@@ -133,12 +158,12 @@ public class UserEntity {
 	}
 
 	public List<ReportEntity> getReports() {
-        return reports;
-    }
+		return reports;
+	}
 
-    public void setReports(List<ReportEntity> reports) {
-        this.reports = reports;
-    }
+	public void setReports(List<ReportEntity> reports) {
+		this.reports = reports;
+	}
 
 	public void setfName(String fName) {
 		this.fName = fName;
@@ -152,11 +177,11 @@ public class UserEntity {
 		this.isRenting = isRenting;
 	}
 
-	public void setOwner(boolean isOwner){
-		this.isOwner = isOwner ;
+	public void setOwner(boolean isOwner) {
+		this.isOwner = isOwner;
 	}
 
-	public boolean isOwner(){
+	public boolean isOwner() {
 		return this.isOwner;
 	}
 
@@ -171,7 +196,7 @@ public class UserEntity {
 	public String getlName() {
 		return lName;
 	}
-	
+
 	public byte[] getProfilePic() {
 		return profilePic;
 	}
@@ -216,17 +241,17 @@ public class UserEntity {
 		this.isDeleted = isDeleted;
 	}
 
-    public String getProfilePicBase64() {
-        return this.profilePic != null ? Base64.getEncoder().encodeToString(this.profilePic) : null;
-    }
+	public String getProfilePicBase64() {
+		return this.profilePic != null ? Base64.getEncoder().encodeToString(this.profilePic) : null;
+	}
 
-    public VerificationEntity getVerification() {
-        return verification;
-    }
+	public VerificationEntity getVerification() {
+		return verification;
+	}
 
-    public void setVerification(VerificationEntity verification) {
-        this.verification = verification;
-    }
+	public void setVerification(VerificationEntity verification) {
+		this.verification = verification;
+	}
 
 	public LocalDateTime getTimeStamp() {
 		return timeStamp;
@@ -244,5 +269,4 @@ public class UserEntity {
 		this.wallet = wallet;
 	}
 
-	
 }
