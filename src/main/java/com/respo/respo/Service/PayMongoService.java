@@ -78,7 +78,6 @@ public class PayMongoService {
         order.setTotalPrice((float) amount / 100); // Cast amount to float before dividing
         order.setPaymentOption("Paymongo");
         order.setStatus(1); // 1 for paid status
-        order.setPaid(true); // Mark as paid
     
         // Insert the order into the database and log the result
         orderService.insertOrder(order);

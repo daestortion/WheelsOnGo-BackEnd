@@ -21,10 +21,10 @@ public class PaymentService {
         payment.setOrder(order);
         payment.setAmount(amount);
         payment.setPaymentMethod(paymentMethod);
-        payment.setProofOfPayment(proofOfPayment);
-        payment.setStatus(status);
+        payment.setStatus(status); // Set status to pending (0 for cash payments)
         return paymentRepo.save(payment);
     }
+    
 
     public List<PaymentEntity> getPaymentsByOrder(OrderEntity order) {
         return paymentRepo.findByOrder(order);

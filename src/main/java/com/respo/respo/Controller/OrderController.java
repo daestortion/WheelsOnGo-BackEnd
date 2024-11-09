@@ -1,6 +1,5 @@
 package com.respo.respo.Controller;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -8,13 +7,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,34 +52,22 @@ public class OrderController {
     private PaymentService paymentService;
 
     @PostMapping("/insertOrder")
-    public ResponseEntity<?> insertOrder(@RequestParam("userId") int userId,
+    public ResponseEntity<?> insertOrder(
+            @RequestParam("userId") int userId,
             @RequestParam("carId") int carId,
-            @RequestPart("order") OrderEntity order,
-            @RequestPart("file") MultipartFile file,
-            HttpServletRequest request) {
+            @RequestBody OrderEntity order) { // Remove file part
+    
         try {
-            // Fetch user and car entities
-            UserEntity user = userv.getUserById(userId);
-            CarEntity car = cserv.getCarById(carId);
-            order.setUser(user);
-            order.setCar(car);
-
-            // Insert the order
-            OrderEntity savedOrder = oserv.insertOrder(order);
-
-            // Add payment if applicable
-            if ("Paymongo".equalsIgnoreCase(order.getPaymentOption())) {
-                paymentService.createPayment(savedOrder, order.getTotalPrice(), "Paymongo", null, 1);
-            } else if (file != null && !file.isEmpty()) {
-                paymentService.createPayment(savedOrder, order.getTotalPrice(), "Cash", file.getBytes(), 0);
-            }
-
+            // Insert the order and related payment (cash) into the database
+            OrderEntity savedOrder = oserv.insertOrder(userId, carId, order);
             return new ResponseEntity<>(savedOrder, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    
 
     @PostMapping("/updatePaymentStatus")
     public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
@@ -99,47 +84,6 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/insertCashOrder")
-    public ResponseEntity<?> insertCashOrder(@RequestParam("userId") int userId,
-            @RequestParam("carId") int carId,
-            @RequestBody OrderEntity order) {
-        try {
-            if (order == null) {
-                System.out.println("Order entity is null. Exiting.");
-                return new ResponseEntity<>("Order entity is null.", HttpStatus.BAD_REQUEST);
-            }
-
-            System.out.println("Order Details: ");
-            System.out.println("Start Date: " + order.getStartDate());
-            System.out.println("End Date: " + order.getEndDate());
-            System.out.println("Total Price: " + order.getTotalPrice());
-            System.out.println("Payment Option: " + order.getPaymentOption());
-            System.out.println("Is Deleted: " + order.isDeleted());
-            System.out.println("Reference Number: " + order.getReferenceNumber());
-
-            UserEntity user = userv.getUserById(userId);
-            CarEntity car = cserv.getCarById(carId);
-            order.setUser(user);
-            order.setCar(car);
-
-            System.out.println("User Details: " + user.getUsername());
-            System.out.println("Car Details: " + car.getCarModel());
-
-            order.setStatus(0); // Assuming 0 is the status for pending orders
-            user.setRenting(true); // Set the user's renting status to true
-
-            OrderEntity savedOrder = oserv.insertOrder(order);
-
-            System.out.println("Saved Order Details: ");
-            System.out.println("Order ID: " + savedOrder.getOrderId());
-            System.out.println("Reference Number: " + savedOrder.getReferenceNumber());
-
-            return new ResponseEntity<>(savedOrder, HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Error creating order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     @GetMapping("/getProofOfPayment/{orderId}")
     public ResponseEntity<byte[]> getProofOfPayment(@PathVariable int orderId) {

@@ -26,6 +26,12 @@ import com.respo.respo.Repository.OrderRepository;
 public class OrderService {
 
 	@Autowired
+    UserService userService;
+
+    @Autowired
+    CarService carService;
+
+	@Autowired
 	OrderRepository orepo;
 	CarRepository crepo;
 
@@ -34,33 +40,38 @@ public class OrderService {
 
 	@Autowired
     WalletService walletService; // Inject walletService to update wallet balances
+
+	@Autowired
+    PaymentService paymentService;
 	
 	// Create
-	public OrderEntity insertOrder(OrderEntity order) {
-	    // Check if the reference number is already set and is not empty, generate if necessary
-	    if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
-	        String newReferenceNumber = order.generateReferenceNumber(); // Generate a new reference number
-	        order.setReferenceNumber(newReferenceNumber); // Set the newly generated reference number
-	    }
-
-	    // Set user as renting
-	    UserEntity user = order.getUser();
-	    if (user != null) {
-	        user.setRenting(true); // Set the user's isRenting status to true
-	        // Persist changes to the user entity if necessary, e.g., userRepository.save(user);
-	    }
-
-	    // Set car as rented
-	    CarEntity car = order.getCar();
-	    if (car != null) {
-	        car.setRented(true); // Set the car's isRented status to true
-	        car.addOrder(order); // Add the order to the car's list of orders
-	        // Persist changes to the car entity if necessary, e.g., carRepository.save(car);
-	    }
-	    // Save the order with the reference number and updated entity statuses
-	    return orepo.save(order);
+	public OrderEntity insertOrder(int userId, int carId, OrderEntity order) {
+		// Fetch user and car entities
+		UserEntity user = userService.getUserById(userId);
+		CarEntity car = carService.getCarById(carId);
+	
+		// Set user and car in order entity
+		order.setUser(user);
+		order.setCar(car);
+	
+		// Generate a unique reference number if not provided
+		if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
+			order.setReferenceNumber(order.generateReferenceNumber());
+		}
+	
+		// Set initial statuses
+		user.setRenting(true);
+		car.setRented(true);
+	
+		// Save the order
+		OrderEntity savedOrder = orepo.save(order);
+	
+		// Create payment entry for cash orders, status set to pending (e.g., 0)
+		paymentService.createPayment(savedOrder, order.getTotalPrice(), "Cash", null, 0);
+	
+		return savedOrder;
 	}
-
+	
 
 	// Read
 	public List<OrderEntity> getAllOrders() {
@@ -265,14 +276,14 @@ public class OrderService {
             order.setStatus(1);  // Set the order status as paid
             order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
             order.setPaymentOption("PayPal");  // Set payment method as PayPal
-            order.setPaid(true); // Mark order as paid
+
 
             // Save the updated order back to the database
             orepo.save(order);
 
             // Update the wallet balance for the car owner (trigger recalculation)
             int carOwnerId = order.getCar().getOwner().getUserId();
-            walletService.updateWalletBalances(carOwnerId); // Recalculate wallet balances for the car owner
+
 
             return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
         } catch (Exception e) {
