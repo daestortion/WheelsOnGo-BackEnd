@@ -31,7 +31,8 @@ public class PaymentService {
     }
 
     public PaymentEntity updatePaymentStatus(int paymentId, int status) {
-        PaymentEntity payment = paymentRepo.findById(paymentId).orElseThrow(() -> new NoSuchElementException("Payment not found"));
+        PaymentEntity payment = paymentRepo.findById(paymentId)
+            .orElseThrow(() -> new NoSuchElementException("Payment with ID " + paymentId + " not found."));
         payment.setStatus(status);
         return paymentRepo.save(payment);
     }

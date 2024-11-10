@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,9 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -72,17 +69,19 @@ public class OrderController {
     @PostMapping("/updatePaymentStatus")
     public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
         try {
-            int paymentId = (Integer) paymentData.get("paymentId");
-            int status = (Integer) paymentData.get("status");
-
-            paymentService.updatePaymentStatus(paymentId, status);
+            if (!paymentData.containsKey("orderId") || !paymentData.containsKey("transactionId")) {
+                throw new IllegalArgumentException("Missing 'orderId' or 'transactionId' in payment data.");
+            }
+    
+            oserv.updatePaymentStatus(paymentData);  // Pass the data to the service layer
             return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    
 
 
     @GetMapping("/getProofOfPayment/{orderId}")

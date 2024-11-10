@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.respo.respo.Entity.ActivityLogEntity;
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.PaymentEntity;
 import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Repository.CarRepository;
 import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.PaymentRepository;
 
 @Service
 public class OrderService {
@@ -34,6 +36,7 @@ public class OrderService {
 	@Autowired
 	OrderRepository orepo;
 	CarRepository crepo;
+	PaymentRepository paymentRepo;
 
 	@Autowired
     ActivityLogService logService;
@@ -261,36 +264,29 @@ public class OrderService {
 		}
 	}
 	
-	@PostMapping("/updatePaymentStatus")
-    public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
-        try {
-            // Extract order ID and transaction details from the request body
-            int orderId = (Integer) paymentData.get("orderId");
-            String transactionId = (String) paymentData.get("transactionId");
+	public void updatePaymentStatus(Map<String, Object> paymentData) {
+		Integer orderId = (Integer) paymentData.get("orderId");
+		String transactionId = (String) paymentData.get("transactionId");
+		String paymentOption = (String) paymentData.get("paymentOption");
+		int status = (int) paymentData.get("status");
+	
+		OrderEntity order = orepo.findById(orderId)
+			.orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
+	
+		// Update or create a payment record associated with this order
+		PaymentEntity payment = new PaymentEntity();
+		payment.setOrder(order);
+		payment.setAmount(order.getTotalPrice());
+		payment.setPaymentMethod(paymentOption);
+		payment.setStatus(status);
+		paymentRepo.save(payment);
+	
+		// Update order status if needed
+		order.setStatus(1); // Assuming '1' is paid status
+		orepo.save(order);
+	}
+	
 
-            // Retrieve the order by its ID
-            OrderEntity order = orepo.findById(orderId)
-                    .orElseThrow(() -> new NoSuchElementException("Order not found"));
-
-            // Update payment details in the order entity
-            order.setStatus(1);  // Set the order status as paid
-            order.setReferenceNumber(transactionId);  // Use transaction ID from PayPal
-            order.setPaymentOption("PayPal");  // Set payment method as PayPal
-
-
-            // Save the updated order back to the database
-            orepo.save(order);
-
-            // Update the wallet balance for the car owner (trigger recalculation)
-            int carOwnerId = order.getCar().getOwner().getUserId();
-
-
-            return new ResponseEntity<>("Payment status updated successfully", HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Error updating payment status: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
 	public OrderEntity markAsReturned(int orderId) {
         OrderEntity order = orepo.findById(orderId)
