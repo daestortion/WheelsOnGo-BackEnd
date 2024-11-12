@@ -48,33 +48,25 @@ public class OrderService {
 	@Autowired
     PaymentService paymentService;
 	
-	// Create
+	// Insert order in `OrderService.java`
 	public OrderEntity insertOrder(int userId, int carId, OrderEntity order) {
-		// Fetch user and car entities
 		UserEntity user = userService.getUserById(userId);
 		CarEntity car = carService.getCarById(carId);
-	
-		// Set user and car in order entity
+
 		order.setUser(user);
 		order.setCar(car);
-	
-		// Generate a unique reference number if not provided
-		if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
-			order.setReferenceNumber(order.generateReferenceNumber());
-		}
-	
-		// Set initial statuses
+		order.setReferenceNumber(order.generateReferenceNumber());
 		user.setRenting(true);
 		car.setRented(true);
-	
-		// Save the order
+
 		OrderEntity savedOrder = orepo.save(order);
-	
-		// Create payment entry for cash orders, status set to pending (e.g., 0)
-		paymentService.createPayment(savedOrder, order.getTotalPrice(), "Cash", null, 0);
-	
+
+		// Use dynamic payment option based on order data
+		paymentService.createPayment(savedOrder, order.getTotalPrice(), order.getPaymentOption(), null, 0);
+
 		return savedOrder;
 	}
+
 	
 
 	// Read
@@ -282,7 +274,16 @@ public class OrderService {
 		OrderEntity order = orepo.findById(orderId)
 			.orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
 	
-		// Update or create a payment record associated with this order
+		// Set the reference number based on the payment method
+		if ("PayPal".equalsIgnoreCase(paymentOption) && transactionId != null) {
+			order.setReferenceNumber(transactionId); // Store PayPal transaction ID as reference number
+		} else if ("Cash".equalsIgnoreCase(paymentOption)) {
+			if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
+				order.setReferenceNumber(order.generateReferenceNumber()); // Generate a new reference number if not set
+			}
+		}
+	
+		// Create a payment record associated with the correct payment method
 		PaymentEntity payment = new PaymentEntity();
 		payment.setOrder(order);
 		payment.setAmount(order.getTotalPrice());
@@ -290,12 +291,11 @@ public class OrderService {
 		payment.setStatus(status);
 		paymentRepo.save(payment);
 	
-		// Update order status if needed
+		// Update order status to 'paid'
 		order.setStatus(1); // Assuming '1' is paid status
 		orepo.save(order);
 	}
 	
-
 
 	public OrderEntity markAsReturned(int orderId) {
         OrderEntity order = orepo.findById(orderId)

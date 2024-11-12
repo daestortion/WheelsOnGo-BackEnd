@@ -220,4 +220,15 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/approveOrder/{orderId}")
+    public ResponseEntity<OrderEntity> approveOrder(@PathVariable int orderId) {
+        try {
+            // Approve the order and set the paid status within the service layer
+            OrderEntity approvedOrder = oserv.approveOrder(orderId);
+            return new ResponseEntity<>(approvedOrder, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
