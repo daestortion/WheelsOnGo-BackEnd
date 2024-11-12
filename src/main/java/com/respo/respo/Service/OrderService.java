@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,41 +164,49 @@ public class OrderService {
 	}
 	
 	public OrderEntity extendOrder(int orderId, LocalDate newEndDate) {
-        // Find the order by its ID
-		OrderEntity order = orepo.findById(orderId)
-		.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
+		// Find the original order by its ID
+		OrderEntity originalOrder = orepo.findById(orderId)
+				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
 
-		// Get the current end date of the order
-		LocalDate currentEndDate = order.getEndDate();
+		// Get the current end date of the original order
+		LocalDate currentEndDate = originalOrder.getEndDate();
 
 		// Check if the new end date is after the current end date
 		if (newEndDate.isBefore(currentEndDate)) {
 			throw new IllegalArgumentException("New end date must be after the current end date");
 		}
 
-		// Calculate the additional days
+		// Calculate the additional days for the new order
 		long additionalDays = currentEndDate.until(newEndDate).getDays();
 
-		// Get the car associated with the order
-		CarEntity car = order.getCar();
+		// Get the car associated with the original order
+		CarEntity car = originalOrder.getCar();
 		float dailyRate = car.getRentPrice();
 
-		// Recalculate the total price (adding additional days' rent to the current total)
-		float newTotalPrice = order.getTotalPrice() + (dailyRate * additionalDays);
+		// Calculate the total price for the new order based on the additional days
+		float newTotalPrice = dailyRate * additionalDays;
 
-		// Update the order's end date and total price
-		order.setEndDate(newEndDate);
-		order.setTotalPrice(newTotalPrice);
+		// Create a new order entity with the details of the original order but with a new ID and adjusted dates
+		OrderEntity newOrder = new OrderEntity();
+		newOrder.setCar(car);
+		newOrder.setUser(originalOrder.getUser());
+		newOrder.setStartDate(currentEndDate.plusDays(1)); // Start date is the day after the current end date
+		newOrder.setEndDate(newEndDate);                   // Set the new end date
+		newOrder.setTotalPrice(newTotalPrice);
+		
+		// Directly set a new reference number without a helper method
+		newOrder.setReferenceNumber("REF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
-		// Save the updated order
-		OrderEntity updatedOrder = orepo.save(order);
+		// Save the new order
+		OrderEntity savedOrder = orepo.save(newOrder);
 
-		// Log the order extension
-		String logMessage = "Order " + order.getOrderId() + " has been extended from " +
-							currentEndDate + " to " + newEndDate + ". Days: " + additionalDays;
-		logService.logActivity(logMessage, order.getUser().getUsername());
+		// Log the new order creation
+		String logMessage = "Order " + savedOrder.getOrderId() + " has been created as an extension of order " +
+							originalOrder.getOrderId() + ", from " + newOrder.getStartDate() + " to " + newEndDate +
+							". Days: " + additionalDays;
+		logService.logActivity(logMessage, originalOrder.getUser().getUsername());
 
-		return updatedOrder;
+		return savedOrder;
 	}
 	
 	 // Method to update the delivery address of an order
