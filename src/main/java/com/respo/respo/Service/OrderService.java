@@ -283,17 +283,27 @@ public class OrderService {
 			}
 		}
 	
+		// Check payment method and set active and status accordingly
+		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {
+			order.setStatus(1); // Assuming '1' indicates a successful payment
+			order.setActive(true);
+		}
+	
 		// Create a payment record associated with the correct payment method
 		PaymentEntity payment = new PaymentEntity();
 		payment.setOrder(order);
 		payment.setAmount(order.getTotalPrice());
 		payment.setPaymentMethod(paymentOption);
 		payment.setStatus(status);
+		
+		// Set payment status to '1' if PayPal or PayMongo
+		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {
+			payment.setStatus(1);
+		}
+		
 		paymentRepo.save(payment);
 	
-		// Update order status to 'paid'
-		order.setStatus(1); // Assuming '1' is paid status
-		orepo.save(order);
+		orepo.save(order); // Save updated order
 	}
 	
 
