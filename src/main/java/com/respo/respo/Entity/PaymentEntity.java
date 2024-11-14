@@ -1,7 +1,6 @@
 package com.respo.respo.Entity;
 
 import java.time.LocalDateTime;
-import java.util.Random;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,8 +26,8 @@ public class PaymentEntity {
 
     @ManyToOne
     @JoinColumn(name = "orderId")
-    @JsonIgnoreProperties("payments")
-    private OrderEntity order;
+    @JsonIgnoreProperties("payments") // Prevent recursive serialization
+    private OrderEntity order; // Many-to-one relationship with OrderEntity
 
     @Column(name = "amount")
     private float amount;
@@ -45,7 +44,7 @@ public class PaymentEntity {
     private String paymentMethod;
 
     @Column(name = "status")
-    private int status;
+    private int status; // Status of the payment (e.g., paid, pending, etc.)
 
     @Column(name = "isRefunded")
     private boolean isRefunded = false;
@@ -53,11 +52,7 @@ public class PaymentEntity {
     @Column(name = "refundDate")
     private LocalDateTime refundDate;
 
-    @Column(name = "referenceNumber", unique = true)
-    private String referenceNumber;
-
     public PaymentEntity() {
-        this.referenceNumber = generateReferenceNumber();
     }
 
     public PaymentEntity(int paymentId, OrderEntity order, float amount, LocalDateTime paymentDate,
@@ -71,11 +66,6 @@ public class PaymentEntity {
         this.status = status;
         this.isRefunded = isRefunded;
         this.refundDate = refundDate;
-    }
-
-    public String generateReferenceNumber() {
-        Random random = new Random();
-        return String.format("%08d", random.nextInt(100000000)); // Generates an 8-digit random number
     }
 
     public int getPaymentId() {
@@ -150,12 +140,6 @@ public class PaymentEntity {
         this.refundDate = refundDate;
     }
 
-    public String getReferenceNumber() {
-        return referenceNumber;
-    }
-
-    public void setReferenceNumber(String referenceNumber) { // Add setter for referenceNumber
-        this.referenceNumber = referenceNumber;
-    }
+    
 
 }

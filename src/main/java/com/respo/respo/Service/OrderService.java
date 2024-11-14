@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -270,17 +271,9 @@ public class OrderService {
 		String paymentOption = (String) paymentData.get("paymentOption");
 		int status = (int) paymentData.get("status");
 	
-		// Check if a payment with this transaction ID already exists
-		if (paymentRepo.existsByReferenceNumber(transactionId)) {
-			System.out.println("Duplicate payment detected. Skipping entry.");
-			return; // Exit to avoid duplicate entry
-		}
-	
 		OrderEntity order = orepo.findById(orderId)
 			.orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
 	
-<<<<<<< HEAD
-=======
 		// Set the reference number based on the payment method
 		if ("PayPal".equalsIgnoreCase(paymentOption) && transactionId != null) {
 			order.setReferenceNumber(transactionId); // Store PayPal transaction ID as reference number
@@ -290,26 +283,30 @@ public class OrderService {
 			}
 		}
 	
->>>>>>> parent of 9195607 (origin)
 		// Check payment method and set active and status accordingly
 		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {
 			order.setStatus(1); // Assuming '1' indicates a successful payment
 			order.setActive(true);
 		}
 	
-		// Create a new payment record
+		// Create a payment record associated with the correct payment method
 		PaymentEntity payment = new PaymentEntity();
 		payment.setOrder(order);
 		payment.setAmount(order.getTotalPrice());
 		payment.setPaymentMethod(paymentOption);
 		payment.setStatus(status);
-		payment.setReferenceNumber(transactionId); // Set the transaction ID
+		
+		// Set payment status to '1' if PayPal or PayMongo
+		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {
+			payment.setStatus(1);
+		}
+		
+		paymentRepo.save(payment);
 	
-		paymentRepo.save(payment); // Save payment only if it's not a duplicate
 		orepo.save(order); // Save updated order
-	}	
+	}
 	
-	
+
 	public OrderEntity markAsReturned(int orderId) {
         OrderEntity order = orepo.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));

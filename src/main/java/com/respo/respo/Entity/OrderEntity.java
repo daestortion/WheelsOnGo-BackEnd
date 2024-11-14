@@ -52,6 +52,9 @@ public class OrderEntity {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "referenceNumber", unique = true)
+    private String referenceNumber; // Unique reference number
+
     @Column(name = "status")
     private int status;
 
@@ -100,6 +103,7 @@ public class OrderEntity {
         this.totalPrice = totalPrice;
         this.paymentOption = paymentOption;
         this.isDeleted = isDeleted;
+        this.referenceNumber = referenceNumber;
         this.status = status;
         this.isActive = isActive;
         this.deliveryOption = deliveryOption;
@@ -179,6 +183,14 @@ public class OrderEntity {
 
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public int getStatus() {
