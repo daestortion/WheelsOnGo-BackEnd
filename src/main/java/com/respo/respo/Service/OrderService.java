@@ -283,15 +283,6 @@ public class OrderService {
 			}
 		}
 	
-		// Set the reference number based on the payment method
-		if ("PayPal".equalsIgnoreCase(paymentOption) && transactionId != null) {
-			order.setReferenceNumber(transactionId); // Store PayPal transaction ID as reference number
-		} else if ("Cash".equalsIgnoreCase(paymentOption)) {
-			if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
-				order.setReferenceNumber(order.generateReferenceNumber()); // Generate a new reference number if not set
-			}
-		}
-	
 		// Check payment method and set active and status accordingly
 		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {
 			order.setStatus(1); // Assuming '1' indicates a successful payment
