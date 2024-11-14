@@ -36,4 +36,9 @@ public class PaymentService {
         payment.setStatus(status);
         return paymentRepo.save(payment);
     }
+
+    public boolean checkExistingPayment(String transactionId) {
+        return paymentRepo.existsByReferenceNumber(transactionId);
+    }
+    
 }

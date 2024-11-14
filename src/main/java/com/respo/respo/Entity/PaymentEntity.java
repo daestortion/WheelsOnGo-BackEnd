@@ -150,6 +150,12 @@ public class PaymentEntity {
         this.refundDate = refundDate;
     }
 
-    
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) { // Add setter for referenceNumber
+        this.referenceNumber = referenceNumber;
+    }
 
 }
