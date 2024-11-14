@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.Collections;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -67,7 +66,7 @@ public class OrderController {
     
     
 
-    @PutMapping("/updatePaymentStatus")
+    @PostMapping("/updatePaymentStatus")
     public ResponseEntity<String> updatePaymentStatus(@RequestBody Map<String, Object> paymentData) {
         try {
             if (!paymentData.containsKey("orderId") || !paymentData.containsKey("transactionId")) {
@@ -232,12 +231,4 @@ public class OrderController {
         }
     }
 
-
-    @GetMapping("/checkExistingPayment")
-    public ResponseEntity<Map<String, Boolean>> checkExistingPayment(@RequestParam("transactionId") String transactionId) {
-        boolean exists = paymentService.checkExistingPayment(transactionId);
-        Map<String, Boolean> response = Collections.singletonMap("exists", exists);
-        return ResponseEntity.ok(response);
-    }
-    
 }
