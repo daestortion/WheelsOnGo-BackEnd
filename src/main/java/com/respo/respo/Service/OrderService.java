@@ -61,9 +61,6 @@ public class OrderService {
 
 		OrderEntity savedOrder = orepo.save(order);
 
-		// Use dynamic payment option based on order data
-		paymentService.createPayment(savedOrder, order.getTotalPrice(), order.getPaymentOption(), null, 0);
-
 		return savedOrder;
 	}
 
