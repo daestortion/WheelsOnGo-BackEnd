@@ -35,18 +35,18 @@ public class PaymentController {
     @Autowired
     private OrderRepository orderRepository;
 
-    // Endpoint to create a payment
     @PostMapping("/create")
     public ResponseEntity<PaymentEntity> createPayment(@RequestBody Map<String, Object> paymentData) {
         try {
-            // Log incoming payment data to help with debugging
-            System.out.println("Received payment data: " + paymentData);
-
+            // Log incoming payment data
+            System.out.println("Received payment data:");
+            paymentData.forEach((key, value) -> System.out.println(key + ": " + value));
+    
             int orderId = (Integer) paymentData.get("orderId");
             String paymentMethod = (String) paymentData.get("paymentOption");
             String transactionId = (String) paymentData.get("transactionId");
             int status = (Integer) paymentData.get("status");
-
+    
             // Ensure the amount is treated as a float
             Object amountObj = paymentData.get("amount");
             float amount = 0f;
@@ -55,20 +55,29 @@ public class PaymentController {
             } else if (amountObj instanceof Float) {
                 amount = (Float) amountObj; // If it's already a Float, use it directly
             }
-
+    
             // Fetch the order directly from the repository
             OrderEntity order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new NoSuchElementException("Order with ID " + orderId + " not found"));
+    
+            // Log order details
+            System.out.println("Fetched Order Details: " + order);
 
             // Create the payment
             PaymentEntity payment = paymentService.createPayment(order, amount, paymentMethod, null, status);
-
+    
+            // Log created payment
+            System.out.println("Created Payment: " + payment);
+    
             return new ResponseEntity<>(payment, HttpStatus.CREATED);
         } catch (Exception e) {
+            // Log error details
+            System.err.println("Error creating payment: " + e.getMessage());
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
 
 
     // Endpoint to get payments by order
