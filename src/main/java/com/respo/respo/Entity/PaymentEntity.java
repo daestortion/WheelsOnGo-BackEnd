@@ -26,12 +26,12 @@ public class PaymentEntity {
 
     @ManyToOne
     @JoinColumn(name = "orderId")
-    @JsonIgnoreProperties("payments") // Prevent recursive serialization
-    private OrderEntity order; // Many-to-one relationship with OrderEntity
+    @JsonIgnoreProperties({ "payments", "user" }) // Prevent recursion
+    private OrderEntity order;
 
     @Column(name = "amount")
     private float amount;
-
+    
     @Column(name = "paymentDate")
     @CreationTimestamp
     private LocalDateTime paymentDate;
@@ -139,7 +139,5 @@ public class PaymentEntity {
     public void setRefundDate(LocalDateTime refundDate) {
         this.refundDate = refundDate;
     }
-
-    
 
 }

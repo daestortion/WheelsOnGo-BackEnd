@@ -84,8 +84,8 @@ public class OrderEntity {
     private LocalDate terminationDate;
 
     @OneToMany(mappedBy = "order")
-    @JsonIgnoreProperties("order")
-    private List<PaymentEntity> payments; // One-to-many relationship with PaymentEntity
+    @JsonIgnoreProperties({"order"}) // Prevent recursion
+    private List<PaymentEntity> payments;
 
     public OrderEntity() {
     }
