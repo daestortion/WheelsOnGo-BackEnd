@@ -1,25 +1,98 @@
 package com.respo.respo.Controller;
 
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.PaymentEntity;
+import com.respo.respo.Repository.OrderRepository;
 import com.respo.respo.Service.PayMongoService;
+import com.respo.respo.Service.PaymentService;
 
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
 
+     @Autowired
+    private PaymentService paymentService;
+
     @Autowired
     private PayMongoService payMongoService;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
+    // Endpoint to create a payment
+    @PostMapping("/create")
+    public ResponseEntity<PaymentEntity> createPayment(
+        @RequestParam int orderId,
+        @RequestParam float amount,
+        @RequestParam String paymentMethod,
+        @RequestParam(required = false) byte[] proofOfPayment,
+        @RequestParam int status) {
+
+        try {
+            // Fetch the order directly from the repository
+            OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order with ID " + orderId + " not found"));
+
+            PaymentEntity payment = paymentService.createPayment(order, amount, paymentMethod, proofOfPayment, status);
+            return new ResponseEntity<>(payment, HttpStatus.CREATED);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Endpoint to get payments by order
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<PaymentEntity>> getPaymentsByOrder(@PathVariable int orderId) {
+        try {
+            // Fetch the order directly from the repository
+            OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order with ID " + orderId + " not found"));
+
+            List<PaymentEntity> payments = paymentService.getPaymentsByOrder(order);
+            return new ResponseEntity<>(payments, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Endpoint to update the status of a payment
+    @PutMapping("/{paymentId}/status")
+    public ResponseEntity<PaymentEntity> updatePaymentStatus(
+        @PathVariable int paymentId,
+        @RequestParam int status) {
+
+        try {
+            PaymentEntity updatedPayment = paymentService.updatePaymentStatus(paymentId, status);
+            return new ResponseEntity<>(updatedPayment, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     // Endpoint to create a payment link
     @PostMapping("/create-link")
     public String createPaymentLink(@RequestBody Map<String, Object> payload) {
