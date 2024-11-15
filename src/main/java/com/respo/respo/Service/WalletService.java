@@ -23,6 +23,12 @@ public class WalletService {
 
     @Autowired
     private WalletRepository walletRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private RequestFormRepository requestFormRepository;
 
     public List<WalletEntity> getAllWallets() {
         return walletRepository.findAll();

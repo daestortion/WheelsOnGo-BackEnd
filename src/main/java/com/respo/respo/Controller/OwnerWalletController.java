@@ -37,7 +37,7 @@ public class OwnerWalletController {
     @PutMapping("/addToCashEarnings/{userId}")
     public ResponseEntity<String> addToCashEarnings(@PathVariable int userId, @RequestParam float amount) {
         ownerWalletService.addToCashEarnings(userId, amount);
-        return ResponseEntity.ok("15% of the amount added to cash earnings successfully.");
+        return ResponseEntity.ok("85% of the amount added to cash earnings successfully.");
     }
 
     @PutMapping("/updateCashRefundable/{userId}")
