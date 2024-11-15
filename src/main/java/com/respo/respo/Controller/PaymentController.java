@@ -71,7 +71,6 @@ public class PaymentController {
     }
 
 
-
     // Endpoint to get payments by order
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<PaymentEntity>> getPaymentsByOrder(@PathVariable int orderId) {
