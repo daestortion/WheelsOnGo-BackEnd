@@ -168,17 +168,19 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/extendOrder/{orderId}")
-    public ResponseEntity<OrderEntity> extendOrder(@PathVariable int orderId,
-                                                @RequestParam("newEndDate") String newEndDateStr) {
+    @PutMapping("/extendOrder/{orderId}")
+    public ResponseEntity<Map<String, Object>> extendOrder(
+            @PathVariable int orderId,
+            @RequestParam("newEndDate") String newEndDateStr) {
         try {
             LocalDate newEndDate = LocalDate.parse(newEndDateStr);
-            OrderEntity newOrder = oserv.extendOrder(orderId, newEndDate);
-            return new ResponseEntity<>(newOrder, HttpStatus.CREATED);  // Use CREATED status for new order
+            Map<String, Object> result = oserv.extendOrder(orderId, newEndDate);
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
+
 
     @PutMapping("/markAsReturned/{orderId}")
     public ResponseEntity<String> markAsReturned(@PathVariable int orderId) {
