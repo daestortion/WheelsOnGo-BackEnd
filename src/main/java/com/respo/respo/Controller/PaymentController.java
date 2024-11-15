@@ -37,27 +37,40 @@ public class PaymentController {
 
     // Endpoint to create a payment
     @PostMapping("/create")
-    public ResponseEntity<PaymentEntity> createPayment(
-        @RequestParam int orderId,
-        @RequestParam float amount,
-        @RequestParam String paymentMethod,
-        @RequestParam(required = false) byte[] proofOfPayment,
-        @RequestParam int status) {
-
+    public ResponseEntity<PaymentEntity> createPayment(@RequestBody Map<String, Object> paymentData) {
         try {
+            // Log incoming payment data to help with debugging
+            System.out.println("Received payment data: " + paymentData);
+
+            int orderId = (Integer) paymentData.get("orderId");
+            String paymentMethod = (String) paymentData.get("paymentOption");
+            String transactionId = (String) paymentData.get("transactionId");
+            int status = (Integer) paymentData.get("status");
+
+            // Ensure the amount is treated as a float
+            Object amountObj = paymentData.get("amount");
+            float amount = 0f;
+            if (amountObj instanceof Integer) {
+                amount = ((Integer) amountObj).floatValue(); // Convert Integer to float
+            } else if (amountObj instanceof Float) {
+                amount = (Float) amountObj; // If it's already a Float, use it directly
+            }
+
             // Fetch the order directly from the repository
             OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Order with ID " + orderId + " not found"));
+                    .orElseThrow(() -> new NoSuchElementException("Order with ID " + orderId + " not found"));
 
-            PaymentEntity payment = paymentService.createPayment(order, amount, paymentMethod, proofOfPayment, status);
+            // Create the payment
+            PaymentEntity payment = paymentService.createPayment(order, amount, paymentMethod, null, status);
+
             return new ResponseEntity<>(payment, HttpStatus.CREATED);
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
     // Endpoint to get payments by order
     @GetMapping("/order/{orderId}")

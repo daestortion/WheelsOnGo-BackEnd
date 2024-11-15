@@ -31,9 +31,13 @@ public class OrderService {
     CarService carService;
 
 	@Autowired
-	OrderRepository orepo;
-	CarRepository crepo;
-	PaymentRepository paymentRepo;
+    OrderRepository orepo;
+
+    @Autowired
+    CarRepository crepo;
+
+    @Autowired
+    PaymentRepository paymentRepo; // Add @Autowired annotation here
 
 	@Autowired
     ActivityLogService logService;
