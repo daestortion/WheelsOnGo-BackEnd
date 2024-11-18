@@ -7,15 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.respo.respo.Entity.ActivityLogEntity;
 import com.respo.respo.Entity.CarEntity;
@@ -60,13 +55,11 @@ public class OrderService {
 
 		order.setUser(user);
 		order.setCar(car);
+		order.setReferenceNumber(order.generateReferenceNumber());
 		user.setRenting(true);
 		car.setRented(true);
 
 		OrderEntity savedOrder = orepo.save(order);
-
-		// Use dynamic payment option based on order data
-		paymentService.createPayment(savedOrder, order.getTotalPrice(), order.getPaymentOption(), null, 0);
 
 		return savedOrder;
 	}
@@ -278,6 +271,14 @@ public class OrderService {
 		OrderEntity order = orepo.findById(orderId)
 			.orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
 	
+		// Set the reference number based on the payment method
+		if ("PayPal".equalsIgnoreCase(paymentOption) && transactionId != null) {
+			order.setReferenceNumber(transactionId); // Store PayPal transaction ID as reference number
+		} else if ("Cash".equalsIgnoreCase(paymentOption)) {
+			if (order.getReferenceNumber() == null || order.getReferenceNumber().isEmpty()) {
+				order.setReferenceNumber(order.generateReferenceNumber()); // Generate a new reference number if not set
+			}
+		}
 	
 		// Check payment method and set active and status accordingly
 		if ("PayPal".equalsIgnoreCase(paymentOption) || "PayMongo".equalsIgnoreCase(paymentOption)) {

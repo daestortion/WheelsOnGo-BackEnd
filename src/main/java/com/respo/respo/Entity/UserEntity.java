@@ -59,9 +59,9 @@ public class UserEntity {
 	@JsonIgnoreProperties({ "owner" }) // Prevent recursion
 	private List<CarEntity> cars;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "user" }) // Prevent recursion
-	private List<OrderEntity> orders;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user", "payments"}) // Prevent recursion
+    private List<OrderEntity> orders;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnoreProperties({ "user" }) // Prevent recursion

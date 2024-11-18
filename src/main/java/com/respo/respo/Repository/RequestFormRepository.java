@@ -11,4 +11,5 @@ import com.respo.respo.Entity.RequestFormEntity;
 public interface RequestFormRepository extends JpaRepository<RequestFormEntity, Integer> {
     // You can define custom query methods here if needed
     List<RequestFormEntity> findAllByUser_UserIdAndStatus(int userId, String status);
+    List<RequestFormEntity> findAllByUser_UserId(int userId);
 }

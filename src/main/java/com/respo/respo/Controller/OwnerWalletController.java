@@ -3,7 +3,15 @@ package com.respo.respo.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.respo.respo.Entity.OwnerWalletEntity;
 import com.respo.respo.Service.OwnerWalletService;
@@ -44,5 +52,16 @@ public class OwnerWalletController {
     public ResponseEntity<String> updateCashRefundable(@PathVariable int userId, @RequestParam float amount) {
         ownerWalletService.updateCashRefundable(userId, amount);
         return ResponseEntity.ok("Cash refundable updated successfully.");
+    }
+
+    // Fetch wallet details for a specific user
+    @GetMapping("/getWalletDetails/{userId}")
+    public ResponseEntity<OwnerWalletEntity> getWalletDetails(@PathVariable int userId) {
+        OwnerWalletEntity wallet = ownerWalletService.getWalletByUserId(userId);
+        if (wallet != null) {
+            return ResponseEntity.ok(wallet);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
