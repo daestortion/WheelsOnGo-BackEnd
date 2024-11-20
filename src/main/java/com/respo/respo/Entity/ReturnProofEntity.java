@@ -41,6 +41,7 @@ public class ReturnProofEntity {
     @JoinColumn(name = "orderId", referencedColumnName = "orderId")
     private OrderEntity order;
 
+
     // Getters and Setters
 
     public int getId() {

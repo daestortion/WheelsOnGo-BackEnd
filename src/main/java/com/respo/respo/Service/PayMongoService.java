@@ -14,13 +14,22 @@ import org.springframework.web.client.RestTemplate;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
+import com.respo.respo.Entity.PaymentEntity;
 import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Repository.OrderRepository;
+import com.respo.respo.Repository.PaymentRepository;
 
 @Service
 public class PayMongoService {
 
     private static final String PAYMONGO_URL = "https://api.paymongo.com/v1/links";
-    private static final String API_KEY = "sk_test_3mN2xCjzWs14ur254hi39QmF";  // Replace with your secret key
+    private static final String API_KEY = "sk_test_TJm895xJBi9VSxyJMG2a9Sue";
+
+    @Autowired
+    private OrderRepository orderRepo;
+
+    @Autowired
+    private PaymentRepository paymentRepo;
 
     @Autowired
     private UserService userService;
@@ -63,25 +72,24 @@ public class PayMongoService {
     
 
     // New method to handle order creation after payment confirmation
-    public void insertOrderAfterPayment(int userId, int carId, int amount) {
-        // Fetch the user and car entities (you can adjust this logic as needed)
-        UserEntity user = userService.getUserById(userId);
-        CarEntity car = carService.getCarById(carId);
+    public void insertOrderAfterPayment(String externalReference, int amount) {
+        // Retrieve the order using the external reference (e.g., referenceNumber)
+        OrderEntity order = orderService.getOrderByReferenceNumber(externalReference);
     
-        // Log the details before order insertion
-        System.out.println("Inserting order for User ID: " + userId + ", Car ID: " + carId + ", Amount: " + amount);
+        // Mark the order as paid
+        order.setStatus(1); // Paid
+        order.setActive(true);
     
-        // Create the order entity and set the status as paid
-        OrderEntity order = new OrderEntity();
-        order.setUser(user);
-        order.setCar(car);
-        order.setTotalPrice((float) amount / 100); // Cast amount to float before dividing
-        order.setPaymentOption("Paymongo");
-        order.setStatus(1); // 1 for paid status
+        // Create a payment record
+        PaymentEntity payment = new PaymentEntity();
+        payment.setOrder(order);
+        payment.setAmount(amount / 100.0f); // Convert centavos to PHP
+        payment.setPaymentMethod("PayMongo");
+        payment.setStatus(1); // Successful
     
-        // Insert the order into the database and log the result
-        orderService.insertOrder(order);
-        System.out.println("Order inserted successfully: " + order);
+        // Save updates
+        orderRepo.save(order);
+        paymentRepo.save(payment);
     }
     
 }

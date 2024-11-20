@@ -3,6 +3,8 @@ package com.respo.respo.Controller;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,5 +78,30 @@ public class ReturnProofController {
         return ResponseEntity.noContent().build();
     }
 
-    
+    // New: Update owner details for the return
+    @PutMapping("/updateReturnProof/{orderId}")
+    public ResponseEntity<?> updateOwnerReturnProof(
+            @PathVariable int orderId,
+            @RequestParam("ownerProof") MultipartFile ownerProof,
+            @RequestParam("ownerRemark") String ownerRemark,
+            @RequestParam("ownerApproval") boolean ownerApproval) {
+        try {
+            ReturnProofEntity updatedProof = returnProofService.updateOwnerProof(
+                    orderId, ownerProof, ownerRemark, ownerApproval);
+            return ResponseEntity.ok(updatedProof);
+        } catch (IOException | RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/getReturnDetails/{orderId}")
+    public ResponseEntity<?> getReturnDetails(@PathVariable int orderId) {
+        try {
+            Map<String, Object> renterDetails = returnProofService.getRenterDetails(orderId);
+            return ResponseEntity.ok(renterDetails);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("Return proof not found for order ID: " + orderId);
+        }
+    }
+
 }

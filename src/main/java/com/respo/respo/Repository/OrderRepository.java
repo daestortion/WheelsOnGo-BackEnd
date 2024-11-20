@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
 import com.respo.respo.Entity.CarEntity;
 import com.respo.respo.Entity.OrderEntity;
@@ -12,4 +13,5 @@ import com.respo.respo.Entity.UserEntity;
 public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
     List<OrderEntity> findByUser(UserEntity user);
     List<OrderEntity> findByCar(CarEntity car); // Add this method
+    Optional<OrderEntity> findByReferenceNumber(String referenceNumber);
 }

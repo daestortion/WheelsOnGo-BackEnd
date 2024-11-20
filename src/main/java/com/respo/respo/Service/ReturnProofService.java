@@ -1,11 +1,18 @@
 package com.respo.respo.Service;
 
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Base64;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.respo.respo.Entity.OrderEntity;
 import com.respo.respo.Entity.ReturnProofEntity;
@@ -74,4 +81,37 @@ public class ReturnProofService {
     public void deleteReturnProof(int id) {
         returnProofRepository.deleteById(id);
     }
+
+    // New: Fetch renter-submitted details
+    public Map<String, Object> getRenterDetails(int orderId) {
+        ReturnProofEntity proof = returnProofRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Return proof not found for order ID: " + orderId));
+    
+        Map<String, Object> response = new HashMap<>();
+        response.put("carOwner", proof.getOrder().getCar().getOwner().getfName() + " " + proof.getOrder().getCar().getOwner().getlName());
+        response.put("renter", proof.getOrder().getUser().getfName() + " " + proof.getOrder().getUser().getlName());
+        response.put("rentStartDate", proof.getOrder().getStartDate());
+        response.put("rentEndDate", proof.getOrder().getEndDate());
+        response.put("carReturnDate", proof.getReturnDate());
+        response.put("remarks", proof.getRemarks());
+        response.put("proof", Base64.getEncoder().encodeToString(proof.getProof())); // Convert the byte array to Base64
+        return response;
+    }
+    
+    
+    
+
+    // New: Update owner-side return proof details
+    public ReturnProofEntity updateOwnerProof(int orderId, MultipartFile ownerProof, 
+                                              String ownerRemark, boolean ownerApproval) throws IOException {
+        ReturnProofEntity proof = returnProofRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Return proof not found for order ID: " + orderId));
+
+        proof.setOwnerProof(ownerProof.getBytes());
+        proof.setOwnerRemark(ownerRemark);
+        proof.setOwnerApproval(ownerApproval);
+
+        return returnProofRepository.save(proof);
+    }
+
 }

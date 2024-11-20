@@ -52,17 +52,24 @@ public class OrderService {
 	public OrderEntity insertOrder(int userId, int carId, OrderEntity order) {
 		UserEntity user = userService.getUserById(userId);
 		CarEntity car = carService.getCarById(carId);
-
+	
 		order.setUser(user);
 		order.setCar(car);
 		order.setReferenceNumber(order.generateReferenceNumber());
 		user.setRenting(true);
 		car.setRented(true);
-
+	
 		OrderEntity savedOrder = orepo.save(order);
-
+	
+		// Manually update active status if start date matches today's date
+		if (savedOrder.getStartDate().equals(LocalDate.now())) {
+			savedOrder.setActive(true);
+			orepo.save(savedOrder); // Save the updated order immediately
+		}
+	
 		return savedOrder;
 	}
+	
 
 	
 
@@ -323,5 +330,25 @@ public class OrderService {
         logService.logActivity(logMessage, order.getUser().getUsername());
 
         return savedOrder;
+    }
+
+
+	public OrderEntity getOrderByReferenceNumber(String referenceNumber) {
+		return orepo.findByReferenceNumber(referenceNumber)
+					.orElseThrow(() -> new NoSuchElementException("Order not found with reference: " + referenceNumber));
+	}
+	
+	public void updateActiveStatusIfStartDateMatches() {
+        LocalDate currentDate = LocalDate.now();  // Get today's date (only date, no time)
+        
+        List<OrderEntity> allOrders = orepo.findAll();  // Get all orders
+
+        for (OrderEntity order : allOrders) {
+            // Ensure we are only comparing the date part (no time)
+            if (order.getStartDate().equals(currentDate)) {
+                order.setActive(true);  // Set active status to true if dates match
+                orepo.save(order);  // Save the updated order
+            }
+        }
     }
 }

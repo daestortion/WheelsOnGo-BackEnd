@@ -124,64 +124,29 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
-public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> payload) {
-    try {
-        // Log the incoming webhook payload
-        System.out.println("Webhook received: " + payload);
-
-        // Check if 'data' exists in the payload
-        if (!payload.containsKey("data")) {
-            System.out.println("Error: 'data' object not found in the payload");
-            return new ResponseEntity<>("Missing 'data' object", HttpStatus.BAD_REQUEST);
-        }
-
-        // Access the 'data' object first
-        Map<String, Object> data = (Map<String, Object>) payload.get("data");
-        System.out.println("Data object: " + data);
-
-        // Check if 'type' exists in the 'data' object
-        if (!data.containsKey("type")) {
-            System.out.println("Error: 'type' not found in 'data' object");
-            return new ResponseEntity<>("Missing 'type' in 'data'", HttpStatus.BAD_REQUEST);
-        }
-
-        // Extract the 'type' from the 'data' object
-        String eventType = (String) data.get("type");
-        System.out.println("Event Type: " + eventType);
-
-        if ("payment.paid".equals(eventType)) {
-            // Check if 'attributes' exists in 'data' object
-            if (!data.containsKey("attributes")) {
-                System.out.println("Error: 'attributes' object not found in 'data'");
-                return new ResponseEntity<>("Missing 'attributes' in 'data'", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> payload) {
+        try {
+            System.out.println("Webhook received: " + payload);
+            if (payload.containsKey("data")) {
+                Map<String, Object> data = (Map<String, Object>) payload.get("data");
+                String eventType = (String) data.get("type");
+                
+                if ("payment.paid".equals(eventType)) {
+                    Map<String, Object> attributes = (Map<String, Object>) data.get("attributes");
+                    int amount = (int) attributes.get("amount");
+                    String externalRef = (String) attributes.get("external_reference");
+                    
+                    // Use external reference (order ID) to update order and payment
+                    payMongoService.insertOrderAfterPayment(externalRef, amount);
+                }
             }
-
-            Map<String, Object> attributes = (Map<String, Object>) data.get("attributes");
-            System.out.println("Attributes: " + attributes);
-
-            // Extract necessary details from the attributes
-            int userId = extractAsInt(attributes, "userId");
-            int carId = extractAsInt(attributes, "carId");
-            int amount = extractAsInt(attributes, "amount");
-
-            System.out.println("User ID: " + userId + ", Car ID: " + carId + ", Amount: " + amount);
-
-            // Call the service method to insert the order after payment confirmation
-            payMongoService.insertOrderAfterPayment(userId, carId, amount);
-
-            return new ResponseEntity<>("Webhook processed successfully", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Unhandled event type", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.ok("Webhook processed successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error handling webhook");
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        return new ResponseEntity<>("Error processing webhook: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
-
-
-
-
+    
     // Helper method to safely extract an integer from a map
     private int extractAsInt(Map<String, Object> map, String key) {
         Object value = map.get(key);
