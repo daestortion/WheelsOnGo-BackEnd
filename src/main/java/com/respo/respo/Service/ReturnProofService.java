@@ -41,17 +41,18 @@ public class ReturnProofService {
         // Calculate the penalty based on return date and order end date
         if (returnProof.getReturnDate() != null && order.getEndDate() != null) {
             long daysLate = ChronoUnit.DAYS.between(order.getEndDate(), returnProof.getReturnDate());
-            if (daysLate > 1) {
-                returnProof.setPenalty(500); // Set penalty if return is more than 1 day late
+            if (daysLate > 0) { 
+                returnProof.setPenalty(daysLate * 500); // Set penalty as 500 multiplied by days late
             } else {
-                returnProof.setPenalty(0); // No penalty if return is on time or within 1 day
+                returnProof.setPenalty(0); // No penalty if return is on time or early
             }
         } else {
             returnProof.setPenalty(0); // Default to no penalty if dates are missing
         }
     
         return returnProofRepository.save(returnProof);
-    }    
+    }
+    
     
     public List<ReturnProofEntity> getAllReturnProofs() {
         return returnProofRepository.findAll();
