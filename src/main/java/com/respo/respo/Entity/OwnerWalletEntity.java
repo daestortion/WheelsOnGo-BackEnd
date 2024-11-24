@@ -14,7 +14,7 @@ public class OwnerWalletEntity {
 
     @OneToOne
     @JoinColumn(name = "userId", referencedColumnName = "userId")
-    @JsonIgnoreProperties({"wallet", "verification", "reports", "chats", "cars", "orders"})
+    @JsonIgnoreProperties({"ownerWallet", "verification", "reports", "chats", "cars", "orders", "wallet"})
     private UserEntity user;
 
     @Column(name = "onlineEarning")

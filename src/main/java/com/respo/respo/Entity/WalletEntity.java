@@ -28,7 +28,7 @@ public class WalletEntity {
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
-    @JsonIgnoreProperties({"wallet", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"wallet", "hibernateLazyInitializer", "handler"}) // Prevent recursion
     private UserEntity user;
 
     @Column(name = "balance", nullable = false)

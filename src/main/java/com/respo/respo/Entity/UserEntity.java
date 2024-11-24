@@ -44,28 +44,28 @@ public class UserEntity {
 	private boolean isOwner = false;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "user" }) // Prevent recursion
-	private VerificationEntity verification;
+    @JsonIgnoreProperties({"user"}) // Prevent recursion
+    private VerificationEntity verification;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "user", "chat" }) // Ignore 'user' and 'chat' in ReportEntity to prevent recursion
-	private List<ReportEntity> reports;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user", "chat"}) // Prevent recursion
+    private List<ReportEntity> reports;
 
-	@ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "users", "messages", "report", "admin" }) // Prevent recursion
-	private List<ChatEntity> chats = new ArrayList<>(); // All chats the user is involved in
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"users", "messages", "report", "admin"}) // Prevent recursion
+    private List<ChatEntity> chats = new ArrayList<>();
 
-	@OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "owner" }) // Prevent recursion
-	private List<CarEntity> cars;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"owner"}) // Prevent recursion
+    private List<CarEntity> cars;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"user", "payments"}) // Prevent recursion
     private List<OrderEntity> orders;
 
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({ "user" }) // Prevent recursion
-	private WalletEntity wallet; // Reference to the WalletEntity
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"user"}) // Prevent recursion
+    private WalletEntity wallet;
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnoreProperties({ "user" })
