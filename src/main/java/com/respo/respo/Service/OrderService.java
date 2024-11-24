@@ -60,6 +60,7 @@ public class OrderService {
 		car.setRented(true);
 	
 		OrderEntity savedOrder = orepo.save(order);
+<<<<<<< Updated upstream
 	
 		// Manually update active status if start date matches today's date
 		if (savedOrder.getStartDate().equals(LocalDate.now())) {
@@ -67,6 +68,10 @@ public class OrderService {
 			orepo.save(savedOrder); // Save the updated order immediately
 		}
 	
+=======
+
+		// Use dynamic payment option based on order data
+>>>>>>> Stashed changes
 		return savedOrder;
 	}
 	
