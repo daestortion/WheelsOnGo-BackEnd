@@ -1,6 +1,7 @@
 package com.respo.respo.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -182,41 +183,37 @@ public class OrderService {
 		// Calculate the cost of the extension (only for the additional days)
 		float extensionCost = dailyRate * additionalDays;
 	
-		// Add the extension cost to the current total price
+		// Update the total price in the order
 		float newTotalPrice = order.getTotalPrice() + extensionCost;
-		order.setTotalPrice(newTotalPrice);  // Set the cumulative total price
-	
-		// Update the order's end date
-		order.setEndDate(newEndDate);
+		order.setTotalPrice(newTotalPrice);  // Update the total price
+		order.setEndDate(newEndDate);        // Update the order's end date
 	
 		// Save the updated order
-		OrderEntity updatedOrder = orepo.save(order);
+		orepo.save(order);
+	
+		// Create a payment record **only for the extension cost**
+		PaymentEntity payment = new PaymentEntity();
+		payment.setOrder(order);
+		payment.setAmount(extensionCost);    // Only the cost of the extension
+		payment.setPaymentDate(LocalDateTime.now());
+		payment.setPaymentMethod("PayPal");  // Assume PayPal for simplicity
+		payment.setStatus(1);                // Mark payment as completed
+	
+		// Save the payment record
+		paymentRepo.save(payment);
 	
 		// Log the order extension
 		String logMessage = "Order " + order.getOrderId() + " has been extended from " +
 							currentEndDate + " to " + newEndDate + ". Additional Days: " + additionalDays;
 		logService.logActivity(logMessage, order.getUser().getUsername());
 	
-		// Prepare the response to return both the updated order and the extension cost separately
+		// Prepare the response to return both the updated order and the extension cost
 		Map<String, Object> response = new HashMap<>();
-		response.put("updatedOrder", updatedOrder);
-		response.put("extensionCost", extensionCost); // Return the extension cost for payment calculation
+		response.put("updatedOrder", order);       // Return the updated order
+		response.put("extensionCost", extensionCost); // Include the extension cost in the response
 	
 		return response;
-	}	
-	
-	 // Method to update the delivery address of an order
-	 public OrderEntity updateDeliveryAddress(int orderId, String newAddress) {
-        // Fetch the order by ID
-        OrderEntity order = orepo.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Order " + orderId + " not found"));
-
-        // Set the new delivery address
-        order.setDeliveryAddress(newAddress);
-
-        // Save and return the updated order
-        return orepo.save(order);
-    }
+	}
 
 	public OrderEntity terminateOrder(int orderId) {
 		OrderEntity order = orepo.findById(orderId)

@@ -1,5 +1,6 @@
 package com.respo.respo.Service;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -103,16 +104,39 @@ public class ReturnProofService {
     
 
     // New: Update owner-side return proof details
-    public ReturnProofEntity updateOwnerProof(int orderId, MultipartFile ownerProof, 
-                                              String ownerRemark, boolean ownerApproval) throws IOException {
-        ReturnProofEntity proof = returnProofRepository.findById(orderId)
+    public ReturnProofEntity updateOwnerProofAndOrder(int orderId, MultipartFile ownerProof, 
+                                                    String ownerRemark, boolean ownerApproval) 
+                                                    throws IOException {
+        // Fetch the return proof and order
+        ReturnProofEntity proof = returnProofRepository.findByOrder_OrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Return proof not found for order ID: " + orderId));
+        OrderEntity order = proof.getOrder();
 
+        // Update acknowledgment fields
         proof.setOwnerProof(ownerProof.getBytes());
         proof.setOwnerRemark(ownerRemark);
         proof.setOwnerApproval(ownerApproval);
 
+        // If the acknowledgment is approved, update the order
+        if (ownerApproval) {
+            order.setReturned(true);
+            order.setReturnDate(LocalDate.now());
+            orderRepository.save(order); // Save updated order
+        }
+
+        // Save the updated return proof
         return returnProofRepository.save(proof);
     }
 
+
+    public boolean returnProofExists(int orderId) {
+        return returnProofRepository.findByOrder_OrderId(orderId).isPresent();
+    }
+    
+    public boolean isOwnerAcknowledged(int orderId) {
+        return returnProofRepository.findByOrder_OrderId(orderId)
+                .map(ReturnProofEntity::isOwnerApproval) // Check if the owner has approved the return
+                .orElse(false); // Return false if no proof exists
+    }
+    
 }

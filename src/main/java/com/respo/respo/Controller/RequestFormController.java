@@ -38,4 +38,9 @@ public class RequestFormController {
         return requestFormService.approveRequest(requestId);
     }
 
+    // Get a specific request by its ID
+    @GetMapping("/getRequestById/{requestId}")
+    public RequestFormEntity getRequestById(@PathVariable int requestId) {
+        return requestFormService.getRequestById(requestId);
+    }
 }

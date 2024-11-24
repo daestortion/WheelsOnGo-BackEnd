@@ -86,13 +86,14 @@ public class ReturnProofController {
             @RequestParam("ownerRemark") String ownerRemark,
             @RequestParam("ownerApproval") boolean ownerApproval) {
         try {
-            ReturnProofEntity updatedProof = returnProofService.updateOwnerProof(
+            ReturnProofEntity updatedProof = returnProofService.updateOwnerProofAndOrder(
                     orderId, ownerProof, ownerRemark, ownerApproval);
-            return ResponseEntity.ok(updatedProof);
+            return ResponseEntity.ok("Acknowledgment updated successfully and order marked as returned.");
         } catch (IOException | RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
+    
 
     @GetMapping("/getReturnDetails/{orderId}")
     public ResponseEntity<?> getReturnDetails(@PathVariable int orderId) {
@@ -104,4 +105,15 @@ public class ReturnProofController {
         }
     }
 
+    @GetMapping("/exists/{orderId}")
+    public ResponseEntity<Boolean> checkReturnProofExists(@PathVariable int orderId) {
+        boolean exists = returnProofService.returnProofExists(orderId);
+        return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/getAcknowledgmentStatus/{orderId}")
+    public ResponseEntity<Boolean> getAcknowledgmentStatus(@PathVariable int orderId) {
+        boolean acknowledged = returnProofService.isOwnerAcknowledged(orderId);
+        return ResponseEntity.ok(acknowledged);
+    }
 }
