@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.respo.respo.Entity.ChatEntity;
 import com.respo.respo.Entity.MessageEntity;
+import com.respo.respo.Entity.UserEntity;
 import com.respo.respo.Service.ChatService;
 
 @RestController
@@ -75,5 +76,9 @@ public class ChatController {
         return chatService.getChatsByUserId(userId);
     }
 
-    
+    @GetMapping("/{chatId}/available-users")
+    public List<UserEntity> getAvailableUsers(@PathVariable int chatId) {
+        return chatService.getAvailableUsersForChat(chatId);
+    }
+
 }

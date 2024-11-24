@@ -3,6 +3,7 @@ package com.respo.respo.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -120,15 +121,14 @@ public class ChatService {
             UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
-            // Check if the user is already in the chat
-            if (chat.getUsers().stream().anyMatch(u -> u.getUserId() == userId)) {
-                throw new IllegalArgumentException("User is already in the chat");
+            if (chat.getUsers().contains(user)) {
+                throw new IllegalArgumentException("User is already a member of this chat");
             }
         
-            // Add the user to the chat
             chat.getUsers().add(user);
             return chatRepository.save(chat);
         }
+        
         
 
         public Optional<ChatEntity> getChatById(int chatId) {
@@ -142,6 +142,17 @@ public class ChatService {
             return chatRepository.findAllByUsersContaining(user);
         }
         
-        
+        public List<UserEntity> getAvailableUsersForChat(int chatId) {
+            ChatEntity chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+
+            List<UserEntity> allUsers = userRepository.findAll();
+            List<UserEntity> chatUsers = chat.getUsers();
+
+            return allUsers.stream()
+                .filter(user -> !chatUsers.contains(user)) // Exclude users already in the chat
+                .collect(Collectors.toList());
+        }
+
         
 }
