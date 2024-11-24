@@ -29,7 +29,7 @@ public class MessageEntity {
 
     @ManyToOne
     @JoinColumn(name = "userId", nullable = true) // Nullable if it's an admin sender
-    private UserEntity sender; // Store the entire UserEntity
+    private UserEntity sender; // The user sender of the message
 
     @ManyToOne
     @JoinColumn(name = "adminId", nullable = true) // Nullable if it's a user sender
@@ -71,16 +71,9 @@ public class MessageEntity {
         this.chat = chat;
     }
 
-    @JsonProperty("user")
-    public Object getUserDetails() {
-        if (sender != null) {
-            return new Object() {
-                public final int userId = sender.getUserId();
-                public final String username = sender.getUsername();
-                public final String profilePicture = sender.getProfilePicBase64();
-            };
-        }
-        return null;
+    @JsonProperty("userId")
+    public Integer getUserId() {
+        return sender != null ? sender.getUserId() : null;
     }
 
     public void setSender(UserEntity sender) {
