@@ -25,15 +25,15 @@ public class MessageEntity {
     @ManyToOne
     @JoinColumn(name = "chatId")
     @JsonIgnore // Prevent recursive serialization
-    private ChatEntity chat; // Many-to-one relationship with ChatEntity
+    private ChatEntity chat;
 
     @ManyToOne
     @JoinColumn(name = "userId", nullable = true) // Nullable if it's an admin sender
-    private UserEntity sender; // The user sender of the message
+    private UserEntity sender;
 
     @ManyToOne
     @JoinColumn(name = "adminId", nullable = true) // Nullable if it's a user sender
-    private AdminEntity adminSender; // The admin sender of the message
+    private AdminEntity adminSender;
 
     @Column(name = "messageContent")
     private String messageContent;
@@ -41,7 +41,7 @@ public class MessageEntity {
     @Column(name = "sentAt")
     private LocalDateTime sentAt;
 
-    // Constructors, getters, and setters
+    // Constructors
     public MessageEntity() {
     }
 
@@ -87,6 +87,17 @@ public class MessageEntity {
 
     public void setAdminSender(AdminEntity adminSender) {
         this.adminSender = adminSender;
+    }
+
+    @JsonProperty("senderLabel")
+    public String getSenderLabel() {
+        // Return "Admin" for admins and username for users
+        if (adminSender != null) {
+            return "Admin";
+        } else if (sender != null) {
+            return sender.getUsername();
+        }
+        return "Unknown";
     }
 
     public String getMessageContent() {
