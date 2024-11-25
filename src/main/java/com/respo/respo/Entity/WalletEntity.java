@@ -26,10 +26,11 @@ public class WalletEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int walletId;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "userId")
-    @JsonIgnoreProperties({"wallet", "hibernateLazyInitializer", "handler"}) // Prevent recursion
-    private UserEntity user;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JsonIgnoreProperties({"username", "fName", "lName", "email", "pWord", "pNum", "isDeleted", "reports", "chats",
+            "cars", "orders", "wallet", "ownerWallet", "verification", "profilePic", "isRenting", "isOwner", "timeStamp"}) // Only include userId
+    private UserEntity user;    
 
     @Column(name = "balance", nullable = false)
     private double balance;

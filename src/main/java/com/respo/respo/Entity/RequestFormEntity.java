@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -48,6 +49,10 @@ public class RequestFormEntity {
     @Column(name = "status", nullable = false)
     private String status; // New status field for request tracking
 
+    @Lob
+    @Column(name = "proof_image", nullable = true) // Binary data for proof image
+    private byte[] proofImage;
+
     // Default constructor
     public RequestFormEntity() {
         this.createdAt = LocalDateTime.now(); // Automatically set the creation time
@@ -55,7 +60,7 @@ public class RequestFormEntity {
     }
 
     // Unified constructor for both GCash and Bank requests
-    public RequestFormEntity(UserEntity user, String requestType, String fullName, String gcashNumber, String bankName, String accountNumber, float amount) {
+    public RequestFormEntity(UserEntity user, String requestType, String fullName, String gcashNumber, String bankName, String accountNumber, float amount, byte[] proofImage) {
         this.user = user;
         this.requestType = requestType;
         this.fullName = fullName; // This will be Account Name for Bank, Full Name for GCash
@@ -65,6 +70,7 @@ public class RequestFormEntity {
         this.amount = amount;
         this.createdAt = LocalDateTime.now(); // Automatically set the creation time
         this.status = "pending"; // Default status for a new request
+        this.proofImage = proofImage; // Set the proof image
     }
 
     // Getters and Setters
@@ -146,5 +152,13 @@ public class RequestFormEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public byte[] getProofImage() {
+        return proofImage;
+    }
+
+    public void setProofImage(byte[] proofImage) {
+        this.proofImage = proofImage;
     }
 }
