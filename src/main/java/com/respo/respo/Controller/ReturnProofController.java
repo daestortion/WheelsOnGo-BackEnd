@@ -34,7 +34,7 @@ public class ReturnProofController {
         this.returnProofService = returnProofService;
     }
 
-    @GetMapping
+    @GetMapping("/getAllProofs")
     public List<ReturnProofEntity> getAllReturnProofs() {
         return returnProofService.getAllReturnProofs();
     }
