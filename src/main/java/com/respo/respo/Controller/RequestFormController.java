@@ -71,4 +71,18 @@ public class RequestFormController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getProofImage/{requestId}")
+    public ResponseEntity<byte[]> getProofImage(@PathVariable int requestId) {
+        RequestFormEntity request = requestFormService.getRequestById(requestId);
+
+        if (request.getProofImage() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/png") // Or other image formats
+                .body(request.getProofImage());
+    }
+
 }
