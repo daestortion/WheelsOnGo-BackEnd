@@ -219,34 +219,23 @@ public class OrderService {
 		OrderEntity order = orepo.findById(orderId)
 				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
 	
-		// Set order as terminated and inactive
+		// Set order as terminated and capture the current date in the Philippines timezone
 		order.setTerminated(true);
-		order.setActive(false);
+		order.setActive(false);  // Set the order as inactive
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
-		order.setTerminationDate(philippinesTime.toLocalDate());
-	
-		// Update the car's rented status
+		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
+
+		// Optionally, set the user's and car's status to non-active
 		CarEntity car = order.getCar();
 		if (car != null) {
-			car.setRented(false);
+			car.setRented(false);  // Set the car as not rented
 		}
-	
-		// Update the user's renting status
+
 		UserEntity user = order.getUser();
 		if (user != null) {
-			user.setRenting(false);
+			user.setRenting(false);  // Set the user as not renting
 		}
-	
-		// Process refund via WalletService
-		try {
-			double refundedAmount = walletService.processRefund(orderId);
-			String refundLogMessage = "Refund of ₱" + refundedAmount + " processed for order " + order.getOrderId();
-			logService.logActivity(refundLogMessage, user.getUsername());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("Refund processing failed: " + e.getMessage());
-		}
-	
+
 		// Save the updated order
 		OrderEntity terminatedOrder = orepo.save(order);
 	
@@ -256,7 +245,6 @@ public class OrderService {
 	
 		return terminatedOrder;
 	}
-	
 
 	public void logOrderActivity(OrderEntity order) {
 		CarEntity car = order.getCar();
