@@ -56,10 +56,4 @@ public class PaymentService {
         payment.setStatus(status);
         return paymentRepo.save(payment);
     }
-    
-    public List<PaymentEntity> getAllPayments() {
-        return paymentRepo.findAll();
-    }
-    
 }
-
