@@ -160,8 +160,16 @@ public class PaymentController {
     }
 
     @GetMapping("/test")
-public ResponseEntity<String> testEndpoint() {
-    return new ResponseEntity<>("Test endpoint working", HttpStatus.OK);
+    public ResponseEntity<String> testEndpoint() {
+        return new ResponseEntity<>("Test endpoint working", HttpStatus.OK);
+    }
+
+    @GetMapping("/allPayments")
+    public ResponseEntity<List<PaymentEntity>> getAllPayments() {
+        List<PaymentEntity> payments = paymentService.getAllPayments();
+        return ResponseEntity.ok(payments);
+    }
 }
 
-}
+
+
