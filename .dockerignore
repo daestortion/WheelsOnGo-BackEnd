@@ -1,0 +1,16 @@
+# Exclude the target directory (to avoid copying the compiled artifacts into the container)
+target/
+
+# Exclude IDE and system files
+*.iml
+.idea/
+*.class
+.classpath
+.project
+.settings/
+
+# Exclude logs
+*.log
+
+# Exclude bin directory
+bin/

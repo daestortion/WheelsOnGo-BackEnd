@@ -52,11 +52,14 @@ public class PaymentEntity {
     @Column(name = "refundDate")
     private LocalDateTime refundDate;
 
+    @Column(name = "refundable")
+    private float refundable; // Field to store refund amount
+
     public PaymentEntity() {
     }
 
     public PaymentEntity(int paymentId, OrderEntity order, float amount, LocalDateTime paymentDate,
-            byte[] proofOfPayment, String paymentMethod, int status, boolean isRefunded, LocalDateTime refundDate) {
+            byte[] proofOfPayment, String paymentMethod, int status, boolean isRefunded, LocalDateTime refundDate, float refundable) {
         this.paymentId = paymentId;
         this.order = order;
         this.amount = amount;
@@ -66,6 +69,17 @@ public class PaymentEntity {
         this.status = status;
         this.isRefunded = isRefunded;
         this.refundDate = refundDate;
+        this.refundable = refundable; // Initialize refundable amount
+    }
+
+    // Getters and Setters
+
+    public float getRefundable() {
+        return refundable;
+    }
+
+    public void setRefundable(float refundable) {
+        this.refundable = refundable;
     }
 
     public int getPaymentId() {
@@ -139,5 +153,5 @@ public class PaymentEntity {
     public void setRefundDate(LocalDateTime refundDate) {
         this.refundDate = refundDate;
     }
-
 }
+
