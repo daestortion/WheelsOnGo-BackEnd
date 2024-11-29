@@ -1,8 +1,6 @@
 package com.respo.respo.Controller;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -211,39 +209,15 @@ public class OrderController {
     }
 
     @PutMapping("/terminateOrder/{orderId}")
-    public ResponseEntity<Map<String, Object>> terminateOrder(@PathVariable int orderId) {
+    public ResponseEntity<OrderEntity> terminateOrder(@PathVariable int orderId) {
         try {
             // Call the service to terminate the order
             OrderEntity terminatedOrder = oserv.terminateOrder(orderId);
-
-            // Calculate the refund amount directly in the response
-            long daysDifference = ChronoUnit.DAYS.between(terminatedOrder.getStartDate(), terminatedOrder.getTerminationDate());
-            float refundPercentage = 0.0f;
-
-            if (daysDifference >= 3) {
-                refundPercentage = 0.85f; // 85% refund
-            } else if (daysDifference >= 1 && daysDifference <= 2) {
-                refundPercentage = 0.50f; // 50% refund
-            }
-
-            float totalPaidAmount = terminatedOrder.getPayments().stream()
-                    .filter(payment -> !payment.isRefunded())
-                    .map(PaymentEntity::getAmount)
-                    .reduce(0.0f, Float::sum);
-
-            float refundAmount = totalPaidAmount * refundPercentage;
-
-            // Prepare the response map with updated order and refund amount
-            Map<String, Object> response = new HashMap<>();
-            response.put("updatedOrder", terminatedOrder);
-            response.put("refundAmount", refundAmount);  // Send refundAmount in the response
-
-            // Return the updated order along with refund information
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
+            return new ResponseEntity<>(terminatedOrder, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
+            // Catch any other potential errors and return a bad request
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
