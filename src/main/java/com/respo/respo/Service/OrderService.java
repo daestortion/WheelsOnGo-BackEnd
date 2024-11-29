@@ -11,7 +11,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.respo.respo.Entity.ActivityLogEntity;
 import com.respo.respo.Entity.CarEntity;
@@ -224,17 +228,23 @@ public class OrderService {
 		order.setActive(false);  // Set the order as inactive
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
 		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
+<<<<<<< Updated upstream
 
 		// Optionally, set the user's and car's status to non-active
+=======
+	
+		// Optionally, set car and user status to non-active
+>>>>>>> Stashed changes
 		CarEntity car = order.getCar();
 		if (car != null) {
-			car.setRented(false);  // Set the car as not rented
+			car.setRented(false);  // Set car as not rented
 		}
 
 		UserEntity user = order.getUser();
 		if (user != null) {
-			user.setRenting(false);  // Set the user as not renting
+			user.setRenting(false);  // Set user as not renting
 		}
+<<<<<<< Updated upstream
 
 		// Save the updated order
 		OrderEntity terminatedOrder = orepo.save(order);
@@ -246,6 +256,46 @@ public class OrderService {
 		return terminatedOrder;
 	}
 
+=======
+	
+		// Get the most recent payment
+		PaymentEntity latestPayment = order.getPayments().stream()
+				.filter(payment -> !payment.isRefunded())  // Only consider non-refunded payments
+				.max(Comparator.comparingInt(PaymentEntity::getPaymentId))
+				.orElseThrow(() -> new NoSuchElementException("No valid payment found for order " + orderId));
+	
+		// Calculate the refund amount based on the days between start and termination date
+		long daysDifference = ChronoUnit.DAYS.between(order.getStartDate(), order.getTerminationDate());
+		float refundPercentage = 0.0f;
+	
+		if (daysDifference >= 3) {
+			refundPercentage = 0.85f; // 85% refund
+		} else if (daysDifference >= 1 && daysDifference <= 2) {
+			refundPercentage = 0.50f; // 50% refund
+		} else {
+			refundPercentage = 0.0f; // No refund if termination is on the start date
+		}
+	
+		// Calculate the total refund amount
+		float totalPaidAmount = order.getPayments().stream()
+				.filter(payment -> !payment.isRefunded())
+				.map(PaymentEntity::getAmount)
+				.reduce(0.0f, Float::sum);
+	
+		float refundAmount = totalPaidAmount * refundPercentage;
+	
+		// Update the refundable field for the latest payment and mark it as refunded
+		latestPayment.setRefunded(true);
+		latestPayment.setRefundDate(LocalDateTime.now());
+		latestPayment.setRefundable(latestPayment.getAmount() * refundPercentage); // Set refundable amount
+		paymentRepo.save(latestPayment);  // Save the updated payment entity
+	
+		// Save the order with updated status and refund amount
+		order.setTotalPrice(order.getTotalPrice() - refundAmount); // Update the total price
+		return orepo.save(order);  // Return the updated order
+	}
+	
+>>>>>>> Stashed changes
 	public void logOrderActivity(OrderEntity order) {
 		CarEntity car = order.getCar();
 		UserEntity user = order.getUser();
@@ -266,6 +316,10 @@ public class OrderService {
 		}
 	}
 	
+<<<<<<< Updated upstream
+=======
+	
+>>>>>>> Stashed changes
 	public void updatePaymentStatus(Map<String, Object> paymentData) {
 		Integer orderId = (Integer) paymentData.get("orderId");
 		String transactionId = (String) paymentData.get("transactionId");
