@@ -225,21 +225,21 @@ public class OrderService {
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
 		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
 	
-		// Optionally, set the user's and car's status to non-active
+		// Optionally, set car and user status to non-active
 		CarEntity car = order.getCar();
 		if (car != null) {
-			car.setRented(false);  // Set the car as not rented
+			car.setRented(false);  // Set car as not rented
 		}
 	
 		UserEntity user = order.getUser();
 		if (user != null) {
-			user.setRenting(false);  // Set the user as not renting
+			user.setRenting(false);  // Set user as not renting
 		}
 	
-		// Get the last inserted payment from the list of payments
+		// Get the most recent payment
 		PaymentEntity latestPayment = order.getPayments().stream()
 				.filter(payment -> !payment.isRefunded())  // Only consider non-refunded payments
-				.max(Comparator.comparingInt(PaymentEntity::getPaymentId))  // Get the payment with the highest ID (most recent)
+				.max(Comparator.comparingInt(PaymentEntity::getPaymentId))
 				.orElseThrow(() -> new NoSuchElementException("No valid payment found for order " + orderId));
 	
 		// Calculate the refund amount based on the days between start and termination date
@@ -256,7 +256,7 @@ public class OrderService {
 	
 		// Calculate the total refund amount
 		float totalPaidAmount = order.getPayments().stream()
-				.filter(payment -> !payment.isRefunded()) // Only consider payments that have not been refunded
+				.filter(payment -> !payment.isRefunded())
 				.map(PaymentEntity::getAmount)
 				.reduce(0.0f, Float::sum);
 	
@@ -266,19 +266,12 @@ public class OrderService {
 		latestPayment.setRefunded(true);
 		latestPayment.setRefundDate(LocalDateTime.now());
 		latestPayment.setRefundable(latestPayment.getAmount() * refundPercentage); // Set refundable amount
-		paymentRepo.save(latestPayment); // Save the updated latest payment entity
+		paymentRepo.save(latestPayment);  // Save the updated payment entity
 	
-		// Save the updated order with refund amount (this assumes there's a method for refunding or adjusting order amounts)
-		order.setTotalPrice(order.getTotalPrice() - refundAmount);
-		OrderEntity terminatedOrder = orepo.save(order);
-	
-		// Log the order termination activity
-		String logMessage = user.getUsername() + " has terminated Order " + order.getOrderId() + " and received a refund of " + refundAmount;
-		logService.logActivity(logMessage, user.getUsername());
-	
-		return terminatedOrder;
+		// Save the order with updated status and refund amount
+		order.setTotalPrice(order.getTotalPrice() - refundAmount); // Update the total price
+		return orepo.save(order);  // Return the updated order
 	}
-	
 
 	public void logOrderActivity(OrderEntity order) {
 		CarEntity car = order.getCar();
@@ -299,12 +292,7 @@ public class OrderService {
 			logService.logActivity(logMessage, user.getUsername());
 		}
 	}
-<<<<<<< Updated upstream
 	
-	
-=======
-
->>>>>>> Stashed changes
 	public void updatePaymentStatus(Map<String, Object> paymentData) {
 		Integer orderId = (Integer) paymentData.get("orderId");
 		String transactionId = (String) paymentData.get("transactionId");
