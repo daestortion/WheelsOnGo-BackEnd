@@ -63,4 +63,17 @@ public class RequestFormService {
     return requestFormRepository.findById(requestId)
             .orElseThrow(() -> new NoSuchElementException("Request with ID " + requestId + " not found."));
     }
+
+    public RequestFormEntity updateRequest(int requestId, RequestFormEntity newRequestFormDetails) {
+        RequestFormEntity request = requestFormRepository.findById(requestId).orElseThrow(() ->
+            new NoSuchElementException("Request " + requestId + " does not exist!"));
+    
+        if (newRequestFormDetails.getProofImage() != null && newRequestFormDetails.getProofImage().length > 0) {
+            // Update the proof image
+            request.setProofImage(newRequestFormDetails.getProofImage());
+        }
+    
+        // Save the updated request entity
+        return requestFormRepository.save(request);
+    }
 }
