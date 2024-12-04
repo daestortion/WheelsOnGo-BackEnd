@@ -153,7 +153,7 @@ public class UserController {
             if (user != null) {
                 // Generate a reset token and store it with an expiry time in your database
                 String resetToken = TokenGenerator.generateResetToken(user.getUserId()); // Using TokenGenerator to generate reset token
-                String resetLink = "http://localhost:3000/resetpassword?userId=" + user.getUserId() + "&token=" + resetToken;
+                String resetLink = "https://wheelsongo-backend.onrender.com/resetpassword?userId=" + user.getUserId() + "&token=" + resetToken;
                 userv.sendPasswordResetEmail(user, resetLink);
                 return ResponseEntity.ok("If the email is associated with an account, a reset link has been sent.");
             } else {
