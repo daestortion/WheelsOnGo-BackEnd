@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.ActivityLogEntity;
@@ -373,4 +374,21 @@ public class OrderService {
 			}
 		}
 	}
+
+	   // Scheduled task to check and update the orders every day at midnight
+    @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
+    public void autoUpdateActiveStatus() {
+        LocalDate currentDate = LocalDate.now(); // Get today's date (only date, no time)
+
+        List<OrderEntity> allOrders = orepo.findAll(); // Get all orders
+
+        for (OrderEntity order : allOrders) {
+            // Ensure we are only comparing the date part (no time)
+            if (order.getStartDate().equals(currentDate)) {
+                order.setActive(true); // Set active status to true if dates match
+                orepo.save(order); // Save the updated order
+            }
+        }
+    }
+
 }
