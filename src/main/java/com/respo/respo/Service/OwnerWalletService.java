@@ -82,6 +82,22 @@ public class OwnerWalletService {
         }
     }
     
-
+    public boolean deductRefundAmount(int userId, double refundAmount) {
+        OwnerWalletEntity wallet = ownerWalletRepository.findByUserUserId(userId);
     
+        if (wallet != null && wallet.getOnlineEarning() >= refundAmount) {
+            // Deduct refundAmount from the online earnings (owner's wallet)
+            double updatedBalance = wallet.getOnlineEarning() - refundAmount;
+    
+            // Cast the updatedBalance to float before passing to setOnlineEarning
+            wallet.setOnlineEarning((float) updatedBalance);  // Cast to float
+    
+            // Save the updated wallet after deduction
+            ownerWalletRepository.save(wallet);
+            return true;
+        }
+    
+        // Return false if wallet doesn't exist or there's insufficient balance
+        return false;
+    }    
 }

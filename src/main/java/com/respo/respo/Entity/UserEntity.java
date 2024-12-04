@@ -43,6 +43,9 @@ public class UserEntity {
 	@Column(name = "isOwner")
 	private boolean isOwner = false;
 
+	@Column(name = "isActive")
+	private boolean isActive = false;
+	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"user"}) // Prevent recursion
     private VerificationEntity verification;
@@ -113,7 +116,7 @@ public class UserEntity {
 	public UserEntity() {
 	}
 
-	public UserEntity(int userId, String username, String fName, boolean isRenting, boolean isOwner,
+	public UserEntity(int userId, String username, String fName, boolean isRenting, boolean isOwner, boolean isActive,
 			VerificationEntity verification, List<ReportEntity> reports, List<ChatEntity> chats, List<CarEntity> cars,
 			List<OrderEntity> orders, WalletEntity wallet, LocalDateTime timeStamp, byte[] profilePic, String lName,
 			String email, String pWord, String pNum, boolean isDeleted) {
@@ -122,6 +125,7 @@ public class UserEntity {
 		this.fName = fName;
 		this.isRenting = isRenting;
 		this.isOwner = isOwner;
+		this.isActive = isActive;
 		this.verification = verification;
 		this.reports = reports;
 		this.chats = chats;
@@ -183,6 +187,14 @@ public class UserEntity {
 
 	public boolean isOwner() {
 		return this.isOwner;
+	}
+
+	public boolean isActive() {
+		return this.isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 
 	public List<CarEntity> getCars() {

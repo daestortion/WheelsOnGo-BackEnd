@@ -42,4 +42,55 @@ public class WalletService {
         return walletRepository.save(walletEntity);
     }
     
+    public WalletEntity addFundsToWallet(int userId, double amount) {
+        WalletEntity walletEntity = walletRepository.findByUser_UserId(userId);
+        if (walletEntity != null) {
+            double updatedBalance = walletEntity.getBalance() + amount;
+            walletEntity.setBalance(updatedBalance);
+            return walletRepository.save(walletEntity); // Save updated wallet
+        }
+        return null; // If wallet doesn't exist for userId
+    }
+    // Fetch wallet by userId
+    public WalletEntity getWalletByUserId(int userId) {
+        return walletRepository.findByUser_UserId(userId);
+    }
+
+    // Logic for calculating refund amount and termination fee
+    // Logic for fetching refund details (refundAmount and terminationFee)
+    public RefundDetails getRefundDetails(int userId) {
+        WalletEntity walletEntity = getWalletByUserId(userId);
+        
+        if (walletEntity == null) {
+            return null; // Return null if the wallet doesn't exist for the given userId
+        }
+
+        // Assuming the refundAmount is the current balance in the wallet
+        double refundAmount = walletEntity.getBalance();
+        
+        // Assume termination fee is fixed, or calculate as needed
+        double terminationFee = 100.00; // Adjust based on your business logic
+
+        return new RefundDetails(refundAmount, terminationFee);
+    }
+
+    // RefundDetails DTO class
+    public static class RefundDetails {
+        private double refundAmount;
+        private double terminationFee;
+
+        public RefundDetails(double refundAmount, double terminationFee) {
+            this.refundAmount = refundAmount;
+            this.terminationFee = terminationFee;
+        }
+
+        public double getRefundAmount() {
+            return refundAmount;
+        }
+
+        public double getTerminationFee() {
+            return terminationFee;
+        }
+    }
+
 }

@@ -64,4 +64,16 @@ public class OwnerWalletController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @PutMapping("/deductRefund/{userId}")
+    public ResponseEntity<String> deductRefund(@PathVariable int userId, @RequestParam double refundAmount) {
+        boolean success = ownerWalletService.deductRefundAmount(userId, refundAmount);
+        
+        if (success) {
+            return ResponseEntity.ok("Refund of ₱" + refundAmount + " deducted from owner's wallet successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to deduct refund from owner's wallet.");
+        }
+    }
+
 }

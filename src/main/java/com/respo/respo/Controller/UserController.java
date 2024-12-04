@@ -35,6 +35,9 @@ import com.respo.respo.Service.UserService;
 import com.respo.respo.Service.WalletService;
 
 import java.util.Optional;
+
+import javax.mail.MessagingException;
+
 import com.respo.respo.Configuration.TokenGenerator; // Import TokenGenerator class
 
 @RestController
@@ -153,7 +156,7 @@ public class UserController {
             if (user != null) {
                 // Generate a reset token and store it with an expiry time in your database
                 String resetToken = TokenGenerator.generateResetToken(user.getUserId()); // Using TokenGenerator to generate reset token
-                String resetLink = "http://localhost:3000/resetpassword?userId=" + user.getUserId() + "&token=" + resetToken;
+                String resetLink = "https://wheels-on-go-front-end.vercel.app/resetpassword?userId=" + user.getUserId() + "&token=" + resetToken;
                 userv.sendPasswordResetEmail(user, resetLink);
                 return ResponseEntity.ok("If the email is associated with an account, a reset link has been sent.");
             } else {
@@ -310,5 +313,47 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
         
         return new ResponseEntity<>("User action logged successfully", HttpStatus.OK);
     }
+
+ /**
+     * Endpoint to send activation email.
+     * 
+     * @param userId The user's ID to send the activation email to.
+     * @return ResponseEntity with a message.
+     */
+    @PostMapping("/send-activation-email/{userId}")
+    public ResponseEntity<String> sendActivationEmail(@PathVariable("userId") int userId) {
+        try {
+            userService.sendActivationEmail(userId);
+            return ResponseEntity.ok("Activation email sent successfully.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body("User not found.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        } catch (Exception e) {
+            // Handle other possible exceptions
+            return ResponseEntity.status(500).body("Failed to send activation email.");
+        }
+    }
+
+    /**
+     * Endpoint to activate a user's account using the token.
+     * 
+     * @param userId The user's ID.
+     * @param token The activation token.
+     * @return ResponseEntity with a message.
+     */
+    @GetMapping("/activate")
+    public ResponseEntity<String> activateUser(@RequestParam("userId") int userId,
+                                               @RequestParam("token") String token) {
+        try {
+            UserEntity activatedUser = userService.activateUser(userId, token);
+            return ResponseEntity.ok("User activated successfully.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body("User not found.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }
+
 
