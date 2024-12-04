@@ -375,8 +375,7 @@ public class OrderService {
 		}
 	}
 
-	   // Scheduled task to check and update the orders every day at midnight
-    @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
+	 @Scheduled(cron = "0 */5 * * * ?") // Runs every 5 minutes
     public void autoUpdateActiveStatus() {
         LocalDate currentDate = LocalDate.now(); // Get today's date (only date, no time)
 
@@ -390,5 +389,4 @@ public class OrderService {
             }
         }
     }
-
 }
