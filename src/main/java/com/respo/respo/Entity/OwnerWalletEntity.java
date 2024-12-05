@@ -1,5 +1,7 @@
 package com.respo.respo.Entity;
 
+import java.util.List;
+
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,6 +19,9 @@ public class OwnerWalletEntity {
     @JsonIgnoreProperties({"ownerWallet", "verification", "reports", "chats", "cars", "orders", "wallet"})
     private UserEntity user;
 
+    @OneToMany(mappedBy = "ownerWallet", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<TransactionEntity> transactions;
+    
     @Column(name = "onlineEarning")
     private float onlineEarning = 0.0f;
 
@@ -76,4 +81,14 @@ public class OwnerWalletEntity {
     public void setCashRefundable(float cashRefundable) {
         this.cashRefundable = cashRefundable;
     }
+
+    public List<TransactionEntity> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<TransactionEntity> transactions) {
+        this.transactions = transactions;
+    }
+
+    
 }

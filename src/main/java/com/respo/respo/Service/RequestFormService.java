@@ -28,18 +28,30 @@ public class RequestFormService {
         return requestFormRepository.findAll();
     }
 
-    // Create a new request
-    public RequestFormEntity createRequest(int userId, RequestFormEntity requestForm) {
-        Optional<UserEntity> userOptional = userRepository.findById(userId);
+  // Create a new request
+  public RequestFormEntity createRequest(int userId, RequestFormEntity requestForm) {
+      // Check if user exists
+      Optional<UserEntity> userOptional = userRepository.findById(userId);
 
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("User not found");
-        }
+      if (userOptional.isEmpty()) {
+          throw new IllegalArgumentException("User not found");
+      }
 
-        UserEntity user = userOptional.get();
-        requestForm.setUser(user);
-        return requestFormRepository.save(requestForm);
-    }
+      // Check if the amount is negative
+      if (requestForm.getAmount() < 0) {
+          throw new IllegalArgumentException("Amount cannot be negative");
+      }
+
+      // Set user and save the request
+      UserEntity user = userOptional.get();
+      requestForm.setUser(user);
+
+      try {
+          return requestFormRepository.save(requestForm);
+      } catch (Exception e) {
+          throw new RuntimeException("Failed to create request: " + e.getMessage());
+      }
+  }
 
     // Fetch requests by userId
     public List<RequestFormEntity> getRequestsByUserId(int userId) {
