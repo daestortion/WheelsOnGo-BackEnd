@@ -56,6 +56,7 @@ public class ReturnProofController {
             returnProof.setRemarks(remarks);
             returnProof.setReturnDate(LocalDate.parse(returnDate));
 
+            // Call the service method to create return proof and deactivate the order
             return returnProofService.createReturnProof(returnProof, orderId);
         } catch (IOException e) {
             throw new RuntimeException("Failed to process proof file", e);

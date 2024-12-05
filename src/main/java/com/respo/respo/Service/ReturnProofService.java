@@ -33,13 +33,15 @@ public class ReturnProofService {
     }
 
     public ReturnProofEntity createReturnProof(ReturnProofEntity returnProof, int orderId) {
+        // Fetch the order entity
         OrderEntity order = orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
-    
+        
+        // Set the return proof's order
         returnProof.setOrder(order);
         returnProof.setEndDate(order.getEndDate()); // Set endDate from OrderEntity to ReturnProofEntity
     
-        // Calculate the penalty based on return date and order end date
+        // Set penalty based on return date and order end date
         if (returnProof.getReturnDate() != null && order.getEndDate() != null) {
             long daysLate = ChronoUnit.DAYS.between(order.getEndDate(), returnProof.getReturnDate());
             if (daysLate > 0) { 
@@ -51,8 +53,14 @@ public class ReturnProofService {
             returnProof.setPenalty(0); // Default to no penalty if dates are missing
         }
     
+        // Step to deactivate the order after return
+        order.setActive(false);  // Mark the order as inactive
+        orderRepository.save(order); // Save the updated order entity
+    
+        // Save and return the return proof
         return returnProofRepository.save(returnProof);
     }
+    
     
     
     public List<ReturnProofEntity> getAllReturnProofs() {
