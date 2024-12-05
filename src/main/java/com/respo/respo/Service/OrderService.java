@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.respo.respo.Entity.ActivityLogEntity;
@@ -218,34 +219,36 @@ public class OrderService {
 	public OrderEntity terminateOrder(int orderId) {
 		OrderEntity order = orepo.findById(orderId)
 				.orElseThrow(() -> new NoSuchElementException("Order " + orderId + " does not exist"));
-	
-		// Set order as terminated and capture the current date in the Philippines timezone
+
+		// Set order as terminated and capture the current date in the Philippines
+		// timezone
 		order.setTerminated(true);
-		order.setActive(false);  // Set the order as inactive
+		order.setActive(false); // Set the order as inactive
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
-		order.setTerminationDate(philippinesTime.toLocalDate());  // Store only the date part
-	
+		order.setTerminationDate(philippinesTime.toLocalDate()); // Store only the date part
+
 		// Optionally, set car and user status to non-active
 		CarEntity car = order.getCar();
 		if (car != null) {
-			car.setRented(false);  // Set car as not rented
+			car.setRented(false); // Set car as not rented
 		}
-	
+
 		UserEntity user = order.getUser();
 		if (user != null) {
-			user.setRenting(false);  // Set user as not renting
+			user.setRenting(false); // Set user as not renting
 		}
-	
+
 		// Get the most recent payment
 		PaymentEntity latestPayment = order.getPayments().stream()
-				.filter(payment -> !payment.isRefunded())  // Only consider non-refunded payments
+				.filter(payment -> !payment.isRefunded()) // Only consider non-refunded payments
 				.max(Comparator.comparingInt(PaymentEntity::getPaymentId))
 				.orElseThrow(() -> new NoSuchElementException("No valid payment found for order " + orderId));
-	
-		// Calculate the refund amount based on the days between start and termination date
+
+		// Calculate the refund amount based on the days between start and termination
+		// date
 		long daysDifference = ChronoUnit.DAYS.between(order.getStartDate(), order.getTerminationDate());
 		float refundPercentage = 0.0f;
-	
+
 		if (daysDifference >= 3) {
 			refundPercentage = 0.85f; // 85% refund
 		} else if (daysDifference >= 1 && daysDifference <= 2) {
@@ -253,24 +256,24 @@ public class OrderService {
 		} else {
 			refundPercentage = 0.0f; // No refund if termination is on the start date
 		}
-	
+
 		// Calculate the total refund amount
 		float totalPaidAmount = order.getPayments().stream()
 				.filter(payment -> !payment.isRefunded())
 				.map(PaymentEntity::getAmount)
 				.reduce(0.0f, Float::sum);
-	
+
 		float refundAmount = totalPaidAmount * refundPercentage;
-	
+
 		// Update the refundable field for the latest payment and mark it as refunded
 		latestPayment.setRefunded(true);
 		latestPayment.setRefundDate(LocalDateTime.now());
 		latestPayment.setRefundable(latestPayment.getAmount() * refundPercentage); // Set refundable amount
-		paymentRepo.save(latestPayment);  // Save the updated payment entity
-	
+		paymentRepo.save(latestPayment); // Save the updated payment entity
+
 		// Save the order with updated status and refund amount
 		order.setTotalPrice(order.getTotalPrice() - refundAmount); // Update the total price
-		return orepo.save(order);  // Return the updated order
+		return orepo.save(order); // Return the updated order
 	}
 
 	public void logOrderActivity(OrderEntity order) {
@@ -292,7 +295,7 @@ public class OrderService {
 			logService.logActivity(logMessage, user.getUsername());
 		}
 	}
-	
+
 	public void updatePaymentStatus(Map<String, Object> paymentData) {
 		Integer orderId = (Integer) paymentData.get("orderId");
 		String transactionId = (String) paymentData.get("transactionId");
@@ -370,6 +373,25 @@ public class OrderService {
 			if (order.getStartDate().equals(currentDate)) {
 				order.setActive(true); // Set active status to true if dates match
 				orepo.save(order); // Save the updated order
+			}
+		}
+	}
+
+	@Scheduled(cron = "0 */5 * * * ?") // Runs every 5 minutes
+	public void autoUpdateActiveStatus() {
+		LocalDate currentDate = LocalDate.now(); // Get today's date (only date, no time)
+
+		List<OrderEntity> allOrders = orepo.findAll(); // Get all orders
+
+		for (OrderEntity order : allOrders) {
+			// Ensure we are only comparing the date part (no time)
+			if (order.getStartDate().equals(currentDate)) {
+				order.setActive(true); // Set active status to true if dates match
+				orepo.save(order); // Save the updated order
+
+				// Log to the console that the order was successfully set to active
+				System.out.println(
+						"Order #" + order.getOrderId() + " is now active as the start date matches today's date.");
 			}
 		}
 	}
