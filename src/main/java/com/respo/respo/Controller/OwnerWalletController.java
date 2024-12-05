@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.respo.respo.Entity.OwnerWalletEntity;
+import com.respo.respo.Entity.RequestFormEntity;
 import com.respo.respo.Service.OwnerWalletService;
+import com.respo.respo.Service.RequestFormService;
+import com.respo.respo.Repository.RequestFormRepository;
 
 @RestController
 @RequestMapping("/ownerWallet")
@@ -23,6 +26,12 @@ public class OwnerWalletController {
 
     @Autowired
     private OwnerWalletService ownerWalletService;
+
+    @Autowired
+    private RequestFormService requestFormService;
+
+    @Autowired
+    private RequestFormRepository requestFormRepository;
 
     @GetMapping("/getWalletByUserId/{userId}")
     public ResponseEntity<OwnerWalletEntity> getWalletByUserId(@PathVariable int userId) {
@@ -74,6 +83,36 @@ public class OwnerWalletController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to deduct refund from owner's wallet.");
         }
+    }
+
+    @PutMapping("/deductFromOnlineEarnings/{userId}/{requestId}")
+    public ResponseEntity<String> deductFromOnlineEarnings(@PathVariable int userId, @PathVariable int requestId) {
+        // Fetch the request details
+        RequestFormEntity request = requestFormService.getRequestById(requestId);
+        if (!request.getStatus().equals("approved")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body("Request is not approved yet.");
+        }
+
+        // Validate that the user has sufficient funds
+        OwnerWalletEntity wallet = ownerWalletService.getWalletByUserId(userId);
+        if (wallet.getOnlineEarning() < request.getAmount()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body("Insufficient online earnings.");
+        }
+
+        // Deduct the amount from the user's online earnings
+        boolean success = ownerWalletService.deductRefundAmount(userId, request.getAmount());
+        if (!success) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Failed to deduct funds from wallet.");
+        }
+
+        // Mark the request as completed
+        request.setStatus("completed");
+        requestFormRepository.save(request);
+        
+        return ResponseEntity.ok("Amount successfully deducted from online earnings.");
     }
 
 }

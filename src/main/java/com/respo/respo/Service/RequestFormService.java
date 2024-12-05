@@ -1,7 +1,9 @@
 package com.respo.respo.Service;
 
+import com.respo.respo.Entity.OwnerWalletEntity;
 import com.respo.respo.Entity.RequestFormEntity;
 import com.respo.respo.Entity.UserEntity;
+import com.respo.respo.Repository.OwnerWalletRepository;
 import com.respo.respo.Repository.RequestFormRepository;
 import com.respo.respo.Repository.UserRepository;
 
@@ -23,35 +25,42 @@ public class RequestFormService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OwnerWalletRepository ownerWalletRepository;
+
     // Fetch all requests
     public List<RequestFormEntity> getAllRequests() {
         return requestFormRepository.findAll();
     }
 
-  // Create a new request
-  public RequestFormEntity createRequest(int userId, RequestFormEntity requestForm) {
-      // Check if user exists
-      Optional<UserEntity> userOptional = userRepository.findById(userId);
 
-      if (userOptional.isEmpty()) {
-          throw new IllegalArgumentException("User not found");
-      }
+    public RequestFormEntity createRequest(int userId, RequestFormEntity requestForm) {
+        // Check if user exists
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
 
-      // Check if the amount is negative
-      if (requestForm.getAmount() < 0) {
-          throw new IllegalArgumentException("Amount cannot be negative");
-      }
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
 
-      // Set user and save the request
-      UserEntity user = userOptional.get();
-      requestForm.setUser(user);
+        // Fetch the wallet details of the user
+        OwnerWalletEntity wallet = ownerWalletRepository.findByUserUserId(userId);
 
-      try {
-          return requestFormRepository.save(requestForm);
-      } catch (Exception e) {
-          throw new RuntimeException("Failed to create request: " + e.getMessage());
-      }
-  }
+        // Check if the requested amount is greater than the available online earnings
+        if (requestForm.getAmount() > wallet.getOnlineEarning()) {
+            throw new IllegalArgumentException("Requested amount exceeds available online earnings.");
+        }
+
+        // Set user and save the request
+        UserEntity user = userOptional.get();
+        requestForm.setUser(user);
+
+        try {
+            return requestFormRepository.save(requestForm);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create request: " + e.getMessage());
+        }
+    }
+
 
     // Fetch requests by userId
     public List<RequestFormEntity> getRequestsByUserId(int userId) {
