@@ -171,7 +171,7 @@ public class UserService {
 
     public void sendPasswordResetEmail(UserEntity user, String resetLink) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("ayadekenneth07@gmail.com");
+        message.setFrom("wheelsongo.business@gmail.com");
         message.setTo(user.getEmail());
         message.setSubject("Password Reset Request");
         message.setText("To reset your password, click the following link: " + resetLink);
@@ -188,10 +188,14 @@ public class UserService {
         Optional<UserEntity> user = identifier.contains("@")
                 ? urepo.findByEmail(identifier)
                 : urepo.findByUsername(identifier);
-
+    
         if (user.isPresent()) {
             UserEntity userEntity = user.get();
-            // Use BCryptPasswordEncoder's matches method to check the password
+            // Check if the account is active
+            if (!userEntity.isActive()) {
+                throw new IllegalStateException("Account is not activated.");
+            }
+            // Check password and deleted status
             if (passwordEncoder.matches(password, userEntity.getpWord()) && !userEntity.isDeleted()) {
                 return user;
             } else if (userEntity.isDeleted()) {
@@ -200,6 +204,7 @@ public class UserService {
         }
         return Optional.empty();
     }
+    
 
     public UserEntity getUserById(int userId) {
         return urepo.findById(userId)
@@ -262,37 +267,38 @@ public class UserService {
         // Retrieve user by ID
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
+    
         // Generate the activation token
         String token = TokenGenerator.generateResetToken(userId);
-
-        // Prepare the activation link
-        String activationLink = "https://wheels-on-go-front-end.vercel.app/user/activate?userId=" + userId + "&token="
-                + token;
-
+    
+        // Prepare the activation link (For localhost, use your local React app's port)
+        String activationLink = "http://localhost:3000/activate/" + userId + "/" + token;
+    
         // Create the email message
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("ayadekenneth07@gmail.com"); // Set the "from" address
+        message.setFrom("wheelsongo.business@gmail.com"); // Set the "from" address
         message.setTo(user.getEmail()); // Set the "to" address (user's email)
         message.setSubject("Account Activation");
         message.setText("Please click the following link to activate your account: " + activationLink);
-
+    
         mailSender.send(message);
         System.out.println("Activation email sent successfully.");
     }
+    
 
     public UserEntity activateUser(int userId, String token) {
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
-        // Validate the token here (e.g., check if the token matches the generated one)
+    
+        // Validate the token (make sure it matches the one generated and not expired)
         boolean isValid = TokenGenerator.validateToken(token, userId);
         if (!isValid) {
             throw new IllegalArgumentException("Invalid or expired activation token.");
         }
-
+    
         // Activate the user
         user.setActive(true);
         return urepo.save(user);
     }
+    
 }
