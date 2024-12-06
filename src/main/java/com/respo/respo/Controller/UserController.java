@@ -355,7 +355,6 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
         }
     }
     
-
     @PostMapping("/resend-activation-email/{userId}")
     public ResponseEntity<String> resendActivationEmail(@PathVariable("userId") int userId) {
         try {
