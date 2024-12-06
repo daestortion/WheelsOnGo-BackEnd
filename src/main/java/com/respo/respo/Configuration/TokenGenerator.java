@@ -23,8 +23,11 @@ public class TokenGenerator {
         byte[] userIdBytes = String.format("%08d", userId).getBytes(); // Format userId to a fixed length
         long expirationTime = System.currentTimeMillis() + EXPIRATION_TIME;
 
-        // Get the expiration time as bytes
-        byte[] expirationBytes = String.format("%019d", expirationTime).getBytes(); // Fixed length for expiration time
+        // Convert expiration time to bytes
+        byte[] expirationBytes = new byte[8]; // 8 bytes for a long value
+        for (int i = 0; i < 8; i++) {
+            expirationBytes[i] = (byte) (expirationTime >> (8 * (7 - i)) & 0xFF); // Convert long to bytes
+        }
 
         // Combine the userId, token, and expiration time into one byte array
         byte[] combinedBytes = new byte[userIdBytes.length + tokenBytes.length + expirationBytes.length];
@@ -48,19 +51,14 @@ public class TokenGenerator {
             byte[] decodedBytes = Base64.getUrlDecoder().decode(token);
 
             // Extract user ID, token bytes, and expiration bytes with fixed sizes
-            byte[] userIdBytes = new byte[8]; // Adjust this based on your fixed length formatting
+            byte[] userIdBytes = new byte[8]; // 8 bytes for user ID
             byte[] tokenBytes = new byte[TOKEN_LENGTH];
-            byte[] expirationBytes = new byte[19]; // Adjust the length for expiration time
+            byte[] expirationBytes = new byte[8]; // 8 bytes for expiration time (long)
 
             // Extract parts from the decoded bytes
             System.arraycopy(decodedBytes, 0, userIdBytes, 0, userIdBytes.length);
             System.arraycopy(decodedBytes, userIdBytes.length, tokenBytes, 0, TOKEN_LENGTH);
             System.arraycopy(decodedBytes, userIdBytes.length + TOKEN_LENGTH, expirationBytes, 0, expirationBytes.length);
-
-            // Log for debugging
-            System.out.println("Decoded userIdBytes: " + new String(userIdBytes));
-            System.out.println("Decoded tokenBytes: " + new String(tokenBytes));
-            System.out.println("Decoded expirationBytes: " + new String(expirationBytes));
 
             // Validate the user ID portion
             if (!new String(userIdBytes).equals(String.format("%08d", userId))) {
@@ -68,9 +66,15 @@ public class TokenGenerator {
                 return false;
             }
 
-            // Check the expiration date
-            long expirationTime = Long.parseLong(new String(expirationBytes));
+            // Convert expirationBytes back to long
+            long expirationTime = 0;
+            for (int i = 0; i < 8; i++) {
+                expirationTime = (expirationTime << 8) | (expirationBytes[i] & 0xFF);
+            }
+
             System.out.println("Expiration Time: " + expirationTime + " Current Time: " + System.currentTimeMillis());
+
+            // Check the expiration date
             if (System.currentTimeMillis() > expirationTime) {
                 System.out.println("Token expired.");
                 return false; // Token is expired

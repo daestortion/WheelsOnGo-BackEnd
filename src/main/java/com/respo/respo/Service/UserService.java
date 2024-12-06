@@ -272,37 +272,48 @@ public class UserService {
         // Retrieve user by ID
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
+    
         // Generate the activation token
         String token = TokenGenerator.generateResetToken(userId);
-
-        // Ensure the token is URL-safe (just in case it's needed)
+    
+        // URL-safe encoding of the token
         String urlSafeToken = Base64.getUrlEncoder().encodeToString(token.getBytes());
+    
+        // Construct the activation link using the URL-safe token
         String activationLink = frontendUrl + "activate/" + userId + "/"
                 + URLEncoder.encode(urlSafeToken, StandardCharsets.UTF_8);
-
+    
         // Create the email message
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("wheelsongo.business@gmail.com");
         message.setTo(user.getEmail());
         message.setSubject("Account Activation");
         message.setText("Please click the following link to activate your account: " + activationLink);
-
+    
         // Send the activation email
-        mailSender.send(message);
-        System.out.println("Activation email sent successfully.");
+        try {
+            mailSender.send(message);
+            System.out.println("Activation email sent successfully to " + user.getEmail());
+        } catch (Exception e) {
+            System.out.println("Failed to send activation email to " + user.getEmail());
+            e.printStackTrace();
+        }
     }
+    
 
     public UserEntity activateUser(int userId, String token) {
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
+    
+        // URL-safe decode the token before passing it to the token validation method
+        String decodedToken = new String(Base64.getUrlDecoder().decode(token));
+    
         // Validate the token (make sure it matches the one generated and not expired)
-        boolean isValid = TokenGenerator.validateToken(token, userId);
+        boolean isValid = TokenGenerator.validateToken(decodedToken, userId);
         if (!isValid) {
             throw new IllegalArgumentException("Invalid or expired activation token.");
         }
-
+    
         // Activate the user
         user.setActive(true);
         return urepo.save(user);
