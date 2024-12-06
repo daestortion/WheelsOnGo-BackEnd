@@ -32,8 +32,8 @@ public class TokenGenerator {
         System.arraycopy(tokenBytes, 0, combinedBytes, userIdBytes.length, tokenBytes.length);
         System.arraycopy(expirationBytes, 0, combinedBytes, userIdBytes.length + tokenBytes.length, expirationBytes.length);
 
-        // Encode the combined bytes using Base64
-        return Base64.getEncoder().encodeToString(combinedBytes);
+        // URL-safe encoding using Base64 URL encoder
+        return Base64.getUrlEncoder().encodeToString(combinedBytes);
     }
 
     /**
@@ -45,7 +45,7 @@ public class TokenGenerator {
      */
     public static boolean validateToken(String token, int userId) {
         try {
-            byte[] decodedBytes = Base64.getDecoder().decode(token);
+            byte[] decodedBytes = Base64.getUrlDecoder().decode(token);
 
             // Extract user ID, token bytes, and expiration bytes with fixed sizes
             byte[] userIdBytes = new byte[8]; // Adjust this based on your fixed length formatting
