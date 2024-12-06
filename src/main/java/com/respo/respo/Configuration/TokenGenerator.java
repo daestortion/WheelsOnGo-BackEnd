@@ -2,7 +2,6 @@ package com.respo.respo.Configuration;
 
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Date;
 
 public class TokenGenerator {
 
@@ -20,12 +19,14 @@ public class TokenGenerator {
         byte[] tokenBytes = new byte[TOKEN_LENGTH];
         new SecureRandom().nextBytes(tokenBytes);
 
-        // Combine user ID and token bytes to create a unique token
-        byte[] userIdBytes = String.valueOf(userId).getBytes();
-        long expirationTime = System.currentTimeMillis() + EXPIRATION_TIME;  // Expiration timestamp
+        // Get the user ID and expiration time
+        byte[] userIdBytes = String.format("%08d", userId).getBytes(); // Format userId to a fixed length
+        long expirationTime = System.currentTimeMillis() + EXPIRATION_TIME;
 
-        // Combine the userId, token, and expiration time into a single byte array
-        byte[] expirationBytes = String.valueOf(expirationTime).getBytes();
+        // Get the expiration time as bytes
+        byte[] expirationBytes = String.format("%019d", expirationTime).getBytes(); // Fixed length for expiration time
+
+        // Combine the userId, token, and expiration time into one byte array
         byte[] combinedBytes = new byte[userIdBytes.length + tokenBytes.length + expirationBytes.length];
         System.arraycopy(userIdBytes, 0, combinedBytes, 0, userIdBytes.length);
         System.arraycopy(tokenBytes, 0, combinedBytes, userIdBytes.length, tokenBytes.length);
@@ -45,17 +46,18 @@ public class TokenGenerator {
     public static boolean validateToken(String token, int userId) {
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(token);
-            byte[] userIdBytes = String.valueOf(userId).getBytes();
-            byte[] expirationBytes = new byte[decodedBytes.length - userIdBytes.length - TOKEN_LENGTH];
-            byte[] tokenBytes = new byte[TOKEN_LENGTH];
 
-            // Extract the token, userId and expiration timestamp from the decoded byte array
+            // Extract user ID, token bytes, and expiration bytes with fixed sizes
+            byte[] userIdBytes = new byte[8]; // Adjust this based on your fixed length formatting
+            byte[] tokenBytes = new byte[TOKEN_LENGTH];
+            byte[] expirationBytes = new byte[19]; // Adjust the length for expiration time
+
             System.arraycopy(decodedBytes, 0, userIdBytes, 0, userIdBytes.length);
             System.arraycopy(decodedBytes, userIdBytes.length, tokenBytes, 0, TOKEN_LENGTH);
             System.arraycopy(decodedBytes, userIdBytes.length + TOKEN_LENGTH, expirationBytes, 0, expirationBytes.length);
 
             // Validate the user ID portion
-            if (!new String(userIdBytes).equals(String.valueOf(userId))) {
+            if (!new String(userIdBytes).equals(String.format("%08d", userId))) {
                 return false;
             }
 
