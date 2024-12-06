@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +25,9 @@ import com.respo.respo.Repository.UserRepository;
 
 @Service
 public class UserService {
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @Autowired
     UserRepository urepo;
@@ -264,27 +268,27 @@ public class UserService {
     }
 
     public void sendActivationEmail(int userId) throws MessagingException {
-        // Retrieve user by ID
-        UserEntity user = urepo.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-    
-        // Generate the activation token
-        String token = TokenGenerator.generateResetToken(userId);
-    
-        // Prepare the activation link (For localhost, use your local React app's port)
-        String activationLink = "http://localhost:3000/activate/" + userId + "/" + token;
-    
-        // Create the email message
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("wheelsongo.business@gmail.com"); // Set the "from" address
-        message.setTo(user.getEmail()); // Set the "to" address (user's email)
-        message.setSubject("Account Activation");
-        message.setText("Please click the following link to activate your account: " + activationLink);
-    
-        mailSender.send(message);
-        System.out.println("Activation email sent successfully.");
+            // Retrieve user by ID
+            UserEntity user = urepo.findById(userId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+            // Generate the activation token
+            String token = TokenGenerator.generateResetToken(userId);
+
+            // Prepare the activation link using the frontend URL from properties
+            String activationLink = frontendUrl + "/activate/" + userId + "/" + token;
+
+            // Create the email message
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("wheelsongo.business@gmail.com");
+            message.setTo(user.getEmail());
+            message.setSubject("Account Activation");
+            message.setText("Please click the following link to activate your account: " + activationLink);
+
+            // Send the activation email
+            mailSender.send(message);
+            System.out.println("Activation email sent successfully.");
     }
-    
 
     public UserEntity activateUser(int userId, String token) {
         UserEntity user = urepo.findById(userId)
@@ -300,5 +304,6 @@ public class UserService {
         user.setActive(true);
         return urepo.save(user);
     }
+    
     
 }
