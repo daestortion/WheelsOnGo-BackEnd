@@ -30,6 +30,7 @@ public class OrderEntity {
     private int orderId;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"order"})  // Prevent recursion
     private ReturnProofEntity returnProof;
 
     @ManyToOne

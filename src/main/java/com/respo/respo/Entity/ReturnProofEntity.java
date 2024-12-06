@@ -1,6 +1,9 @@
 package com.respo.respo.Entity;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDate;
 
 @Entity
@@ -39,8 +42,8 @@ public class ReturnProofEntity {
 
     @OneToOne
     @JoinColumn(name = "orderId", referencedColumnName = "orderId")
+    @JsonIgnoreProperties({"returnProof"})  // Prevent recursion
     private OrderEntity order;
-
 
     // Getters and Setters
 
