@@ -271,7 +271,7 @@ public class UserService {
         // Generate the activation token
         String token = TokenGenerator.generateResetToken(userId);
     
-        // Prepare the activation link (For localhost, use your local React app's port)
+        // Prepare the activation link (updated to use the deployed version)
         String activationLink = "https://wheels-on-go-front-end.vercel.app/activate/" + userId + "/" + token;
     
         // Create the email message
@@ -283,7 +283,7 @@ public class UserService {
     
         mailSender.send(message);
         System.out.println("Activation email sent successfully.");
-    }
+    }    
     
 
     public UserEntity activateUser(int userId, String token) {
