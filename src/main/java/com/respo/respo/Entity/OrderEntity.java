@@ -279,6 +279,12 @@ public class OrderEntity {
         this.payments = payments;
     }
 
-    
-    
+    public ReturnProofEntity getReturnProof() {
+        return returnProof;
+    }
+
+    public void setReturnProof(ReturnProofEntity returnProof) {
+        this.returnProof = returnProof;
+    }
+
 }
