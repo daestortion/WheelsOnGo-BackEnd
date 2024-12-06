@@ -342,9 +342,9 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
      * @param token The activation token.
      * @return ResponseEntity with a message.
      */
-    @GetMapping("/activate")
-    public ResponseEntity<String> activateUser(@RequestParam("userId") int userId,
-                                               @RequestParam("token") String token) {
+    @GetMapping("/activate/{userId}/{token}")
+    public ResponseEntity<String> activateUser(@PathVariable("userId") int userId,
+                                               @PathVariable("token") String token) {
         try {
             UserEntity activatedUser = userService.activateUser(userId, token);
             return ResponseEntity.ok("User activated successfully.");
@@ -354,6 +354,7 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
+    
 
     @PostMapping("/resend-activation-email/{userId}")
     public ResponseEntity<String> resendActivationEmail(@PathVariable("userId") int userId) {
