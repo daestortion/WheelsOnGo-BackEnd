@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "tblRequestForm")
 public class RequestFormEntity {
@@ -23,6 +25,7 @@ public class RequestFormEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JsonIgnoreProperties({ "orders", "cars", "chats", "wallet", "ownerWallet" }) // Prevent recursion
     private UserEntity user;
 
     @Column(name = "request_type", nullable = false)
@@ -63,7 +66,8 @@ public class RequestFormEntity {
     }
 
     // Unified constructor for both GCash and Bank requests
-    public RequestFormEntity(UserEntity user, String requestType, String fullName, String gcashNumber, String bankName, String accountNumber, float amount, byte[] proofImage) {
+    public RequestFormEntity(UserEntity user, String requestType, String fullName, String gcashNumber, String bankName,
+            String accountNumber, float amount, byte[] proofImage) {
         this.user = user;
         this.requestType = requestType;
         this.fullName = fullName; // This will be Account Name for Bank, Full Name for GCash
