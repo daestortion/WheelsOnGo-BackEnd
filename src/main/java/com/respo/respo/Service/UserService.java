@@ -272,7 +272,7 @@ public class UserService {
         String token = TokenGenerator.generateResetToken(userId);
     
         // Prepare the activation link (For localhost, use your local React app's port)
-        String activationLink = "http://localhost:3000/activate/" + userId + "/" + token;
+        String activationLink = "https://wheels-on-go-front-end.vercel.app/activate/" + userId + "/" + token;
     
         // Create the email message
         SimpleMailMessage message = new SimpleMailMessage();
