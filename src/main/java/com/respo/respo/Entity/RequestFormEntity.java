@@ -53,6 +53,9 @@ public class RequestFormEntity {
     @Column(name = "proof_image", nullable = true) // Binary data for proof image
     private byte[] proofImage;
 
+    @Column(name = "user_type", nullable = true) // New field for User Type
+    private String userType;
+
     // Default constructor
     public RequestFormEntity() {
         this.createdAt = LocalDateTime.now(); // Automatically set the creation time
@@ -160,5 +163,14 @@ public class RequestFormEntity {
 
     public void setProofImage(byte[] proofImage) {
         this.proofImage = proofImage;
+    }
+
+    // Getters and Setters
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }

@@ -93,4 +93,20 @@ public class WalletService {
         }
     }
 
+    public double getTotalRefundableAmount(int userId) {
+        // Fetch the wallet entity for the renter
+        WalletEntity walletEntity = walletRepository.findByUser_UserId(userId);
+
+        if (walletEntity == null) {
+            throw new IllegalArgumentException("Wallet not found for userId: " + userId);
+        }
+
+        // Assuming refundable amount is the same as the balance (you can adjust the logic)
+        return walletEntity.getBalance();
+    }
+
+    public WalletEntity save(WalletEntity walletEntity) {
+        return walletRepository.save(walletEntity);  // Use the repository's save method to persist changes
+    }
+
 }

@@ -1,7 +1,10 @@
 package com.respo.respo.Controller;
 
 import com.respo.respo.Entity.RequestFormEntity;
+import com.respo.respo.Entity.WalletEntity;
+import com.respo.respo.Repository.RequestFormRepository;
 import com.respo.respo.Service.RequestFormService;
+import com.respo.respo.Service.WalletService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,10 @@ public class RequestFormController {
 
     @Autowired
     private RequestFormService requestFormService;
+    @Autowired
+    private WalletService walletService;  
+    @Autowired
+    private RequestFormRepository requestFormRepository;
 
     // Get all requests
     @GetMapping("/getAllRequests")
@@ -84,4 +91,66 @@ public class RequestFormController {
                 .header("Content-Type", "image/png") // Or other image formats
                 .body(request.getProofImage());
     }
+
+    // New endpoint for renters to request their refundable amount
+    @PostMapping("/request-refund/{userId}")
+    public ResponseEntity<String> requestRefund(@PathVariable int userId, @RequestBody RequestFormEntity requestForm) {
+        try {
+            String message = requestFormService.requestRefund(userId, requestForm);
+            return new ResponseEntity<>(message, HttpStatus.CREATED);  // Return success message
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);  // Return error message if the refund exceeds balance
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>("Failed to create refund request: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);  // Handle unexpected errors
+        }
+    }
+
+    // Request validation before submitting refund
+    @PostMapping("/validate-renter-refund/{userId}")
+    public ResponseEntity<String> validateRenterRefund(@PathVariable int userId, @RequestBody RequestFormEntity requestForm) {
+        try {
+            String message = requestFormService.validateRenterRefund(userId, requestForm);
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST); 
+        }
+    }
+
+    // Approve renter's refund request
+    @PutMapping("/approve-renter-refund/{requestId}")
+    public ResponseEntity<RequestFormEntity> approveRenterRefund(@PathVariable int requestId) {
+        try {
+            // Fetch the request by its ID
+            RequestFormEntity request = requestFormService.getRequestById(requestId);
+            
+            // Ensure the request is for a renter (UserType should be Renter)
+            if (!"Renter".equals(request.getUserType())) {
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);  // Return bad request if not a renter
+            }
+            
+            // Proceed with the refund process
+            WalletEntity renterWallet = walletService.getWalletByUserId(request.getUser().getUserId());
+            double availableBalance = renterWallet.getBalance();
+            double requestedAmount = request.getAmount();
+            
+            // Check if the renter has sufficient balance
+            if (requestedAmount <= availableBalance) {
+                // Deduct the requested amount from the renter's wallet
+                renterWallet.setBalance(availableBalance - requestedAmount);
+                walletService.save(renterWallet);  // Save the updated wallet
+                
+                // Mark the request as approved
+                request.setStatus("approved");
+                requestFormRepository.save(request);  // Use the repository's save method
+                
+                return new ResponseEntity<>(request, HttpStatus.OK);  // Return approved request
+            } else {
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);  // Insufficient balance
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);  // Handle unexpected errors
+        }
+    }
+
+
 }
