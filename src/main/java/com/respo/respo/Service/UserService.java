@@ -1,6 +1,8 @@
 package com.respo.respo.Service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -192,7 +194,7 @@ public class UserService {
         Optional<UserEntity> user = identifier.contains("@")
                 ? urepo.findByEmail(identifier)
                 : urepo.findByUsername(identifier);
-    
+
         if (user.isPresent()) {
             UserEntity userEntity = user.get();
             // Check if the account is active
@@ -208,7 +210,6 @@ public class UserService {
         }
         return Optional.empty();
     }
-    
 
     public UserEntity getUserById(int userId) {
         return urepo.findById(userId)
@@ -271,43 +272,40 @@ public class UserService {
         // Retrieve user by ID
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-    
+
         // Generate the activation token
         String token = TokenGenerator.generateResetToken(userId);
-    
+
         // Ensure the token is URL-safe (just in case it's needed)
         String urlSafeToken = Base64.getUrlEncoder().encodeToString(token.getBytes());
-    
-        // Prepare the activation link using the frontend URL from properties
-        String activationLink = frontendUrl + "activate/" + userId + "/" + urlSafeToken;
-    
+        String activationLink = frontendUrl + "activate/" + userId + "/"
+                + URLEncoder.encode(urlSafeToken, StandardCharsets.UTF_8);
+
         // Create the email message
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("wheelsongo.business@gmail.com");
         message.setTo(user.getEmail());
         message.setSubject("Account Activation");
         message.setText("Please click the following link to activate your account: " + activationLink);
-    
+
         // Send the activation email
         mailSender.send(message);
         System.out.println("Activation email sent successfully.");
     }
-    
 
     public UserEntity activateUser(int userId, String token) {
         UserEntity user = urepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-    
+
         // Validate the token (make sure it matches the one generated and not expired)
         boolean isValid = TokenGenerator.validateToken(token, userId);
         if (!isValid) {
             throw new IllegalArgumentException("Invalid or expired activation token.");
         }
-    
+
         // Activate the user
         user.setActive(true);
         return urepo.save(user);
     }
-    
-    
+
 }
