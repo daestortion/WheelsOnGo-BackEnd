@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "tblRequestForm")
 public class RequestFormEntity {
@@ -23,6 +25,7 @@ public class RequestFormEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JsonIgnoreProperties({"orders", "cars", "chats", "wallet", "ownerWallet"}) // Prevent recursion
     private UserEntity user;
 
     @Column(name = "request_type", nullable = false)

@@ -92,11 +92,11 @@ public class ReturnProofService {
         returnProofRepository.deleteById(id);
     }
 
-    // New: Fetch renter-submitted details
     public Map<String, Object> getRenterDetails(int orderId) {
-        ReturnProofEntity proof = returnProofRepository.findById(orderId)
+        // Use the custom method to find ReturnProof by orderId
+        ReturnProofEntity proof = returnProofRepository.findByOrder_OrderId(orderId)
             .orElseThrow(() -> new RuntimeException("Return proof not found for order ID: " + orderId));
-    
+        
         Map<String, Object> response = new HashMap<>();
         response.put("carOwner", proof.getOrder().getCar().getOwner().getfName() + " " + proof.getOrder().getCar().getOwner().getlName());
         response.put("renter", proof.getOrder().getUser().getfName() + " " + proof.getOrder().getUser().getlName());
@@ -106,10 +106,7 @@ public class ReturnProofService {
         response.put("remarks", proof.getRemarks());
         response.put("proof", Base64.getEncoder().encodeToString(proof.getProof())); // Convert the byte array to Base64
         return response;
-    }
-    
-    
-    
+    }  
 
     // New: Update owner-side return proof details
     public ReturnProofEntity updateOwnerProofAndOrder(int orderId, MultipartFile ownerProof, 
