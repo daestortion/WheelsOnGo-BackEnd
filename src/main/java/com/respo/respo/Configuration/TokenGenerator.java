@@ -46,27 +46,28 @@ public class TokenGenerator {
     public static boolean validateToken(String token, int userId) {
         try {
             byte[] decodedBytes = Base64.getUrlDecoder().decode(token);
-    
+
             // Extract user ID, token bytes, and expiration bytes with fixed sizes
             byte[] userIdBytes = new byte[8]; // Adjust this based on your fixed length formatting
             byte[] tokenBytes = new byte[TOKEN_LENGTH];
             byte[] expirationBytes = new byte[19]; // Adjust the length for expiration time
-    
+
+            // Extract parts from the decoded bytes
             System.arraycopy(decodedBytes, 0, userIdBytes, 0, userIdBytes.length);
             System.arraycopy(decodedBytes, userIdBytes.length, tokenBytes, 0, TOKEN_LENGTH);
             System.arraycopy(decodedBytes, userIdBytes.length + TOKEN_LENGTH, expirationBytes, 0, expirationBytes.length);
-    
+
             // Log for debugging
             System.out.println("Decoded userIdBytes: " + new String(userIdBytes));
             System.out.println("Decoded tokenBytes: " + new String(tokenBytes));
             System.out.println("Decoded expirationBytes: " + new String(expirationBytes));
-    
+
             // Validate the user ID portion
             if (!new String(userIdBytes).equals(String.format("%08d", userId))) {
                 System.out.println("User ID does not match.");
                 return false;
             }
-    
+
             // Check the expiration date
             long expirationTime = Long.parseLong(new String(expirationBytes));
             System.out.println("Expiration Time: " + expirationTime + " Current Time: " + System.currentTimeMillis());
@@ -74,7 +75,7 @@ public class TokenGenerator {
                 System.out.println("Token expired.");
                 return false; // Token is expired
             }
-    
+
             // If the token is valid and not expired, return true
             return true;
         } catch (Exception e) {
@@ -82,5 +83,4 @@ public class TokenGenerator {
             return false; // If there's any error in decoding or validation, return false
         }
     }
-    
 }
