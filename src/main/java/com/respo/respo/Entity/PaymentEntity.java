@@ -26,7 +26,7 @@ public class PaymentEntity {
 
     @ManyToOne
     @JoinColumn(name = "orderId")
-    @JsonIgnoreProperties({ "payments", "user" }) // Prevent recursion
+    @JsonIgnoreProperties({"payments", "user", "returnProof"}) // Prevent recursion by ignoring payments, user, and returnProof from OrderEntity
     private OrderEntity order;
 
     @Column(name = "amount")
