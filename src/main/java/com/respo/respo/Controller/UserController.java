@@ -354,6 +354,20 @@ public ResponseEntity<?> updateIsOwner(@PathVariable int userId, @RequestBody Ma
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
+
+    @PostMapping("/resend-activation-email/{userId}")
+    public ResponseEntity<String> resendActivationEmail(@PathVariable("userId") int userId) {
+        try {
+            userService.sendActivationEmail(userId);  // Reuse the sendActivationEmail method
+            return ResponseEntity.ok("Activation email resent successfully.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body("User not found.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to resend activation email.");
+        }
+    }
 }
 
 
