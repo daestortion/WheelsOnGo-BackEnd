@@ -276,7 +276,7 @@ public class UserService {
             String token = TokenGenerator.generateResetToken(userId);
 
             // Prepare the activation link using the frontend URL from properties
-            String activationLink = frontendUrl + "/activate/" + userId + "/" + token;
+            String activationLink = frontendUrl + "activate/" + userId + "/" + token;
 
             // Create the email message
             SimpleMailMessage message = new SimpleMailMessage();
