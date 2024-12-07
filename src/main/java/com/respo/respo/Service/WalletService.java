@@ -109,4 +109,18 @@ public class WalletService {
         return walletRepository.save(walletEntity);  // Use the repository's save method to persist changes
     }
 
+    public WalletEntity deductPenaltyFromWallet(int userId, double penaltyAmount) {
+        if (penaltyAmount <= 0) {
+            return null; // No deduction if penalty is less than or equal to 0
+        }
+        
+        WalletEntity walletEntity = walletRepository.findByUser_UserId(userId);
+        if (walletEntity != null && walletEntity.getBalance() >= penaltyAmount) {
+            double updatedBalance = walletEntity.getBalance() - penaltyAmount;
+            walletEntity.setBalance(updatedBalance);
+            return walletRepository.save(walletEntity);
+        }
+        return null; // If there are insufficient funds or wallet not found
+    }
+    
 }
