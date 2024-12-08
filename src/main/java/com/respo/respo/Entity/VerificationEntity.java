@@ -12,23 +12,29 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 @Entity
 @Table(name = "tblVerification")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Ignore Hibernate proxy properties
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Enable caching
 public class VerificationEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private int vId;
-	
+
 	@ManyToOne
-    @JoinColumn(name = "user")
-    @JsonIgnoreProperties({"verification", "cars"}) // Prevent recursion
-    private UserEntity user;
+	@JoinColumn(name = "user")
+	@JsonIgnoreProperties(value = {"fName", "lName", "email", "pWord", "pNum", "isRenting", "isOwner", "isActive", 
+									"verification", "cars", "reports", "wallet", "ownerWallet", "orders", "chats", "profilePic", 
+									"isDeleted", "timeStamp"}, allowGetters = true) // Ignore all but allow userId and username
+	private UserEntity user;
 	
 	@Column(name = "status")
     private int status;
