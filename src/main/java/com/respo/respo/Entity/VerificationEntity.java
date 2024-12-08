@@ -30,10 +30,8 @@ public class VerificationEntity {
     private int vId;
 
 	@ManyToOne
-	@JoinColumn(name = "user")
-	@JsonIgnoreProperties(value = {"fName", "lName", "email", "pWord", "pNum", "isRenting", "isOwner", "isActive", 
-									"verification", "cars", "reports", "wallet", "ownerWallet", "orders", "chats", "profilePic", 
-									"isDeleted", "timeStamp"}, allowGetters = true) // Ignore all but allow userId and username
+    @JoinColumn(name = "user")
+    @JsonIgnoreProperties({"verification", "cars", "reports", "wallet", "ownerWallet", "orders", "chats", "profilePicBase64", "deleted", "timeStamp", "email", "pWord", "pNum", "renting", "owner", "active"}) // Ignore all but allow userId and username
 	private UserEntity user;
 	
 	@Column(name = "status")
