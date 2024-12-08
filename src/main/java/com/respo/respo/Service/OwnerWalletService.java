@@ -27,11 +27,11 @@ public class OwnerWalletService {
         return ownerWalletRepository.save(wallet);
     }
 
-    public void addToOnlineEarnings(int userId, float rentPrice) {
+    public void addToOnlineEarnings(int userId, double rentPrice) {
         OwnerWalletEntity wallet = getWalletByUserId(userId);
     
         // Calculate 85% for the withdrawable balance
-        float onlineAmount = rentPrice * 0.85f;
+        double onlineAmount = rentPrice * 0.85;
         wallet.setOnlineEarning(wallet.getOnlineEarning() + onlineAmount);
     
         // Automatically deduct outstanding balance from online earnings
@@ -39,14 +39,12 @@ public class OwnerWalletService {
     
         ownerWalletRepository.save(wallet);
     }
-    
 
-
-    public void addToCashEarnings(int userId, float rentPrice) {
+    public void addToCashEarnings(int userId, double rentPrice) {
         OwnerWalletEntity wallet = getWalletByUserId(userId);
     
         // Calculate 15% for the outstanding balance
-        float outstandingAmount = rentPrice * 0.15f;
+        double outstandingAmount = rentPrice * 0.15;
         wallet.setCashEarning(wallet.getCashEarning() + outstandingAmount);
     
         // Automatically deduct outstanding balance from online earnings
@@ -54,9 +52,8 @@ public class OwnerWalletService {
     
         ownerWalletRepository.save(wallet);
     }
-    
 
-    public void updateCashRefundable(int userId, float amount) {
+    public void updateCashRefundable(int userId, double amount) {
         OwnerWalletEntity wallet = getWalletByUserId(userId);
         wallet.setCashRefundable(wallet.getCashRefundable() + amount);
         // Automatically handle deductions after updating cash refundable
@@ -67,17 +64,17 @@ public class OwnerWalletService {
     // Automatically deduct cash earnings from online earnings if cash earning has balance
     private void deductCashFromOnlineEarnings(OwnerWalletEntity wallet) {
         if (wallet.getCashEarning() > 0) { // Check if there's an outstanding balance
-            float outstandingBalance = wallet.getCashEarning();
-            float onlineEarning = wallet.getOnlineEarning();
+            double outstandingBalance = wallet.getCashEarning();
+            double onlineEarning = wallet.getOnlineEarning();
     
             if (onlineEarning >= outstandingBalance) {
                 // Deduct full outstanding balance from online earnings
                 wallet.setOnlineEarning(onlineEarning - outstandingBalance);
-                wallet.setCashEarning(0.0f); // Clear the outstanding balance
+                wallet.setCashEarning(0.0); // Clear the outstanding balance
             } else {
                 // Partial deduction if online earnings are insufficient
                 wallet.setCashEarning(outstandingBalance - onlineEarning);
-                wallet.setOnlineEarning(0.0f); // Clear online earnings
+                wallet.setOnlineEarning(0.0); // Clear online earnings
             }
         }
     }
@@ -85,19 +82,20 @@ public class OwnerWalletService {
     public boolean deductRefundAmount(int userId, double refundAmount) {
         OwnerWalletEntity wallet = ownerWalletRepository.findByUserUserId(userId);
     
-        if (wallet != null && wallet.getOnlineEarning() >= refundAmount) {
+        if (wallet != null) {
             // Deduct refundAmount from the online earnings (owner's wallet)
             double updatedBalance = wallet.getOnlineEarning() - refundAmount;
     
-            // Cast the updatedBalance to float before passing to setOnlineEarning
-            wallet.setOnlineEarning((float) updatedBalance);  // Cast to float
+            // Allow negative balances
+            wallet.setOnlineEarning(updatedBalance); // Update online earnings
     
             // Save the updated wallet after deduction
             ownerWalletRepository.save(wallet);
             return true;
         }
     
-        // Return false if wallet doesn't exist or there's insufficient balance
+        // Return false if wallet doesn't exist
         return false;
-    }    
+    }
+    
 }

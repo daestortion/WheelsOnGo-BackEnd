@@ -23,18 +23,18 @@ public class OwnerWalletEntity {
     private List<TransactionEntity> transactions;
     
     @Column(name = "onlineEarning")
-    private float onlineEarning = 0.0f;
+    private double onlineEarning = 0.0;
 
     @Column(name = "cashEarning")
-    private float cashEarning = 0.0f;
+    private double cashEarning = 0.0;
 
     @Column(name = "cashRefundable")
-    private float cashRefundable = 0.0f;
+    private double cashRefundable = 0.0;
 
     // Constructors
     public OwnerWalletEntity() {}
 
-    public OwnerWalletEntity(UserEntity user, float onlineEarning, float cashEarning, float cashRefundable) {
+    public OwnerWalletEntity(UserEntity user, double onlineEarning, double cashEarning, double cashRefundable) {
         this.user = user;
         this.onlineEarning = onlineEarning;
         this.cashEarning = cashEarning;
@@ -58,27 +58,27 @@ public class OwnerWalletEntity {
         this.user = user;
     }
 
-    public float getOnlineEarning() {
+    public double getOnlineEarning() {
         return onlineEarning;
     }
 
-    public void setOnlineEarning(float onlineEarning) {
+    public void setOnlineEarning(double onlineEarning) {
         this.onlineEarning = onlineEarning;
     }
 
-    public float getCashEarning() {
+    public double getCashEarning() {
         return cashEarning;
     }
 
-    public void setCashEarning(float cashEarning) {
+    public void setCashEarning(double cashEarning) {
         this.cashEarning = cashEarning;
     }
 
-    public float getCashRefundable() {
+    public double getCashRefundable() {
         return cashRefundable;
     }
 
-    public void setCashRefundable(float cashRefundable) {
+    public void setCashRefundable(double cashRefundable) {
         this.cashRefundable = cashRefundable;
     }
 
@@ -89,6 +89,4 @@ public class OwnerWalletEntity {
     public void setTransactions(List<TransactionEntity> transactions) {
         this.transactions = transactions;
     }
-
-    
 }
