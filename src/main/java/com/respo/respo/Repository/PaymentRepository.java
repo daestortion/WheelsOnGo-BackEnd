@@ -8,4 +8,6 @@ import com.respo.respo.Entity.OrderEntity;
 
 public interface PaymentRepository extends JpaRepository<PaymentEntity, Integer> {
     List<PaymentEntity> findByOrder(OrderEntity order);
+    List<PaymentEntity> findByOrderOrderId(int orderId);
+
 }

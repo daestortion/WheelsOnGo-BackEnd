@@ -52,6 +52,13 @@ public class OrderService {
 	@Autowired
 	PaymentService paymentService;
 
+	@Autowired
+	PaymentRepository paymentRepository;
+
+	public List<PaymentEntity> getPaymentsByOrderId(int orderId) {
+        return paymentRepository.findByOrderOrderId(orderId);
+    }
+	
 	// Insert order in `OrderService.java`
 	public OrderEntity insertOrder(int userId, int carId, OrderEntity order) {
 		UserEntity user = userService.getUserById(userId);

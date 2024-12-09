@@ -259,4 +259,9 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/{orderId}/payments")
+    public List<PaymentEntity> getPaymentsByOrderId(@PathVariable int orderId) {
+        return oserv.getPaymentsByOrderId(orderId);
+    }
+
 }
