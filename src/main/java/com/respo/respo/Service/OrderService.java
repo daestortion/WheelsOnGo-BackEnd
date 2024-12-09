@@ -372,18 +372,29 @@ public class OrderService {
 
 	public void updateActiveStatusIfStartDateMatches() {
 		LocalDate currentDate = LocalDate.now(); // Get today's date (only date, no time)
-
+	
 		List<OrderEntity> allOrders = orepo.findAll(); // Get all orders
-
+	
 		for (OrderEntity order : allOrders) {
-			// Ensure we are only comparing the date part (no time)
+			// Check if the start date is today's date
 			if (order.getStartDate().equals(currentDate)) {
 				order.setActive(true); // Set active status to true if dates match
-				orepo.save(order); // Save the updated order
 			}
+			// Check if the start date is in the past (before today's date)
+			else if (order.getStartDate().isBefore(currentDate)) {
+				order.setActive(false); // Set active status to false if the date has passed
+			}
+			
+			// Check if the end date is in the past (before today's date)
+			if (order.getEndDate().isBefore(currentDate)) {
+				order.setActive(false); // Set active status to false if the end date has passed
+			}
+	
+			orepo.save(order); // Save the updated order
 		}
 	}
-
+	
+	
 	@Scheduled(cron = "0 */5 * * * ?") // Runs every 5 minutes
 	public void autoUpdateActiveStatus() {
 		LocalDate currentDate = LocalDate.now(); // Get today's date (only date, no time)
