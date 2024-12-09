@@ -107,6 +107,10 @@ public class ReturnProofService {
         response.put("carReturnDate", proof.getReturnDate());
         response.put("remarks", proof.getRemarks());
     
+        // Access the ownerRemark from ReturnProofEntity
+        String ownerRemark = proof.getOwnerRemark();  // Now correctly accessing ownerRemark from ReturnProofEntity
+        response.put("ownerRemark", ownerRemark != null ? ownerRemark : "No remark available");
+    
         // Check for null before encoding to Base64
         if (proof.getProof() != null) {
             response.put("proof", Base64.getEncoder().encodeToString(proof.getProof())); // Convert the byte array to Base64
@@ -125,8 +129,7 @@ public class ReturnProofService {
         response.put("penalty", proof.getPenalty() > 0 ? proof.getPenalty() : "No Penalty");
     
         return response;
-    }
-    
+    }    
 
     public ReturnProofEntity updateOwnerProofAndOrder(int orderId, MultipartFile ownerProof,
             String ownerRemark, boolean ownerApproval)
