@@ -6,4 +6,5 @@ import com.respo.respo.Entity.WalletEntity;
 
 public interface WalletRepository extends JpaRepository<WalletEntity, Integer> {
     WalletEntity findByUser_UserId(int userId);
+    
 }

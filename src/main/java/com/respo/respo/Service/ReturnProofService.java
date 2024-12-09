@@ -95,10 +95,9 @@ public class ReturnProofService {
     }
 
     public Map<String, Object> getRenterDetails(int orderId) {
-        // Use the custom method to find ReturnProof by orderId
         ReturnProofEntity proof = returnProofRepository.findByOrder_OrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Return proof not found for order ID: " + orderId));
-
+    
         Map<String, Object> response = new HashMap<>();
         response.put("carOwner", proof.getOrder().getCar().getOwner().getfName() + " "
                 + proof.getOrder().getCar().getOwner().getlName());
@@ -107,9 +106,27 @@ public class ReturnProofService {
         response.put("rentEndDate", proof.getOrder().getEndDate());
         response.put("carReturnDate", proof.getReturnDate());
         response.put("remarks", proof.getRemarks());
-        response.put("proof", Base64.getEncoder().encodeToString(proof.getProof())); // Convert the byte array to Base64
+    
+        // Check for null before encoding to Base64
+        if (proof.getProof() != null) {
+            response.put("proof", Base64.getEncoder().encodeToString(proof.getProof())); // Convert the byte array to Base64
+        } else {
+            response.put("proof", "No proof available");
+        }
+    
+        if (proof.getOwnerProof() != null) {
+            response.put("ownerProof", Base64.getEncoder().encodeToString(proof.getOwnerProof())); // Owner proof
+        } else {
+            response.put("ownerProof", "No owner proof available");
+        }
+    
+        // Add owner approval and penalty to the response
+        response.put("ownerApproval", proof.isOwnerApproval() ? "Approved" : "Not Approved");
+        response.put("penalty", proof.getPenalty() > 0 ? proof.getPenalty() : "No Penalty");
+    
         return response;
     }
+    
 
     public ReturnProofEntity updateOwnerProofAndOrder(int orderId, MultipartFile ownerProof,
             String ownerRemark, boolean ownerApproval)
@@ -181,6 +198,18 @@ public class ReturnProofService {
         return returnProofRepository.findByOrder_OrderId(orderId)
                 .map(ReturnProofEntity::isOwnerApproval) // Check if the owner has approved the return
                 .orElse(false); // Return false if no proof exists
+    }
+
+    public ReturnProofEntity getReturnProofByOrderId(int orderId) {
+        // Use the custom method to find ReturnProof by orderId
+        Optional<ReturnProofEntity> proofOptional = returnProofRepository.findByOrder_OrderId(orderId);
+
+        // If not found, throw an exception
+        if (!proofOptional.isPresent()) {
+            throw new RuntimeException("Return proof not found for order ID: " + orderId);
+        }
+
+        return proofOptional.get(); // Return the ReturnProof entity
     }
 
 }

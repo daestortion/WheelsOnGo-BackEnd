@@ -102,7 +102,7 @@ public class ReturnProofController {
             Map<String, Object> renterDetails = returnProofService.getRenterDetails(orderId);
             return ResponseEntity.ok(renterDetails);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Return proof not found for order ID: " + orderId);
+            return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 
@@ -116,5 +116,17 @@ public class ReturnProofController {
     public ResponseEntity<Boolean> getAcknowledgmentStatus(@PathVariable int orderId) {
         boolean acknowledged = returnProofService.isOwnerAcknowledged(orderId);
         return ResponseEntity.ok(acknowledged);
+    }   
+
+    @GetMapping("/returnProof/{orderId}")
+    public ResponseEntity<?> getReturnProof(@PathVariable int orderId) {
+        try {
+            // Call service to get ReturnProof by orderId
+            ReturnProofEntity proof = returnProofService.getReturnProofByOrderId(orderId);
+            return ResponseEntity.ok(proof); // Return the ReturnProof entity as the response
+        } catch (RuntimeException e) {
+            // If not found, return a 404 response with an error message
+            return ResponseEntity.status(404).body("Return proof not found for order ID: " + orderId);
+        }
     }
 }
