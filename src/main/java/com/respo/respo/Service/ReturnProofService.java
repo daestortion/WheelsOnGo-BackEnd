@@ -78,17 +78,34 @@ public class ReturnProofService {
     }
 
     public ReturnProofEntity updateReturnProof(int id, ReturnProofEntity updatedReturnProof) {
+        OrderEntity order = updatedReturnProof.getOrder();
+    
         return returnProofRepository.findById(id)
                 .map(existingProof -> {
+                    // Update ReturnProofEntity fields
                     existingProof.setProof(updatedReturnProof.getProof());
                     existingProof.setRemarks(updatedReturnProof.getRemarks());
                     existingProof.setReturnDate(updatedReturnProof.getReturnDate());
                     existingProof.setEndDate(updatedReturnProof.getEndDate());
                     existingProof.setPenalty(updatedReturnProof.getPenalty());
+    
+                    // Update associated OrderEntity fields
+                    if (order != null) {
+                        order.setStatus(3); // Set status to 3
+                        order.setActive(false); // Set isActive to false
+                    }
+    
+                    // Save the updated OrderEntity if necessary
+                    if (order != null) {
+                        orderRepository.save(order);
+                    }
+    
+                    // Save and return the updated ReturnProofEntity
                     return returnProofRepository.save(existingProof);
                 })
                 .orElseThrow(() -> new RuntimeException("ReturnProof not found"));
     }
+    
 
     public void deleteReturnProof(int id) {
         returnProofRepository.deleteById(id);

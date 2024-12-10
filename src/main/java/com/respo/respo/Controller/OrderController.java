@@ -210,6 +210,16 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/getOrderStatus/{orderId}")
+    public ResponseEntity<Integer> getOrderStatus(@PathVariable int orderId) {
+        try {
+            OrderEntity order = oserv.getOrderById(orderId);
+            return ResponseEntity.ok(order.getStatus()); // Return the order's status
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @PutMapping("/terminateOrder/{orderId}")
     public ResponseEntity<Map<String, Object>> terminateOrder(@PathVariable int orderId) {
         try {
