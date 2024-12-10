@@ -76,18 +76,26 @@ public class OwnerWalletService {
                 wallet.setCashEarning(outstandingBalance - onlineEarning);
                 wallet.setOnlineEarning(0.0); // Clear online earnings
             }
+        } else if (wallet.getCashEarning() < 0) { // Handle negative cash earnings
+            double negativeBalance = Math.abs(wallet.getCashEarning());
+            wallet.setOnlineEarning(wallet.getOnlineEarning() + negativeBalance); // Add to online earnings
+            wallet.setCashEarning(0.0); // Clear the negative balance
         }
-    }
+    }    
     
-    public boolean deductRefundAmount(int userId, double refundAmount) {
+    public boolean deductRefundAmount(int userId, double refundAmount, boolean isCashPayment) {
         OwnerWalletEntity wallet = ownerWalletRepository.findByUserUserId(userId);
     
         if (wallet != null) {
-            // Deduct refundAmount from the online earnings (owner's wallet)
-            double updatedBalance = wallet.getOnlineEarning() - refundAmount;
-    
-            // Allow negative balances
-            wallet.setOnlineEarning(updatedBalance); // Update online earnings
+            if (isCashPayment) {
+                // Deduct refundAmount from the cash earnings
+                double updatedCashEarnings = wallet.getCashEarning() - refundAmount;
+                wallet.setCashEarning(updatedCashEarnings);
+            } else {
+                // Deduct refundAmount from the online earnings
+                double updatedOnlineEarnings = wallet.getOnlineEarning() - refundAmount;
+                wallet.setOnlineEarning(updatedOnlineEarnings);
+            }
     
             // Save the updated wallet after deduction
             ownerWalletRepository.save(wallet);
@@ -96,6 +104,26 @@ public class OwnerWalletService {
     
         // Return false if wallet doesn't exist
         return false;
+    }
+    
+    
+    public boolean deductFromOnlineEarnings(int userId, double amount) {
+        // Fetch the wallet of the owner by userId
+        OwnerWalletEntity wallet = ownerWalletRepository.findByUserUserId(userId);
+        if (wallet == null) {
+            throw new IllegalArgumentException("Wallet not found for user ID: " + userId);
+        }
+
+        // Check if there are sufficient funds
+        if (wallet.getOnlineEarning() < amount) {
+            return false; // Insufficient funds
+        }
+
+        // Deduct the amount and save the wallet
+        wallet.setOnlineEarning(wallet.getOnlineEarning() - amount);
+        ownerWalletRepository.save(wallet);
+
+        return true; // Deduction successful
     }
     
 }

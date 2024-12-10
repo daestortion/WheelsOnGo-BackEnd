@@ -75,15 +75,20 @@ public class OwnerWalletController {
     }
 
     @PutMapping("/deductRefund/{userId}")
-    public ResponseEntity<String> deductRefund(@PathVariable int userId, @RequestParam double refundAmount) {
-        boolean success = ownerWalletService.deductRefundAmount(userId, refundAmount);
-        
+    public ResponseEntity<String> deductRefund(
+        @PathVariable int userId,
+        @RequestParam double refundAmount,
+        @RequestParam boolean isCashPayment) {
+        boolean success = ownerWalletService.deductRefundAmount(userId, refundAmount, isCashPayment);
+    
         if (success) {
-            return ResponseEntity.ok("Refund of ₱" + refundAmount + " deducted from owner's wallet successfully.");
+            String paymentType = isCashPayment ? "cash earnings" : "online earnings";
+            return ResponseEntity.ok("Refund of ₱" + refundAmount + " deducted from owner's " + paymentType + " successfully.");
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to deduct refund from owner's wallet.");
         }
     }
+    
 
     @PutMapping("/deductFromOnlineEarnings/{userId}/{requestId}")
     public ResponseEntity<String> deductFromOnlineEarnings(@PathVariable int userId, @PathVariable int requestId) {
@@ -91,28 +96,30 @@ public class OwnerWalletController {
         RequestFormEntity request = requestFormService.getRequestById(requestId);
         if (!request.getStatus().equals("approved")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body("Request is not approved yet.");
+                                 .body("Request is not approved yet.");
         }
-
-        // Validate that the user has sufficient funds
-        OwnerWalletEntity wallet = ownerWalletService.getWalletByUserId(userId);
-        if (wallet.getOnlineEarning() < request.getAmount()) {
+    
+        try {
+            // Deduct the amount using the new service method
+            boolean success = ownerWalletService.deductFromOnlineEarnings(userId, request.getAmount());
+            if (!success) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                     .body("Insufficient online earnings.");
+            }
+    
+            // Mark the request as completed
+            request.setStatus("completed");
+            requestFormRepository.save(request);
+    
+            return ResponseEntity.ok("Amount successfully deducted from online earnings.");
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body("Insufficient online earnings.");
-        }
-
-        // Deduct the amount from the user's online earnings
-        boolean success = ownerWalletService.deductRefundAmount(userId, request.getAmount());
-        if (!success) {
+                                 .body(e.getMessage());
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body("Failed to deduct funds from wallet.");
+                                 .body("An error occurred while deducting from online earnings.");
         }
-
-        // Mark the request as completed
-        request.setStatus("completed");
-        requestFormRepository.save(request);
-        
-        return ResponseEntity.ok("Amount successfully deducted from online earnings.");
     }
+    
 
 }

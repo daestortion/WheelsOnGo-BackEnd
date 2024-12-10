@@ -233,7 +233,7 @@ public class OrderService {
 		order.setActive(false); // Set the order as inactive
 		ZonedDateTime philippinesTime = ZonedDateTime.now(ZoneId.of("Asia/Manila"));
 		order.setTerminationDate(philippinesTime.toLocalDate()); // Store only the date part
-
+		order.setStatus(2);
 		// Optionally, set car and user status to non-active
 		CarEntity car = order.getCar();
 		if (car != null) {
