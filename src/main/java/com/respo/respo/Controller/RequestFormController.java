@@ -152,5 +152,25 @@ public class RequestFormController {
         }
     }
 
+    @PutMapping("/denyRequest/{requestId}")
+public ResponseEntity<String> denyRequest(@PathVariable int requestId) {
+    try {
+        // Fetch the request by its ID
+        RequestFormEntity request = requestFormService.getRequestById(requestId);
+
+        // Set the status to "denied"
+        request.setStatus("denied");
+
+        // Save the updated request
+        requestFormRepository.save(request);
+
+        return new ResponseEntity<>("Request denied successfully!", HttpStatus.OK);
+    } catch (NoSuchElementException e) {
+        return new ResponseEntity<>("Request not found with ID: " + requestId, HttpStatus.NOT_FOUND);
+    } catch (Exception e) {
+        return new ResponseEntity<>("Error processing denial: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
 
 }

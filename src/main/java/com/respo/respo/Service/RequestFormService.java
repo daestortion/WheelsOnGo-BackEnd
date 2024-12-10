@@ -186,4 +186,18 @@ public class RequestFormService {
         return requestFormRepository.save(request);
     }
     
+    public String denyRequest(int requestId) {
+        Optional<RequestFormEntity> optionalRequest = requestFormRepository.findById(requestId);
+    
+        if (optionalRequest.isEmpty()) {
+            throw new IllegalArgumentException("Request not found with ID: " + requestId);
+        }
+    
+        RequestFormEntity request = optionalRequest.get();
+        request.setStatus("denied");
+        requestFormRepository.save(request);
+    
+        return "Request denied successfully!";
+    }
+    
 }
